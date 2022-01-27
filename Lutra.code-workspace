@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"editor.formatOnSave": true,
+		"omnisharp.defaultLaunchSolution": "Lutra.sln",
+		"omnisharp.enableImportCompletion": true,
+		"omnisharp.organizeImportsOnFormat": true
+	}
+}

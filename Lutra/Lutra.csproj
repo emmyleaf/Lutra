@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Lutra Game Framework</Description>
+    <Authors>Emmy Leadley</Authors>
+    <RepositoryUrl>https://github.com/emmyleaf/Lutra</RepositoryUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <Platforms>AnyCPU</Platforms>
+    <LangVersion>10.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ImGui.NET" Version="1.86.0" />
+    
+    <PackageReference Include="SharpFont.NetStandard" Version="1.0.5" />
+
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
+
+    <PackageReference Include="Veldrid" Version="4.8.0" />
+    <PackageReference Include="Veldrid.ImageSharp" Version="4.8.0" />
+    <PackageReference Include="Veldrid.ImGui" Version="5.72.0" />
+    <PackageReference Include="Veldrid.Sdl2" Version="4.8.0" />
+    <PackageReference Include="Veldrid.SPIRV" Version="1.0.14" />
+    <PackageReference Include="Veldrid.StartupUtilities" Version="4.8.0" />
+    <PackageReference Include="Veldrid.Utilities" Version="4.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Shaders/**/*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Providing a newer dylib makes SDL work on macOS/OpenGL so it's worth it! -->
+  <ItemGroup>
+    <Content Include="libsdl2.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="System" />
+  </ItemGroup>
+
+</Project>

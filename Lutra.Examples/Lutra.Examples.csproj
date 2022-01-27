@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <Platforms>AnyCPU</Platforms>
+    <LangVersion>10.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Lutra/Lutra.csproj" />
+    <ProjectReference Include="../Lutra.Audio.OpenAL/Lutra.Audio.OpenAL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets/**/*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Lutra" />
+  </ItemGroup>
+
+</Project>
