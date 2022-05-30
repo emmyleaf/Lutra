@@ -34,8 +34,10 @@ public class LutraTexture
         }
     }
 
-    public static implicit operator Texture(LutraTexture texture) => texture.Texture;
-    public static implicit operator TextureView(LutraTexture texture) => texture.TextureView;
+    public bool IsRenderTarget => (Texture.Usage & TextureUsage.RenderTarget) == TextureUsage.RenderTarget;
+
+    public static explicit operator Texture(LutraTexture texture) => texture.Texture;
+    public static explicit operator TextureView(LutraTexture texture) => texture.TextureView;
 
     #endregion
 
@@ -57,7 +59,12 @@ public class LutraTexture
         Texture = VeldridResources.CreateTexture(imageSharpTexture);
     }
 
-    public LutraTexture(Texture texture)
+    public LutraTexture(LutraTexture texture)
+    {
+        Texture = VeldridResources.CloneTexture((Texture)texture);
+    }
+
+    internal LutraTexture(Texture texture)
     {
         Texture = texture;
     }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Lutra.Cameras;
+using Lutra.Collision;
 using Lutra.Utility;
 using Lutra.Utility.Collections;
 using Lutra.Utility.Glide;
@@ -30,7 +31,7 @@ namespace Lutra
         /// When true, this Scene adds a Camera to the CameraManager's stack on Begin.
         /// On End, the scene removes this Camera and any Cameras above it on the stack.
         /// </summary>
-        public bool ManagesOwnCamera = false;
+        public bool ManagesOwnCamera = true;
 
         /// <summary>
         /// When ManagesOwnCamera is true, this Camera will be non-null between the Scene's Begin and End calls. 
@@ -86,7 +87,7 @@ namespace Lutra
 
         /// <summary>
         /// Get a list of entities that have a component that can be cast to the given type parameter.
-        /// WARNING: This can be very slow!
+        /// WARNING: This could be very slow!
         /// </summary>
         public List<Entity> GetEntitiesWith<TComponent>()
         where TComponent : Component
@@ -104,6 +105,26 @@ namespace Lutra
                 }
             }
             return list;
+        }
+
+        /// <summary>
+        /// Get all entities that have a collider with the given collision tag.
+        /// WARNING: This could be very slow!
+        /// </summary>
+        public IEnumerable<Entity> GetEntitiesWithCollider(int colliderTag)
+        {
+            return CollisionSystem.Instance.RegisteredColliders
+                .Where(c => c.Tags.Contains(colliderTag))
+                .Select(c => c.Entity);
+        }
+
+        /// <summary>
+        /// Get all entities that have a collider with the given collision tag.
+        /// WARNING: This could be very slow!
+        /// </summary>
+        public IEnumerable<Entity> GetEntitiesWithCollider(Enum colliderTag)
+        {
+            return GetEntitiesWithCollider(Convert.ToInt32(colliderTag));
         }
 
         public void Add(Entity entity)
@@ -216,6 +237,16 @@ namespace Lutra
             // }
         }
 
+        /// <summary>
+        /// Update internal lists of entities and graphics.
+        /// This includes processing additions/removals and sorting.
+        /// </summary>
+        public void UpdateLists()
+        {
+            _entityList.UpdateLists();
+            _graphicList.UpdateLists();
+        }
+
         #endregion
 
         #region Virtuals
@@ -256,8 +287,8 @@ namespace Lutra
         public virtual void UpdateLast() { }
 
         /// <summary>
-        /// Renders the scene. Graphics added to the scene render first.
-        /// Graphics drawn in Render() will render on top of all entities.
+        /// Contains custom render logic for the scene.
+        /// Entities/Graphics added to the scene render before this.
         /// </summary>
         public virtual void Render() { }
 
@@ -380,7 +411,7 @@ namespace Lutra
 
         internal void InternalRender()
         {
-            if (Visible)
+            if (Game != null && Visible)
             {
                 _graphicList.UpdateLists();
                 _graphicList.RenderAll();
@@ -431,6 +462,19 @@ namespace Lutra
             set
             {
                 if (MainCamera != null) MainCamera.Scale = value;
+            }
+        }
+
+        /// <summary>
+        /// The angle of MainCamera. Only use if ManagesOwnCamera is true.
+        /// </summary>
+        [Obsolete("Deprecated. Use MainCamera directly or CameraManager instead.")]
+        public float CameraAngle
+        {
+            get => MainCamera?.Angle ?? default;
+            set
+            {
+                if (MainCamera != null) MainCamera.Angle = value;
             }
         }
 

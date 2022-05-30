@@ -54,6 +54,8 @@ namespace Lutra
 
             Id = nextSessionId;
             nextSessionId++;
+
+            InputManager.AddVirtualController(Controller);
         }
     }
 }

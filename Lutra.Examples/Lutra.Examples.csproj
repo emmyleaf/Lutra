@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <TargetFrameworks>net6.0</TargetFrameworks>
-    <Platforms>AnyCPU</Platforms>
+    <Platforms>x64</Platforms>
     <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 

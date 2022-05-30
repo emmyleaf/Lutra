@@ -1,5 +1,6 @@
 using System.Numerics;
 using Lutra.Rendering;
+using Lutra.Rendering.Shaders;
 
 namespace Lutra.Graphics;
 
@@ -11,7 +12,7 @@ namespace Lutra.Graphics;
 /// </summary>
 public abstract class SpriteGraphic : Graphic
 {
-    protected SpriteDrawable SpriteDrawable;
+    public SpriteDrawable SpriteDrawable;
 
     /// <summary>
     /// If true, this SpriteGraphic will always update its SpriteDrawable.
@@ -21,12 +22,16 @@ public abstract class SpriteGraphic : Graphic
     /// <summary>
     /// Smooth the texture of a sprite image while scaling it.
     /// </summary>
-    // TODO: Implement this?!
     public bool Smooth;
 
-    public SpriteShader Shader;
+    public ShaderData Shader;
 
-    protected override void Render()
+    /// <summary>
+    /// The blend mode to be applied to this graphic. Defaults to Alpha blend.
+    /// </summary>
+    public BlendMode Blend = BlendMode.Alpha;
+
+    protected internal override void Render()
     {
         var updateTransforms = Transform.WillBeUpdated || (Entity != null && Entity.Transform.WillBeUpdated);
         if (Dynamic || NeedsUpdate || updateTransforms)
@@ -36,14 +41,7 @@ public abstract class SpriteGraphic : Graphic
 
         if (SpriteDrawable.Vertices.Count > 0)
         {
-            if (Shader != null)
-            {
-                Draw.SpriteDrawableShaders(SpriteDrawable, Shader);
-            }
-            else
-            {
-                Draw.SpriteDrawable(SpriteDrawable);
-            }
+            Draw.SpriteDrawable(SpriteDrawable, Blend, Smooth, Shader);
         }
     }
 

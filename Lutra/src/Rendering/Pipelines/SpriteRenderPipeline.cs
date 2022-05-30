@@ -12,6 +12,10 @@ public class SpriteRenderPipeline
     private const ushort MAX_VERTICES = MAX_QUADS * 4;
     private const ushort MAX_INDICES = MAX_QUADS * 6;
 
+    private const string NO_SHADER = "___NO_SHADER___";
+
+    private readonly GraphicsPipelineDescription PipelineDescTemplate;
+
     private readonly PipelineCommon PipelineCommon;
 
     private readonly DeviceBuffer WorldBuffer;
@@ -20,15 +24,21 @@ public class SpriteRenderPipeline
 
     private readonly ResourceLayout PerSpriteResourceLayout;
 
-    private readonly Dictionary<int, ResourceSet> PerSpriteResourceSets = new();
+    private readonly Dictionary<int, ResourceSet> PerTextureResourceSets = new();
     private readonly Dictionary<int, ResourceSet> PerShaderResourceSets = new();
+    private readonly Dictionary<string, ResourceLayout> ShaderLayouts = new();
 
-    private readonly Pipeline MainPipeline;
-    private readonly Dictionary<string, (Pipeline Pipeline, ResourceLayout Layout)> ShaderPipelines = new();
+    private readonly Dictionary<int, Pipeline> Pipelines = new();
 
     internal SpriteRenderPipeline(PipelineCommon common)
     {
         PipelineCommon = common;
+
+        PipelineDescTemplate = new GraphicsPipelineDescription();
+        PipelineDescTemplate.PrimitiveTopology = PrimitiveTopology.TriangleList;
+        PipelineDescTemplate.DepthStencilState = DepthStencilStateDescription.Disabled;
+        PipelineDescTemplate.Outputs = VeldridResources.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
+        PipelineDescTemplate.RasterizerState = RasterizerStateDescription.Default;
 
         WorldBuffer = VeldridResources.CreateMatrixUniformBuffer();
         VertexBuffer = VeldridResources.CreateVertexBuffer(MAX_VERTICES * VertexPositionColorTexture.SizeInBytes);
@@ -36,7 +46,7 @@ public class SpriteRenderPipeline
 
         PerSpriteResourceLayout = VeldridResources.Factory.CreateResourceLayout(new ResourceLayoutDescription(
             new ResourceLayoutElementDescription("WorldBuffer", ResourceKind.UniformBuffer, ShaderStages.Vertex),
-            new ResourceLayoutElementDescription("Sprite", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+            new ResourceLayoutElementDescription("Texture", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
             new ResourceLayoutElementDescription("Sampler", ResourceKind.Sampler, ShaderStages.Fragment)
         ));
 
@@ -45,22 +55,25 @@ public class SpriteRenderPipeline
             VeldridResources.CreateShaders(BuiltinShader.SpriteVertexBytes, BuiltinShader.SpriteFragmentBytes)
         );
 
-        var description = new GraphicsPipelineDescription();
-        description.BlendState = BlendStateDescription.SingleAlphaBlend;
-        description.PrimitiveTopology = PrimitiveTopology.TriangleList;
-        description.ResourceLayouts = new[] { PipelineCommon.PerFrameResourceLayout, PerSpriteResourceLayout };
-        description.ResourceBindingModel = ResourceBindingModel.Improved;
-        description.ShaderSet = shaderSet;
-        description.Outputs = VeldridResources.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
-        description.DepthStencilState = DepthStencilStateDescription.Disabled;
-        description.RasterizerState = RasterizerStateDescription.Default;
+        var alphaBlendDesc = PipelineDescTemplate;
+        alphaBlendDesc.BlendState = BlendStateDescription.SingleAlphaBlend;
+        alphaBlendDesc.ResourceLayouts = new[] { PipelineCommon.PerFrameResourceLayout, PerSpriteResourceLayout };
+        alphaBlendDesc.ShaderSet = shaderSet;
 
-        MainPipeline = VeldridResources.Factory.CreateGraphicsPipeline(description);
+        var addBlendDesc = alphaBlendDesc;
+        addBlendDesc.BlendState = BlendStateDescription.SingleAdditiveBlend;
+
+        Pipelines.Add(
+            HashCode.Combine(NO_SHADER, BlendMode.Alpha),
+            VeldridResources.Factory.CreateGraphicsPipeline(alphaBlendDesc));
+        Pipelines.Add(
+            HashCode.Combine(NO_SHADER, BlendMode.Add),
+            VeldridResources.Factory.CreateGraphicsPipeline(addBlendDesc));
     }
 
     internal void CreateShaderPipeline(string shaderName, byte[] fragShaderBytes, ResourceLayoutDescription layoutDesc)
     {
-        if (ShaderPipelines.ContainsKey(shaderName)) return;
+        if (ShaderLayouts.ContainsKey(shaderName)) return;
 
         var shaderSet = new ShaderSetDescription(
             new[] { VertexPositionColorTexture.LayoutDescription },
@@ -69,19 +82,22 @@ public class SpriteRenderPipeline
 
         var shaderResourceLayout = VeldridResources.Factory.CreateResourceLayout(layoutDesc);
 
-        var description = new GraphicsPipelineDescription();
-        description.BlendState = BlendStateDescription.SingleAlphaBlend;
-        description.PrimitiveTopology = PrimitiveTopology.TriangleList;
-        description.ResourceLayouts = new[] { PipelineCommon.PerFrameResourceLayout, PerSpriteResourceLayout, shaderResourceLayout };
-        description.ResourceBindingModel = ResourceBindingModel.Improved;
-        description.ShaderSet = shaderSet;
-        description.Outputs = VeldridResources.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
-        description.DepthStencilState = DepthStencilStateDescription.Disabled;
-        description.RasterizerState = RasterizerStateDescription.Default;
+        var alphaBlendDesc = PipelineDescTemplate;
+        alphaBlendDesc.BlendState = BlendStateDescription.SingleAlphaBlend;
+        alphaBlendDesc.ResourceLayouts = new[] { PipelineCommon.PerFrameResourceLayout, PerSpriteResourceLayout, shaderResourceLayout };
+        alphaBlendDesc.ShaderSet = shaderSet;
 
-        var shaderPipeline = VeldridResources.Factory.CreateGraphicsPipeline(description);
+        var addBlendDesc = alphaBlendDesc;
+        addBlendDesc.BlendState = BlendStateDescription.SingleAdditiveBlend;
 
-        ShaderPipelines.Add(shaderName, (shaderPipeline, shaderResourceLayout));
+        Pipelines.Add(
+            HashCode.Combine(shaderName, BlendMode.Alpha),
+            VeldridResources.Factory.CreateGraphicsPipeline(alphaBlendDesc));
+        Pipelines.Add(
+            HashCode.Combine(shaderName, BlendMode.Add),
+            VeldridResources.Factory.CreateGraphicsPipeline(addBlendDesc));
+
+        ShaderLayouts.Add(shaderName, shaderResourceLayout);
     }
 
     public void UpdateVertexBuffer(ref VertexPositionColorTexture[] data, uint vertIndex, uint vertAmount)
@@ -90,62 +106,55 @@ public class SpriteRenderPipeline
         Draw.CommandList.UpdateBuffer(VertexBuffer, 0u, ref data[vertIndex], sizeInBytes);
     }
 
-    public void DrawSprites(SpriteParams quadInfo, uint indexOffset, uint numQuads)
+    public void DrawSprites(SpriteParams quadInfo, uint indexOffset, uint numQuads, BlendMode blendMode, bool smooth, ShaderData shaderData = null)
     {
-        Draw.CommandList.SetPipeline(MainPipeline);
+        var shaderName = shaderData != null ? shaderData.ShaderName : NO_SHADER;
+        var key = HashCode.Combine(shaderName, blendMode);
+        var pipeline = Pipelines[key];
+
+        Draw.CommandList.SetPipeline(pipeline);
 
         Draw.CommandList.SetIndexBuffer(IndexBuffer, IndexFormat.UInt16);
         Draw.CommandList.SetVertexBuffer(0u, VertexBuffer);
         Draw.CommandList.UpdateBuffer(WorldBuffer, 0u, quadInfo.WorldMatrix);
 
         Draw.CommandList.SetGraphicsResourceSet(0u, PipelineCommon.PerFrameResourceSet);
-        Draw.CommandList.SetGraphicsResourceSet(1u, GetPerSpriteResourceSet(quadInfo));
+        Draw.CommandList.SetGraphicsResourceSet(1u, GetPerTextureResourceSet(quadInfo, smooth));
+
+        if (shaderData != null)
+        {
+            Draw.CommandList.SetGraphicsResourceSet(2u, GetShaderResourceSet(shaderData));
+        }
 
         Draw.CommandList.DrawIndexed(numQuads * 6u, 1u, indexOffset * 6u, 0, 0u);
     }
 
-    public void DrawShaderSprites(SpriteParams quadInfo, uint indexOffset, uint numQuads, SpriteShader shaderData)
+    private ResourceSet GetPerTextureResourceSet(SpriteParams quadInfo, bool smooth)
     {
-        Draw.CommandList.SetPipeline(ShaderPipelines[shaderData.ShaderName].Pipeline);
-
-        Draw.CommandList.SetIndexBuffer(IndexBuffer, IndexFormat.UInt16);
-        Draw.CommandList.SetVertexBuffer(0u, VertexBuffer);
-        Draw.CommandList.UpdateBuffer(WorldBuffer, 0u, quadInfo.WorldMatrix);
-
-        Draw.CommandList.SetGraphicsResourceSet(0u, PipelineCommon.PerFrameResourceSet);
-        Draw.CommandList.SetGraphicsResourceSet(1u, GetPerSpriteResourceSet(quadInfo));
-        Draw.CommandList.SetGraphicsResourceSet(2u, GetShaderResourceSet(shaderData));
-
-        Draw.CommandList.DrawIndexed(numQuads * 6u, 1u, indexOffset * 6u, 0, 0u);
-    }
-
-    private ResourceSet GetPerSpriteResourceSet(SpriteParams quadInfo)
-    {
-        int key = HashCode.Combine(quadInfo.Texture);
+        int key = HashCode.Combine(quadInfo.Texture.TextureView, smooth);
         ResourceSet resourceSet;
 
-        if (!PerSpriteResourceSets.TryGetValue(key, out resourceSet))
+        if (!PerTextureResourceSets.TryGetValue(key, out resourceSet))
         {
+            var sampler = smooth ? VeldridResources.GraphicsDevice.LinearSampler : VeldridResources.GraphicsDevice.PointSampler;
             resourceSet = VeldridResources.Factory.CreateResourceSet(new ResourceSetDescription(
-                PerSpriteResourceLayout, WorldBuffer, quadInfo.Texture.TextureView, VeldridResources.GraphicsDevice.PointSampler)
+                PerSpriteResourceLayout, WorldBuffer, quadInfo.Texture.TextureView, sampler)
             );
-            PerSpriteResourceSets[key] = resourceSet;
+            PerTextureResourceSets[key] = resourceSet;
         }
 
         return resourceSet;
     }
 
-    private ResourceSet GetShaderResourceSet(SpriteShader shaderData)
+    private ResourceSet GetShaderResourceSet(ShaderData shaderData)
     {
         int key = HashCode.Combine(shaderData);
         ResourceSet resourceSet;
 
         if (!PerShaderResourceSets.TryGetValue(key, out resourceSet))
         {
-            var layout = ShaderPipelines[shaderData.ShaderName].Layout;
-            resourceSet = VeldridResources.Factory.CreateResourceSet(new ResourceSetDescription(
-                layout, shaderData.Resources
-            ));
+            var desc = new ResourceSetDescription(ShaderLayouts[shaderData.ShaderName], shaderData.Resources);
+            resourceSet = VeldridResources.Factory.CreateResourceSet(ref desc);
             PerShaderResourceSets[key] = resourceSet;
         }
 

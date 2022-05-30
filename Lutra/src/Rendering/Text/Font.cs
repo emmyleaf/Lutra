@@ -16,7 +16,6 @@ namespace Lutra.Rendering.Text
 
         static Font()
         {
-            FreetypeDllResolver.Register();
             Library = new Library();
         }
 

@@ -24,6 +24,8 @@ public static class VeldridResources
     public static GraphicsDevice GraphicsDevice => _graphicsDevice;
     public static ResourceFactory Factory => _factory;
 
+    public static bool IsOpenGL;
+
     public static void Initialize(Game game, GraphicsBackend? preferredBackend)
     {
         if (!preferredBackend.HasValue || !GraphicsDevice.IsBackendSupported(preferredBackend.Value))
@@ -46,13 +48,12 @@ public static class VeldridResources
         };
 
         VeldridStartup.CreateWindowAndGraphicsDevice(windowCreateInfo, gdOptions, preferredBackend.Value, out Sdl2Window, out _graphicsDevice);
+        IsOpenGL = _graphicsDevice.BackendType == Veldrid.GraphicsBackend.OpenGL || _graphicsDevice.BackendType == Veldrid.GraphicsBackend.OpenGLES;
 
         Sdl2Window.Resized += () => _windowResized = true;
-
         OnResize += game.Window.OnResized;
 
         _factory = new DisposeCollectorResourceFactory(_graphicsDevice.ResourceFactory);
-
         _utilityCommandList = _factory.CreateCommandList();
 
         DEBUG_Initialize();
@@ -66,6 +67,40 @@ public static class VeldridResources
             _graphicsDevice.MainSwapchain.Resize((uint)Sdl2Window.Width, (uint)Sdl2Window.Height);
             OnResize?.Invoke();
         }
+    }
+
+    public static Texture CloneTexture(Texture texture)
+    {
+        var newDesc = TextureDescription.Texture2D(texture.Width, texture.Height, texture.MipLevels, texture.ArrayLayers, texture.Format, texture.Usage);
+        var newTex = _factory.CreateTexture(ref newDesc);
+
+        _utilityCommandList.Begin();
+        _utilityCommandList.CopyTexture(texture, newTex);
+        _utilityCommandList.End();
+        GraphicsDevice.SubmitCommands(_utilityCommandList);
+        GraphicsDevice.WaitForIdle();
+
+        return newTex;
+    }
+
+    public static Texture EnlargeTexture(Texture texture, uint width, uint height)
+    {
+        if (texture.Width >= width || texture.Height >= height)
+        {
+            Util.LogError($"Cannot enlarge a {texture.Width}x{texture.Height} texture to {width}x{height}");
+            return texture;
+        }
+
+        var newDesc = TextureDescription.Texture2D(width, height, texture.MipLevels, texture.ArrayLayers, texture.Format, texture.Usage);
+        var newTex = _factory.CreateTexture(ref newDesc);
+
+        _utilityCommandList.Begin();
+        _utilityCommandList.CopyTexture(texture, 0, 0, 0, 0, 0, newTex, 0, 0, 0, 0, 0, texture.Width, texture.Height, 1, 1);
+        _utilityCommandList.End();
+        GraphicsDevice.SubmitCommands(_utilityCommandList);
+        GraphicsDevice.WaitForIdle();
+
+        return newTex;
     }
 
     public static MappedResourceView<byte> GetMappedTexture(Texture texture)
@@ -83,7 +118,7 @@ public static class VeldridResources
         return GraphicsDevice.Map<byte>(stagingTexture, MapMode.Read);
     }
 
-    public static void UpdateTexture<T>(Texture texture, T[] data, RectInt bounds) where T : struct
+    public static void UpdateTexture<T>(Texture texture, T[] data, RectInt bounds) where T : unmanaged
     {
         if (bounds.Width == 0 || bounds.Height == 0)
         {

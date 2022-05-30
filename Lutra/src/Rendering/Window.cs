@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Lutra.Utility;
 
 namespace Lutra.Rendering;
@@ -82,8 +83,23 @@ public class Window
     {
         if (VeldridResources.Sdl2Window.WindowState != Veldrid.WindowState.FullScreen)
         {
+            unsafe
+            {
+                Veldrid.Sdl2.SDL_DisplayMode displayMode;
+                if (Veldrid.Sdl2.Sdl2Native.SDL_GetDesktopDisplayMode(0, &displayMode) == 0)
+                {
+                    VeldridResources.Sdl2Window.Width = displayMode.w;
+                    VeldridResources.Sdl2Window.Height = displayMode.h;
+                }
+                else
+                {
+                    var errorMsg = Marshal.PtrToStringAnsi((IntPtr)Veldrid.Sdl2.Sdl2Native.SDL_GetError());
+                    Util.LogError($"SDL_GetDesktopDisplayMode failed: {errorMsg}");
+                }
+            }
             VeldridResources.Sdl2Window.WindowState = Veldrid.WindowState.FullScreen;
         }
+        else
         {
             UpdateSurfaceBounds();
         }

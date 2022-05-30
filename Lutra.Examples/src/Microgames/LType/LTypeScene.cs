@@ -21,11 +21,6 @@ public class LTypeScene : Scene
     private Music musicA;
     private float spawnTimer = 0f;
 
-    public LTypeScene()
-    {
-        ManagesOwnCamera = true;
-    }
-
     public override void Begin()
     {
         Music.GlobalVolume = DEFAULT_VOLUME;

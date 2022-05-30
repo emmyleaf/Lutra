@@ -9,6 +9,8 @@ namespace Lutra;
 /// </summary>
 public struct GameOptions
 {
+    public GameOptions() {}
+
     /// <summary>
     /// The window title. Default: "Lutra"
     /// </summary>
@@ -23,6 +25,11 @@ public struct GameOptions
     /// The game's internal height. Default: 540
     /// </summary>
     public int Height = 540;
+
+    /// <summary>
+    /// The game's default background color.
+    /// </summary>
+    public Color ClearColor = Color.CornflowerBlue;
 
     /// <summary>
     /// Determines initial window size relative to the game's internal size. Default: 1

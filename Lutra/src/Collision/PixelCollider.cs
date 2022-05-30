@@ -42,7 +42,7 @@ namespace Lutra.Collision
         /// <param name="tags">The tags to register the collider with.</param>
         public PixelCollider(string source, params int[] tags)
         {
-            Initialize(AssetManager.GetTexture(source));
+            Initialize((Texture)AssetManager.GetTexture(source));
             AddTag(tags);
         }
 

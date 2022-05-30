@@ -6,36 +6,41 @@
     <RepositoryUrl>https://github.com/emmyleaf/Lutra</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <TargetFrameworks>net6.0</TargetFrameworks>
-    <Platforms>AnyCPU</Platforms>
+    <Platforms>x64</Platforms>
     <LangVersion>10.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="ImGui.NET" Version="1.86.0" />
-    
-    <PackageReference Include="SharpFont.NetStandard" Version="1.0.5" />
 
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
 
-    <PackageReference Include="Veldrid" Version="4.8.0" />
-    <PackageReference Include="Veldrid.ImageSharp" Version="4.8.0" />
+    <PackageReference Include="SpaceWizards.SharpFont" Version="1.0.1" />
+
+    <PackageReference Include="Veldrid" Version="4.9.0-beta1" />
+    <PackageReference Include="Veldrid.ImageSharp" Version="4.9.0-beta1" />
     <PackageReference Include="Veldrid.ImGui" Version="5.72.0" />
-    <PackageReference Include="Veldrid.Sdl2" Version="4.8.0" />
+    <PackageReference Include="Veldrid.Sdl2" Version="4.9.0-beta1" />
     <PackageReference Include="Veldrid.SPIRV" Version="1.0.14" />
-    <PackageReference Include="Veldrid.StartupUtilities" Version="4.8.0" />
-    <PackageReference Include="Veldrid.Utilities" Version="4.8.0" />
+    <PackageReference Include="Veldrid.StartupUtilities" Version="4.9.0-beta1" />
+    <PackageReference Include="Veldrid.Utilities" Version="4.9.0-beta1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Shaders/**/*.*">
+    <EmbeddedResource Include="Shaders/**/*.*" />
+  </ItemGroup>
+
+  <!-- Providing a newer SDL dylib for macOS x64 -->
+  <ItemGroup>
+    <Content Include="libsdl2.dylib" Condition="('$(RuntimeIdentifier)' == 'osx-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('OSX')))">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
-  <!-- Providing a newer dylib makes SDL work on macOS/OpenGL so it's worth it! -->
+  <!-- Providing patched freetype dll for Windows x64 -->
   <ItemGroup>
-    <Content Include="libsdl2.dylib">
+    <Content Include="freetype6.dll" Condition="('$(RuntimeIdentifier)' == 'win-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('Windows')))">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

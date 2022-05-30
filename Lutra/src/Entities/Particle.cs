@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Lutra.Graphics;
+using Lutra.Rendering;
 using Lutra.Utility;
 
 namespace Lutra.Entities;
@@ -446,33 +447,33 @@ public class Particle : Entity
 
     #region Constructors
 
-    // /// <summary>
-    // /// Create a new Particle.
-    // /// </summary>
-    // /// <param name="x">The x position.</param>
-    // /// <param name="y">The y position.</param>
-    // /// <param name="source">The source file path of the ImageSet.</param>
-    // /// <param name="width">The width of the ImageSet cell.</param>
-    // /// <param name="height">The height of the ImageSet cell.</param>
-    // public Particle(float x, float y, string source = null, int width = 0, int height = 0)
-    //     : base(x, y)
-    // {
-    //     Image = new ImageSet(source, width, height);
-    // }
+    /// <summary>
+    /// Create a new Particle.
+    /// </summary>
+    /// <param name="x">The x position.</param>
+    /// <param name="y">The y position.</param>
+    /// <param name="source">The source file path of the ImageSet.</param>
+    /// <param name="width">The width of the ImageSet cell.</param>
+    /// <param name="height">The height of the ImageSet cell.</param>
+    public Particle(float x, float y, string source = null, int width = 0, int height = 0)
+        : base(x, y)
+    {
+        Image = new InstancedImageSet(source, width, height);
+    }
 
-    // /// <summary>
-    // /// Create a new Particle.
-    // /// </summary>
-    // /// <param name="x">The x position.</param>
-    // /// <param name="y">The y position.</param>
-    // /// <param name="texture">The Texture to use for the ImageSet.</param>
-    // /// <param name="width">The width of the ImageSet cell.</param>
-    // /// <param name="height">The height of the ImageSet cell.</param>
-    // public Particle(float x, float y, LutraTexture texture, int width = 0, int height = 0)
-    //     : base(x, y)
-    // {
-    //     Image = new ImageSet(texture, width, height);
-    // }
+    /// <summary>
+    /// Create a new Particle.
+    /// </summary>
+    /// <param name="x">The x position.</param>
+    /// <param name="y">The y position.</param>
+    /// <param name="texture">The Texture to use for the ImageSet.</param>
+    /// <param name="width">The width of the ImageSet cell.</param>
+    /// <param name="height">The height of the ImageSet cell.</param>
+    public Particle(float x, float y, LutraTexture texture, int width = 0, int height = 0)
+        : base(x, y)
+    {
+        Image = new InstancedImageSet(texture, width, height);
+    }
 
     /// <summary>
     /// Create a blank Particle.

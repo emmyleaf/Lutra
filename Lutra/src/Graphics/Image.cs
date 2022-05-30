@@ -175,10 +175,9 @@ public class Image : SpriteGraphic
 
     public Image(LutraTexture texture)
     {
-        Texture = texture;
+        SetTexture(texture);
         Width = (int)texture.Width;
         Height = (int)texture.Height;
-        TextureRegion = new RectInt(0, 0, (int)texture.Width, (int)texture.Height);
     }
 
     protected Image() { }

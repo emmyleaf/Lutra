@@ -21,7 +21,7 @@ public class Text : SpriteGraphic
         Size = size;
         Bold = bold;
 
-        Font.PreloadASCII(Size, Bold);
+        // Font.PreloadASCII(Size, Bold);
         Texture = Font.GetTexture(Size, Bold);
         UpdateDrawable();
     }

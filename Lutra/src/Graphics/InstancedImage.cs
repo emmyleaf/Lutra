@@ -97,7 +97,7 @@ public class InstancedImage : Graphic
 
     #endregion
 
-    protected override void Render()
+    protected internal override void Render()
     {
         // draw dropshadow
         if (dropshadowDistanceX != 0 || dropshadowDistanceY != 0)

@@ -8,17 +8,18 @@ namespace Lutra.Rendering.Pipelines;
 
 public class InstancedRenderPipeline
 {
-    // TODO: resize instance buffers when too large rather than this arbitrary maximum
-    public const uint MAX_INSTANCES = 256u;
-    public const uint INITIAL_INSTANCE_BUFFER_SIZE = MAX_INSTANCES * Instance.SizeInBytes;
+    public const uint MAX_INSTANCES = 2048u;
+    public const uint INSTANCE_BUFFER_SIZE = MAX_INSTANCES * Instance.SizeInBytes;
 
     private readonly PipelineCommon PipelineCommon;
 
     private readonly DeviceBuffer VertexBuffer;
+    private readonly DeviceBuffer InstanceBuffer;
+
     private readonly ResourceLayout PerBatchResourceLayout;
     private readonly Pipeline Pipeline;
 
-    private readonly Dictionary<int, BatchResources> ResourceDict = new();
+    private readonly Dictionary<int, ResourceSet> ResourceDict = new();
     private readonly Dictionary<int, InstanceBatch> BatchesDict = new();
     private readonly List<InstanceBatch> BatchesList = new();
 
@@ -27,6 +28,7 @@ public class InstancedRenderPipeline
         PipelineCommon = common;
 
         VertexBuffer = CreateSingleQuadVertexBuffer();
+        InstanceBuffer = VeldridResources.CreateStructuredBuffer(INSTANCE_BUFFER_SIZE, Instance.SizeInBytes);
 
         PerBatchResourceLayout = VeldridResources.Factory.CreateResourceLayout(new ResourceLayoutDescription(
             new ResourceLayoutElementDescription("InstancesBuffer", ResourceKind.StructuredBufferReadOnly, ShaderStages.Vertex),
@@ -36,7 +38,7 @@ public class InstancedRenderPipeline
 
         var shaderSet = new ShaderSetDescription(
             new[] { VertexPosition.LayoutDescription },
-            VeldridResources.CreateShaders(BuiltinShader.InstancedVertexBytes, BuiltinShader.InstancedFragmentBytes)
+            VeldridResources.CreateShaders(BuiltinShader.InstancedVertexBytes, BuiltinShader.SpriteFragmentBytes)
         );
 
         var description = new GraphicsPipelineDescription();
@@ -54,65 +56,65 @@ public class InstancedRenderPipeline
 
     /// <summary>
     /// Add an instance to be drawn at the next Flush.
+    /// A flush can be triggered if any resource set already contains the maximum number of instances.
     /// </summary>
-    public void Add(LutraTexture texture, int layer, Vector4 color, Matrix4x4 source, Matrix4x4 world)
+    public void Add(LutraTexture texture, int layer, Vector4 color, Matrix4x4 source, Matrix4x4 world, CommandList commandList)
     {
-        var hashCode = HashCode.Combine(texture, layer);
+        var hashCode = HashCode.Combine(texture.TextureView, layer);
         InstanceBatch batch;
 
         if (!BatchesDict.TryGetValue(hashCode, out batch))
         {
-            batch = new InstanceBatch()
-            {
-                Resources = GetBatchResources(hashCode, texture)
-            };
+            batch = new InstanceBatch() { ResourceSet = GetBatchResourceSet(hashCode, texture.TextureView) };
 
             BatchesDict.Add(hashCode, batch);
             BatchesList.Add(batch);
+        }
+
+        if (batch.Instances.Count == MAX_INSTANCES)
+        {
+            Flush(commandList);
         }
 
         batch.Instances.Add(new Instance { Color = color, Source = source, World = world });
     }
 
     /// <summary>
-    /// Flush current contents to the main CommandList.
+    /// Flush current contents to the given CommandList.
     /// </summary>
-    public void Flush()
+    public void Flush(CommandList commandList)
     {
         if (BatchesList.IsEmpty()) return;
 
-        Draw.CommandList.SetPipeline(Pipeline);
-        Draw.CommandList.SetVertexBuffer(0u, VertexBuffer);
-        Draw.CommandList.SetGraphicsResourceSet(0, PipelineCommon.PerFrameResourceSet);
+        commandList.SetPipeline(Pipeline);
+        commandList.SetVertexBuffer(0u, VertexBuffer);
+        commandList.SetGraphicsResourceSet(0, PipelineCommon.PerFrameResourceSet);
 
         foreach (var batch in BatchesList)
         {
-            Draw.CommandList.UpdateBuffer(batch.Resources.InstancesBuffer, 0, batch.Instances.Items);
-            Draw.CommandList.SetGraphicsResourceSet(1, batch.Resources.ResourceSet);
-            Draw.CommandList.Draw(4, (uint)batch.Instances.Count, 0, 0);
+            commandList.UpdateBuffer(InstanceBuffer, 0, batch.Instances.GetReadOnlySpan());
+            commandList.SetGraphicsResourceSet(1, batch.ResourceSet);
+            commandList.Draw(4, (uint)batch.Instances.Count, 0, 0);
         }
 
         BatchesDict.Clear();
         BatchesList.Clear();
     }
 
-    private BatchResources GetBatchResources(int hashCode, LutraTexture texture)
+    private ResourceSet GetBatchResourceSet(int hashCode, TextureView textureView)
     {
-        BatchResources batchResources;
+        ResourceSet batchResourceSet;
 
-        if (!ResourceDict.TryGetValue(hashCode, out batchResources))
+        if (!ResourceDict.TryGetValue(hashCode, out batchResourceSet))
         {
-            var buffer = VeldridResources.CreateStructuredBuffer(INITIAL_INSTANCE_BUFFER_SIZE, Instance.SizeInBytes);
-            var resourceSet = VeldridResources.Factory.CreateResourceSet(new ResourceSetDescription(
-                PerBatchResourceLayout, buffer, texture.TextureView, VeldridResources.GraphicsDevice.PointSampler
+            batchResourceSet = VeldridResources.Factory.CreateResourceSet(new ResourceSetDescription(
+                PerBatchResourceLayout, InstanceBuffer, textureView, VeldridResources.GraphicsDevice.PointSampler
             ));
 
-            batchResources = new BatchResources { InstancesBuffer = buffer, ResourceSet = resourceSet };
-
-            ResourceDict.Add(hashCode, batchResources);
+            ResourceDict.Add(hashCode, batchResourceSet);
         }
 
-        return batchResources;
+        return batchResourceSet;
     }
 
     private static DeviceBuffer CreateSingleQuadVertexBuffer()
@@ -140,15 +142,9 @@ public class InstancedRenderPipeline
         public Matrix4x4 World;
     }
 
-    private class BatchResources
-    {
-        public DeviceBuffer InstancesBuffer;
-        public ResourceSet ResourceSet;
-    }
-
     private class InstanceBatch
     {
         public LutraList<Instance> Instances = new(16);
-        public BatchResources Resources;
+        public ResourceSet ResourceSet;
     }
 }

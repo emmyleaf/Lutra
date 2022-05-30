@@ -1,6 +1,7 @@
 using System.Numerics;
 using Lutra.Graphics;
 using Lutra.Rendering.Pipelines;
+using Lutra.Rendering.Shaders;
 using Lutra.Utility;
 using Veldrid;
 
@@ -9,6 +10,19 @@ namespace Lutra.Rendering;
 public static class Draw
 {
     #region Static Fields
+
+    private static Surface _target;
+    private static bool _targetUpdated;
+
+    internal static Surface Target
+    {
+        get => _target;
+        set
+        {
+            _target = value;
+            _targetUpdated = true;
+        }
+    }
 
     internal static CommandList CommandList;
     internal static PipelineCommon PipelineCommon;
@@ -29,13 +43,13 @@ public static class Draw
         SurfaceRenderPipeline = new();
     }
 
-    public static void Begin(Color clearColor, Surface surface)
+    public static void Begin(Surface surface)
     {
+        Target = surface;
+
         CommandList.Begin();
-        CommandList.SetFramebuffer(surface.Framebuffer);
-        CommandList.ClearColorTarget(0u, clearColor);
-        CommandList.UpdateBuffer(PipelineCommon.ProjectionBuffer, 0u, Game.Instance.CameraManager.Projection);
-        CommandList.UpdateBuffer(PipelineCommon.ViewBuffer, 0u, Game.Instance.CameraManager.View);
+
+        SetAndClearFramebuffer();
     }
 
     public static void End()
@@ -63,6 +77,8 @@ public static class Draw
         Color color
     )
     {
+        SetAndClearFramebuffer();
+
         var texWidth = (float)texture.Width;
         var texHeight = (float)texture.Height;
 
@@ -73,36 +89,28 @@ public static class Draw
             graphicMatrix *
             Matrix4x4.CreateTranslation(destRect.X, destRect.Y, 0);
 
-        InstancedRenderPipeline.Add(texture, layer, color.ToVector4(), source, world);
+        InstancedRenderPipeline.Add(texture, layer, color.ToVector4(), source, world, CommandList);
     }
 
-    public static void SpriteDrawable(SpriteDrawable spriteDrawable)
+    public static void SpriteDrawable(SpriteDrawable spriteDrawable, BlendMode blendMode, bool smooth, ShaderData spriteShader = null)
     {
-        InstancedRenderPipeline.Flush();
+        InstancedRenderPipeline.Flush(CommandList);
+
+        SetAndClearFramebuffer();
 
         var vertData = spriteDrawable.Vertices.ToArray();
         var vertCount = (uint)spriteDrawable.Vertices.Count;
         var quadCount = vertCount / 4u;
 
         SpriteRenderPipeline.UpdateVertexBuffer(ref vertData, 0, vertCount);
-        SpriteRenderPipeline.DrawSprites(spriteDrawable.Params, 0, quadCount);
-    }
-
-    public static void SpriteDrawableShaders(SpriteDrawable spriteDrawable, SpriteShader spriteShader)
-    {
-        InstancedRenderPipeline.Flush();
-
-        var vertData = spriteDrawable.Vertices.ToArray();
-        var vertCount = (uint)spriteDrawable.Vertices.Count;
-        var quadCount = vertCount / 4u;
-
-        SpriteRenderPipeline.UpdateVertexBuffer(ref vertData, 0, vertCount);
-        SpriteRenderPipeline.DrawShaderSprites(spriteDrawable.Params, 0, quadCount, spriteShader);
+        SpriteRenderPipeline.DrawSprites(spriteDrawable.Params, 0, quadCount, blendMode, smooth, spriteShader);
     }
 
     public static void SurfaceToWindow(Surface surface, Window window, Color letterBoxColor)
     {
-        InstancedRenderPipeline.Flush();
+        InstancedRenderPipeline.Flush(CommandList);
+
+        SetAndClearFramebuffer();
 
         CommandList.SetFramebuffer(VeldridResources.GraphicsDevice.SwapchainFramebuffer);
         CommandList.ClearColorTarget(0u, letterBoxColor);
@@ -144,8 +152,35 @@ public static class Draw
             };
         }
 
-        SurfaceRenderPipeline.DrawSurface(surface.Texture, vertices);
+        SurfaceRenderPipeline.DrawSurface((TextureView)surface.Texture, vertices);
+
+        if (surface.AutoClear)
+        {
+            CommandList.SetFramebuffer(surface.Framebuffer);
+            CommandList.ClearColorTarget(0u, surface.ClearColor);
+        }
+    }
+
+    public static void ClearTarget()
+    {
+        CommandList.SetFramebuffer(Target.Framebuffer);
+        CommandList.ClearColorTarget(0u, Target.ClearColor);
     }
 
     #endregion
+
+    private static void SetAndClearFramebuffer()
+    {
+        if (_targetUpdated)
+        {
+            InstancedRenderPipeline.Flush(CommandList);
+
+            CommandList.SetFramebuffer(Target.Framebuffer);
+
+            CommandList.UpdateBuffer(PipelineCommon.ProjectionBuffer, 0u, Game.Instance.CameraManager.Projection);
+            CommandList.UpdateBuffer(PipelineCommon.ViewBuffer, 0u, Game.Instance.CameraManager.View);
+
+            _targetUpdated = false;
+        }
+    }
 }

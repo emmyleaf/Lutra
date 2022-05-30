@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lutra.Graphics;
 using Lutra.Rendering;
 using Lutra.Utility;
 
@@ -8,7 +9,7 @@ namespace Lutra.Cameras
     {
         private float _x, _y, _width, _height, _angle, _scale;
         private Matrix4x4 _projection, _view;
-        private RectFloat _bounds = new RectFloat();
+        private RectFloat _bounds;
         private bool _needsUpdate;
 
         #region Public Properties
@@ -19,6 +20,7 @@ namespace Lutra.Cameras
             set
             {
                 _x = value;
+                _bounds.X = _x - _width / 2f;
                 _needsUpdate = true;
             }
         }
@@ -29,6 +31,7 @@ namespace Lutra.Cameras
             set
             {
                 _y = value;
+                _bounds.Y = _y - _height / 2f;
                 _needsUpdate = true;
             }
         }
@@ -39,6 +42,8 @@ namespace Lutra.Cameras
             set
             {
                 _width = value;
+                _bounds.Width = _width;
+                _bounds.X = _x - _width / 2f;
                 _needsUpdate = true;
             }
         }
@@ -49,6 +54,8 @@ namespace Lutra.Cameras
             set
             {
                 _height = value;
+                _bounds.Height = _height;
+                _bounds.Y = _y - _height / 2f;
                 _needsUpdate = true;
             }
         }
@@ -78,14 +85,7 @@ namespace Lutra.Cameras
         public float Bottom => Bounds.Bottom;
         public float Top => Bounds.Top;
 
-        public RectFloat Bounds
-        {
-            get
-            {
-                if (_needsUpdate) UpdateMatrices();
-                return _bounds;
-            }
-        }
+        public RectFloat Bounds => _bounds;
 
         public Matrix4x4 Projection
         {
@@ -121,13 +121,20 @@ namespace Lutra.Cameras
             _angle = angle;
             _scale = scale;
 
+            _bounds = new RectFloat(x - width / 2f, y - height / 2f, width, height);
+
             _needsUpdate = true;
         }
 
         /// <summary>
-        /// Create the default camera centred in a Game's bounds.
+        /// Create a default camera centred in a Game's bounds.
         /// </summary>
-        public Camera(Game game) : this(game.Width / 2, game.Height / 2, game.Width, game.Height) { }
+        public Camera(Game game) : this(game.HalfWidth, game.HalfHeight, game.Width, game.Height) { }
+
+        /// <summary>
+        /// Create a default camera centred in a Surface's bounds.
+        /// </summary>
+        public Camera(Surface surface) : this(surface.HalfWidth, surface.HalfHeight, surface.Width, surface.Height) { }
 
         #endregion
 
@@ -135,17 +142,12 @@ namespace Lutra.Cameras
 
         private void UpdateMatrices()
         {
-            _bounds.X = _x - _width / 2;
-            _bounds.Y = _y - _height / 2;
-            _bounds.Width = _width;
-            _bounds.Height = _height;
-
             _projection = VeldridResources.CreateOrthographicProjection(_width, _height);
 
-            _view = Matrix4x4.CreateTranslation(-_x, -_y, 0) *
+            _view = Matrix4x4.CreateTranslation(-_x, -_y, 0f) *
                 Matrix4x4.CreateRotationZ(_angle * Util.DEG_TO_RAD) *
-                Matrix4x4.CreateScale(_scale) *
-                Matrix4x4.CreateTranslation(_width / 2, _height / 2, 0);
+                Matrix4x4.CreateScale(_scale, _scale, 1f) *
+                Matrix4x4.CreateTranslation(_width / 2f, _height / 2f, 0f);
 
             _needsUpdate = false;
         }

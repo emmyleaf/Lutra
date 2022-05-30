@@ -366,6 +366,17 @@ public class VirtualAxis
         {
             X = 0;
             Y = 0;
+
+            Up.Update();
+            Right.Update();
+            Down.Update();
+            Left.Update();
+
+            Up.ForceState(false);
+            Right.ForceState(false);
+            Down.ForceState(false);
+            Left.ForceState(false);
+
             return;
         }
 

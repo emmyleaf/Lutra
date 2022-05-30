@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using Lutra.Collision;
+using Lutra.Graphics;
 using Lutra.Utility.Collections;
 using Lutra.Utility.Glide;
 
@@ -13,10 +14,12 @@ namespace Lutra
         private readonly LinkedHashSet<Graphic> graphics;
 
         private int order = 0;
+        internal int _deprecated_layer = 0;
+        internal Surface _deprecated_surface = null;
 
         public IManagedList<Component> Components => components;
-        public IReadOnlyCollection<Collider> Colliders => colliders;
-        public IReadOnlyCollection<Graphic> Graphics => graphics;
+        public IReadOnlyList<Collider> Colliders => colliders;
+        public IReadOnlyList<Graphic> Graphics => graphics;
 
         /// <summary>
         /// The Scene that controls and updates this entity.
@@ -65,13 +68,10 @@ namespace Lutra
         // TODO: Implement
         public int Group;
 
-        private int _deprecated_layer;
-
         /// <summary>
         /// Deprecated.
-        /// A shorthand for setting the Layer of all Graphics attached to this Entity.
-        /// This will not set Layer for Graphics added after this property is set.
-        /// In Otter, Layer was handled at the Entity level, so this is a breaking change.
+        /// The fallback Layer for Graphics attached to this Entity. Defaults to 0.
+        /// Even with this property set, Layer can be overridden on individual Graphics.
         /// </summary>
         [Obsolete("Deprecated. Please set Layer on Graphics individually instead.", false)]
         public int Layer
@@ -79,12 +79,21 @@ namespace Lutra
             get => _deprecated_layer;
             set
             {
-                foreach (var graphic in graphics)
-                {
-                    graphic.Layer = value;
-                }
                 _deprecated_layer = value;
+                Scene?.Graphics.MarkUnsorted();
             }
+        }
+
+        /// <summary>
+        /// Deprecated.
+        /// The fallback Surface for Graphics attached to this Entity. Defaults to null.
+        /// Even with this property set, Surface can be overridden on individual Graphics.
+        /// </summary>
+        [Obsolete("Deprecated. Please set Surface on Graphics individually instead.", false)]
+        public Surface Surface
+        {
+            get => _deprecated_surface;
+            set => _deprecated_surface = value;
         }
 
         public int Order

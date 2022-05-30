@@ -4,6 +4,8 @@ using Veldrid;
 
 namespace Lutra.Rendering.Pipelines;
 
+// TODO: Replace this with just reusing the SpriteRenderPipeline
+// That way we can simplify the Surface render logic, enable multiple Surfaces, and have custom shaders on Surfaces.
 public class SurfaceRenderPipeline : IDisposable
 {
     private readonly DeviceBuffer VertexBuffer;

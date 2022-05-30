@@ -334,11 +334,7 @@ public static class InputManager
 
     private static void ProcessSdl2Events()
     {
-#if DEBUG
         DEBUG_LatestInput = VeldridResources.Sdl2Window.PumpEvents();
-#else
-        Sdl2Events.ProcessEvents();
-#endif
     }
 
     private static unsafe void RegisterControllers()

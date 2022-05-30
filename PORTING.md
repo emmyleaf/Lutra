@@ -39,6 +39,11 @@ TODO: Soon, I will take another pass over the changes made to TMFBMA and update 
 Some features have been kept in for Otter compatibility, but tagged as obsolete/deprecated.
 I don't intend for these to be used in new games using Lutra, but were helpful for porting TMFBMA from Otter.
 
+* `Layer` can still be set on Entities but this is deprecated. `Layer` should now be set on individual Graphics, but will fall back to the Entity's `Layer` value if not set.
+* `Surface` can still be set on Entities but this is deprecated. `Surfaces` should now be added on individual Graphics, but will fall back to the Entity's `Surface` value if that list is empty.
+* Setting Camera properties directly on `Scene` is now deprecated in favour of `CameraManager`.
+* `Util.Log` with `String.Format` params is deprecated in favour of log level specific methods without params.
+
 ## Input system
 
 The input system has been significantly redesigned in Lutra. It should still be just as flexible as Otter's, including creating virtual controllers that can aggregate various inputs.

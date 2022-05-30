@@ -615,7 +615,7 @@ public class RichText : SpriteGraphic
         String = str;
         Dynamic = true;
 
-        font.PreloadASCII(charSize, currentBold);
+        // font.PreloadASCII(charSize, currentBold);
         Texture = font.GetTexture(charSize, currentBold);
     }
 

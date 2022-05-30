@@ -48,12 +48,14 @@ public class SpriteDrawable
         Vertices.Add(new Vertex(new Vector2(position.X + sourceRect.Width, position.Y + sourceRect.Height), color, new Vector2(u2, v2)));
     }
 
+    // If ever another method was used by Surface, we would need to duplicate this OpenGL flipping logic!
     public void AddInstance(RectFloat destRect, RectInt sourceRect, Color color, FlipState flipState = FlipState.Normal)
     {
+        var openGLRenderTarget = VeldridResources.IsOpenGL && Params.Texture.IsRenderTarget;
         var texWidth = (float)Params.Texture.Width;
         var texHeight = (float)Params.Texture.Height;
         var flippedX = flipState.HasFlag(FlipState.FlippedX);
-        var flippedY = flipState.HasFlag(FlipState.FlippedY);
+        var flippedY = flipState.HasFlag(FlipState.FlippedY) ^ openGLRenderTarget;
 
         var u1 = (flippedX ? sourceRect.Right : sourceRect.Left) / texWidth;
         var v1 = (flippedY ? sourceRect.Bottom : sourceRect.Top) / texHeight;

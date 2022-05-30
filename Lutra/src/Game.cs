@@ -51,11 +51,6 @@ public class Game
     public Color LetterBoxColor = Color.Black;
 
     /// <summary>
-    /// The default background color of the game.
-    /// </summary>
-    public Color ClearColor = Color.CornflowerBlue;
-
-    /// <summary>
     /// How long the game has been active.  Measured in units of delta time.
     /// </summary>
     public float Timer;
@@ -73,9 +68,18 @@ public class Game
     public Scene Scene { get; internal set; }
 
     /// <summary>
-    /// The main surface that the game renders to.
+    /// The main surface that the game renders to. Only use after initialization.
     /// </summary>
-    public Surface Surface { get; set; }
+    public Surface Surface { get; private set; }
+
+    /// <summary>
+    /// The default background color of the game. Only use after initialization.
+    /// </summary>
+    public Color Color
+    {
+        get => Surface.ClearColor;
+        set => Surface.ClearColor = value;
+    }
 
     /// <summary>
     /// How much time has passed since the last update.
@@ -190,7 +194,7 @@ public class Game
         DebugConsole.Initialize();
         Draw.Initialize();
 
-        Surface = new Surface((uint)initialOptions.Width, (uint)initialOptions.Height);
+        Surface = new Surface(initialOptions.Width, initialOptions.Height, initialOptions.ClearColor);
 
         OnInitialize?.Invoke();
     }
@@ -219,7 +223,7 @@ public class Game
 
     protected internal virtual void Render()
     {
-        Draw.Begin(ClearColor, Surface);
+        Draw.Begin(Surface);
 
         Scene?.InternalRender();
 

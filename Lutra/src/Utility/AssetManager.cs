@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Lutra.Rendering;
-using Lutra.Rendering.Shaders;
 using Lutra.Rendering.Text;
 
 namespace Lutra.Utility
@@ -98,11 +98,15 @@ namespace Lutra.Utility
 
         private static void PreloadBuiltinShaders()
         {
-            foreach (var name in BuiltinShader.Names)
+            var assembly = Assembly.GetExecutingAssembly();
+            var names = assembly.GetManifestResourceNames();
+            foreach (var name in names)
             {
-                var path = Path.Join(BasePath, BUILT_IN_SHADER_PATH, name);
-                var bytes = File.ReadAllBytes(path);
-                BuiltinShaderBytesCache.Add(name, bytes);
+                if (name.StartsWith("Lutra.Shaders"))
+                {
+                    using var stream = assembly.GetManifestResourceStream(name);
+                    BuiltinShaderBytesCache.Add(name, stream.ToArray());
+                }
             }
         }
     }

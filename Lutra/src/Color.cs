@@ -339,65 +339,69 @@ public struct Color : IEquatable<Color>
     /// <summary>
     /// Clear (0, 0, 0, 0)
     /// </summary>
-    public static readonly Color Clear = new Color(0, 0, 0, 0);
+    public static readonly Color Clear = new Color(0f, 0f, 0f, 0f);
     public static readonly Color None = Clear;
     /// <summary>
     /// Black (0, 0, 0, 1)
     /// </summary>
-    public static readonly Color Black = new Color(0, 0, 0, 1);
+    public static readonly Color Black = new Color(0f, 0f, 0f, 1f);
     /// <summary>
     /// White (1, 1, 1, 1)
     /// </summary>
-    public static readonly Color White = new Color(1, 1, 1, 1);
+    public static readonly Color White = new Color(1f, 1f, 1f, 1f);
     /// <summary>
     /// Red (1, 0, 0, 1)
     /// </summary>
-    public static readonly Color Red = new Color(1, 0, 0, 1);
+    public static readonly Color Red = new Color(1f, 0f, 0f, 1f);
     /// <summary>
     /// Green (0, 1, 0, 1)
     /// </summary>
-    public static readonly Color Green = new Color(0, 1, 0, 1);
+    public static readonly Color Green = new Color(0f, 1f, 0f, 1f);
     /// <summary>
     /// Blue (0, 0, 1, 1)
     /// </summary>
-    public static readonly Color Blue = new Color(0, 0, 1, 1);
+    public static readonly Color Blue = new Color(0f, 0f, 1f, 1f);
+    /// <summary>
+    /// Purple (0.5, 0, 1, 1)
+    /// </summary>
+    public static readonly Color Purple = new Color(0.5f, 0f, 1f, 1f);
     /// <summary>
     /// Cyan (0, 1, 1, 1)
     /// </summary>
-    public static readonly Color Cyan = new Color(0, 1, 1, 1);
+    public static readonly Color Cyan = new Color(0f, 1f, 1f, 1f);
     /// <summary>
     /// Magenta (1, 0, 1, 1)
     /// </summary>
-    public static readonly Color Magenta = new Color(1, 0, 1, 1);
+    public static readonly Color Magenta = new Color(1f, 0f, 1f, 1f);
     /// <summary>
     /// Yellow (1, 1, 0, 1)
     /// </summary>
-    public static readonly Color Yellow = new Color(1, 1, 0, 1);
+    public static readonly Color Yellow = new Color(1f, 1f, 0f, 1f);
     /// <summary>
-    /// Grey (0.5f, 0.5f, 0.5f, 1)
+    /// Orange (1, 0.5, 0, 1)
     /// </summary>
-    public static readonly Color Grey = new Color(.5f, .5f, .5f, 1);
+    public static readonly Color Orange = new Color(1f, 0.5f, 0f, 1f);
+    /// <summary>
+    /// Grey (0.5, 0.5, 0.5, 1)
+    /// </summary>
+    public static readonly Color Grey = new Color(0.5f, 0.5f, 0.5f, 1f);
     public static readonly Color Gray = Grey;
     /// <summary>
-    /// Pink (1, 0.45f, 0.75f, 1)
+    /// Pink (1, 0.45, 0.75, 1)
     /// </summary>
-    public static readonly Color Pink = new Color(1f, 0.45f, 0.75f, 1);
-    /// <summary>
-    /// Orange (1, 0.36f, 0, 1)
-    /// </summary>
-    public static readonly Color Orange = new Color(1f, 0.36f, 0f, 1);
+    public static readonly Color Pink = new Color(1f, 0.45f, 0.75f, 1f);
     /// <summary>
     /// Cornflower Blue (0.3921f, 0.5843f, 0.9294f, 1)
     /// </summary>
-    public static readonly Color CornflowerBlue = new Color(0.3921f, 0.5843f, 0.9294f, 1);
+    public static readonly Color CornflowerBlue = new Color(0.3921f, 0.5843f, 0.9294f, 1f);
     /// <summary>
     /// Coral (1, 0.498f, 0.3137f, 1).
     /// </summary>
-    public static readonly Color Coral = new Color(1, 0.498f, 0.3137f, 1);
+    public static readonly Color Coral = new Color(1, 0.498f, 0.3137f, 1f);
     /// <summary>
     /// Coral Pink (1, 0.3137f, 0.498f, 1).
     /// </summary>
-    public static readonly Color CoralPink = new Color(1, 0.3137f, 0.498f, 1);
+    public static readonly Color CoralPink = new Color(1, 0.3137f, 0.498f, 1f);
 
     #endregion
 }

@@ -31,6 +31,10 @@ namespace Lutra.Examples
 
                 if (ImGui.BeginMenu("Start Test Scene"))
                 {
+                    if (ImGui.MenuItem("Blank Scene"))
+                    {
+                        Game.AddScene(new Scene());
+                    }
                     if (ImGui.MenuItem("Text Rendering"))
                     {
                         Game.AddScene(new TextRenderingScene());
@@ -75,9 +79,13 @@ namespace Lutra.Examples
                     {
                         Game.AddScene(new OpenALSoundsScene());
                     }
-                    if (ImGui.MenuItem("Blank Scene"))
+                    if (ImGui.MenuItem("Surface Rendering (Manual)"))
                     {
-                        Game.AddScene(new Scene());
+                        Game.AddScene(new SurfaceManualTestScene());
+                    }
+                    if (ImGui.MenuItem("Surface Rendering (Layered)"))
+                    {
+                        Game.AddScene(new SurfaceLayeredTestScene());
                     }
                     ImGui.EndMenu();
                 }

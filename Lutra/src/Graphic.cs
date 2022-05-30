@@ -1,4 +1,7 @@
-﻿using System.Numerics;
+﻿using System.Collections.Generic;
+using System.Numerics;
+using Lutra.Cameras;
+using Lutra.Graphics;
 using Lutra.Rendering;
 using Lutra.Utility;
 
@@ -11,6 +14,8 @@ namespace Lutra
     {
         private RectInt _textureRegion;
         private bool _relative = true;
+        private int? layer = null;
+        private Color color = Color.White;
 
         #region Public Properties
 
@@ -37,7 +42,19 @@ namespace Lutra
             }
         }
 
-        public Color Color = Color.White;
+        public Color Color
+        {
+            get
+            {
+                return color;
+            }
+            set
+            {
+                color = value;
+                NeedsUpdate = true;
+            }
+        }
+
         public bool Visible = true;
 
         public Action OnRender;
@@ -69,27 +86,27 @@ namespace Lutra
             }
         }
 
-        private int layer = 0;
-
         /// <summary>
-        /// The Layer (render order) of the graphic. Higher values render on top of lower values.
+        /// The Layer (render order) of the graphic. Lower values render on top of higher values.
+        /// If not set, Layer falls back to the Entity's Layer value for Otter compatibility.
+        /// If not attached to an Entity, defaults to 0.
         /// </summary>
         public int Layer
         {
-            get => layer;
+            get => layer ?? Entity?._deprecated_layer ?? 0;
             set
             {
-                if (layer != value)
-                {
-                    layer = value;
-
-                    if (Scene != null)
-                    {
-                        Scene.Graphics.MarkUnsorted();
-                    }
-                }
+                layer = value;
+                Scene?.Graphics.MarkUnsorted();
             }
         }
+
+        /// <summary>
+        /// The list of Surfaces the Graphic should draw to.
+        /// If this list is empty, this falls back to the Surface property of the Entity for Otter compatibility.
+        /// If there is not Enitity Surface, the default behaviour is to render to the main game Surface.
+        /// </summary>
+        public List<Surface> Surfaces { get; } = new();
 
         /// <summary>
         /// The width of the Graphic.
@@ -328,7 +345,31 @@ namespace Lutra
             Transform.OriginY = (int)HalfHeight;
         }
 
-        protected abstract void Render();
+        /// <summary>
+        /// Add a surface that the Graphic should render to.
+        /// </summary>
+        public void AddSurface(Surface target)
+        {
+            Surfaces.Add(target);
+        }
+
+        /// <summary>
+        /// Remove a surface from the list of surfaces that the Graphic should render to.
+        /// </summary>
+        public void RemoveSurface(Surface target)
+        {
+            Surfaces.Remove(target);
+        }
+
+        /// <summary>
+        /// Remove all Surfaces from the list of Surfaces that the Graphic should render to.
+        /// </summary>
+        public void ClearSurfaces()
+        {
+            Surfaces.Clear();
+        }
+
+        protected internal abstract void Render();
 
         internal void InternalRender()
         {
@@ -337,7 +378,45 @@ namespace Lutra
             if (Entity != null && !Entity.Visible) return;
 
             OnRender?.Invoke();
-            Render();
+
+            // Draw to each surface in Surfaces (or to Entity's Surface, or to current Draw Target)
+            if (Surfaces.Count > 0)
+            {
+                Surface temp = Draw.Target;
+                foreach (var surface in Surfaces)
+                {
+                    Draw.Target = surface;
+                    if (!surface.UseSceneCamera)
+                    {
+                        Game.Instance.CameraManager.PushCamera(new Camera(surface));
+                    }
+                    Render();
+                    if (!surface.UseSceneCamera)
+                    {
+                        Game.Instance.CameraManager.PopCamera();
+                    }
+                }
+                Draw.Target = temp;
+            }
+            else if (Entity?._deprecated_surface != null)
+            {
+                Surface temp = Draw.Target;
+                Draw.Target = Entity._deprecated_surface;
+                if (!Entity._deprecated_surface.UseSceneCamera)
+                {
+                    Game.Instance.CameraManager.PushCamera(new Camera(Entity._deprecated_surface));
+                }
+                Render();
+                if (!Entity._deprecated_surface.UseSceneCamera)
+                {
+                    Game.Instance.CameraManager.PopCamera();
+                }
+                Draw.Target = temp;
+            }
+            else
+            {
+                Render();
+            }
 
             // Reset if we need an update AFTER subclasses may have used it
             NeedsUpdate = false;

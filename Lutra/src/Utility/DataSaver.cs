@@ -104,7 +104,7 @@ namespace Lutra.Utility
         {
             if (filename == "") filename = DefaultFilename;
 
-            filename = DefaultPath + filename;
+            filename = Path.Combine(DefaultPath, filename);
             if (!File.Exists(filename)) return;
 
             File.Delete(filename);
@@ -127,7 +127,7 @@ namespace Lutra.Utility
         {
             if (filename == "") filename = DefaultFilename;
 
-            filename = DefaultPath + filename;
+            filename = Path.Combine(DefaultPath, filename);
             if (File.Exists(filename))
             {
                 string loaded = File.ReadAllText(filename);
@@ -154,7 +154,7 @@ namespace Lutra.Utility
         {
             if (filename == "") filename = DefaultFilename;
 
-            filename = DefaultPath + filename;
+            filename = Path.Combine(DefaultPath, filename);
             if (!File.Exists(filename)) return;
 
             string loaded = File.ReadAllText(filename);
@@ -206,7 +206,7 @@ namespace Lutra.Utility
         {
             if (filename == "") filename = DefaultFilename;
 
-            filename = DefaultPath + filename;
+            filename = Path.Combine(DefaultPath, filename);
 
             if (ExportMode == DataExportMode.Data)
             {

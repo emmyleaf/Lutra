@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lutra.Utility.Collections;
 
@@ -7,7 +8,7 @@ namespace Lutra.Utility.Collections;
 /// A simple LinkedHashSet. A collection with uniqueness and order.
 /// Internally uses a Dictionary and a LinkedList.
 /// </summary>
-public class LinkedHashSet<T> : ICollection<T>, IReadOnlyCollection<T>
+public class LinkedHashSet<T> : ICollection<T>, IReadOnlyList<T>
 {
     private readonly Dictionary<T, LinkedListNode<T>> dictionary;
     private readonly LinkedList<T> linkedList;
@@ -41,6 +42,8 @@ public class LinkedHashSet<T> : ICollection<T>, IReadOnlyCollection<T>
     }
 
     #region Interface Implementations
+
+    public T this[int index] => (index >= 0 && index < dictionary.Count) ? linkedList.ElementAt(index) : default(T);
 
     public int Count => dictionary.Count;
 

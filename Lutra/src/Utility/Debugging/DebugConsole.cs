@@ -81,7 +81,8 @@ public class DebugConsole
                 ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new System.Numerics.Vector2(4, 1)); // Tightens spacing.
                 foreach (var entry in Instance.Entries)
                 {
-                    ImGui.TextColored(ImGuiHelper.ImColorFromColor(entry.Color).Value, $"[{entry.Timestamp.ToString("G")}] {entry.LogText}");
+                    var sanitisedString = entry.LogText.Replace("%", "%%"); // TODO: Perform other sanitisation checks here for printf() format.
+                    ImGui.TextColored(ImGuiHelper.ImColorFromColor(entry.Color).Value, $"[{entry.Timestamp.ToString("G")}] {sanitisedString}");
                 }
 
                 if (Instance.ScrollToBottom)

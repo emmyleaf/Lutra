@@ -60,15 +60,16 @@ namespace Lutra.Rendering.Text
 
         private void EnlargeTexture()
         {
-            // var oldRect = Texture.Bounds;
-            // var oldData = new Color[oldRect.Width * oldRect.Height];
-            // Texture.GetData(oldData);
+            var oldWidth = (int)Width;
+            var oldHeight = (int)Height;
+            var newWidth = Width * 2;
+            var newHeight = Height * 2;
 
-            // Texture = new Texture2D(Game.Instance.GraphicsDevice, oldRect.Width * 2, oldRect.Height * 2, false, SurfaceFormat.Color);
-            // Texture.SetData(0, oldRect, oldData, 0, oldData.Length);
+            Texture = VeldridResources.EnlargeTexture(Texture, newWidth, newHeight);
+            _textureView = null;
 
-            // nodes.Add(new Rect(0, oldRect.Bottom, oldRect.Width, oldRect.Height));
-            // nodes.Add(new Rect(oldRect.Right, 0, oldRect.Width, oldRect.Height * 2));
+            nodes.Add(new RectInt(0, oldHeight, oldWidth, oldHeight));
+            nodes.Add(new RectInt(oldWidth, 0, oldWidth, oldHeight * 2));
         }
 
         public void RenderGlyph(int glyphWidth, int glyphHeight, byte[] bitmap, int x, int y)
