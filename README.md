@@ -17,6 +17,12 @@ You can either clone this repo or download the source of the latest release from
 
 See the [changelog](./CHANGELOG.md) for more details about the latest release.
 
+## Future plans
+
+* A new cross-platform renderer potentially based on [kelp-2d](https://github.com/emmyleaf/kelp-2d)
+* An optional ECS game structure, slotting in beside the traditional Otter-like one
+* Better Otter compatibility and more Otter features, for ease of porting
+
 ## Features
 
 * Quick set up
@@ -43,7 +49,7 @@ See the [changelog](./CHANGELOG.md) for more details about the latest release.
 
 ## Porting games from Otter
 
-Lutra and Otter do not have identical features and designs, but porting games from Otter to Lutra is a goal of the project.
+Lutra and Otter do not have identical featuresets, but porting games from Otter to Lutra is a goal of the project.
 
 * [TMFBMA](https://drmelon.itch.io/tmfbma-demo) was fully ported within a week, while completing Lutra version 0.1.0.
 * [DA-DA-DASHBONK](https://drmelon.itch.io/da-da-dashbonk) was fully ported within 2 days, while completing Lutra version 0.2.0.
