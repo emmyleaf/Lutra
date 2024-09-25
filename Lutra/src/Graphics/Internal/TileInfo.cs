@@ -1,9 +1,40 @@
+using System;
 using System.Numerics;
 using Lutra.Rendering;
 using Lutra.Utility;
 using Vertex = Lutra.Rendering.VertexPositionColorTexture;
 
 namespace Lutra.Graphics;
+
+[Flags]
+public enum TileRotationAndFlips
+{
+    // Flips
+    FlipDiagonal = 1 << 0,
+    FlipXAxis = 1 << 1,
+    FlipYAxis = 1 << 2,
+
+    // Rotations
+    ZERO = 0,
+    NINETY = FlipDiagonal | FlipXAxis,
+    ONE_EIGHTY = FlipXAxis | FlipYAxis,
+    TWO_SEVENTY = FlipDiagonal | FlipYAxis,
+}
+
+public static class TileRotationAndFlipsExt
+{
+    public static void SetFlag(this TileRotationAndFlips enumRef, TileRotationAndFlips flag, bool value)
+    {
+        if (value)
+        {
+            enumRef |= flag;
+        }
+        else
+        {
+            enumRef &= ~flag;
+        }
+    }
+}
 
 /// <summary>
 /// Class containing all the info to describe a tile in a Tilemap.
@@ -43,16 +74,9 @@ public class TileInfo
     public int Height;
 
     /// <summary>
-    /// Flipped tile options.
+    /// The rotation and flips of the tile encoded as bitflags for each of the 3 flip directions.
     /// </summary>
-    public bool FlipX;
-    public bool FlipY;
-
-    /// <summary>
-    /// Flips the tile anti-diagonally, equivalent to a 90 degree rotation and a horizontal flip.
-    /// Combined with FlipX and FlipY you can rotate the tile any direction.
-    /// </summary>
-    public bool FlipD;
+    public TileRotationAndFlips RotationAndFlips;
 
     /// <summary>
     /// The color of the tile, or the color to tint the texture.
@@ -68,6 +92,36 @@ public class TileInfo
         set { Color = Color.WithAlpha(value); }
     }
 
+    #endregion
+
+    #region Properties
+    /// <summary>
+    /// Flips the tile anti-diagonally, equivalent to a 90 degree rotation and a horizontal flip.
+    /// Combined with FlipX and FlipY you can rotate the tile any direction.
+    /// </summary>
+    public bool FlipD
+    {
+        get => RotationAndFlips.HasFlag(TileRotationAndFlips.FlipDiagonal);
+        set => RotationAndFlips.SetFlag(TileRotationAndFlips.FlipDiagonal, value);
+    }
+
+    /// <summary>
+    /// Flips the tile on the X-axis.
+    /// </summary>
+    public bool FlipX
+    {
+        get => RotationAndFlips.HasFlag(TileRotationAndFlips.FlipXAxis);
+        set => RotationAndFlips.SetFlag(TileRotationAndFlips.FlipXAxis, value);
+    }
+
+    /// <summary>
+    /// Flips the tile on the Y-axis.
+    /// </summary>
+    public bool FlipY
+    {
+        get => RotationAndFlips.HasFlag(TileRotationAndFlips.FlipYAxis);
+        set => RotationAndFlips.SetFlag(TileRotationAndFlips.FlipYAxis, value);
+    }
     #endregion
 
     #region Constructors
@@ -109,49 +163,52 @@ public class TileInfo
         var texHeight = (float)drawable.Params.Texture.Height;
         var tileColor = Color * tilemapColor;
 
-        Vertex CreateVertex(int x, int y, int tx, int ty)
-        {
-            var u = (float)(TX + tx) / texWidth;
-            var v = (float)(TY + ty) / texHeight;
-            return new Vertex(new Vector2(X + x, Y + y), tileColor, new Vector2(u, v));
-        }
+        var vert1Pos = new Vector2(X, Y);
+        var vert2Pos = new Vector2(X + Width, Y);
+        var vert3Pos = new Vector2(X, Y + Height);
+        var vert4Pos = new Vector2(X + Width, Y + Height);
+
+        var texUpperLeft = new Vector2(TX / texWidth, TY / texHeight);
+        var texUpperRight = new Vector2((TX + Width) / texWidth, TY / texHeight);
+        var texLowerLeft = new Vector2(TX / texWidth, (TY + Height) / texHeight);
+        var texLowerRight = new Vector2((TX + Width) / texWidth, (TY + Height) / texHeight);
 
         if (!FlipD)
         {
             if (!FlipX && !FlipY)
             {
                 drawable.Add(
-                    CreateVertex(0, 0, 0, 0), //upper-left
-                    CreateVertex(Width, 0, Width, 0), //upper-right
-                    CreateVertex(0, Height, 0, Height), //lower-left
-                    CreateVertex(Width, Height, Width, Height) //lower-right
+                    new Vertex(vert1Pos, tileColor, texUpperLeft),
+                    new Vertex(vert2Pos, tileColor, texUpperRight),
+                    new Vertex(vert3Pos, tileColor, texLowerLeft),
+                    new Vertex(vert4Pos, tileColor, texLowerRight)
                 );
             }
             if (FlipX && FlipY)
             {
                 drawable.Add(
-                    CreateVertex(0, 0, Width, Height),
-                    CreateVertex(Width, 0, 0, Height),
-                    CreateVertex(0, Height, Width, 0),
-                    CreateVertex(Width, Height, 0, 0)
+                    new Vertex(vert1Pos, tileColor, texLowerRight),
+                    new Vertex(vert2Pos, tileColor, texLowerLeft),
+                    new Vertex(vert3Pos, tileColor, texUpperRight),
+                    new Vertex(vert4Pos, tileColor, texUpperLeft)
                 );
             }
             if (FlipX & !FlipY)
             {
                 drawable.Add(
-                    CreateVertex(0, 0, Width, 0),
-                    CreateVertex(Width, 0, 0, 0),
-                    CreateVertex(0, Height, Width, Height),
-                    CreateVertex(Width, Height, 0, Height)
+                    new Vertex(vert1Pos, tileColor, texUpperRight),
+                    new Vertex(vert2Pos, tileColor, texUpperLeft),
+                    new Vertex(vert3Pos, tileColor, texLowerRight),
+                    new Vertex(vert4Pos, tileColor, texLowerLeft)
                 );
             }
             if (!FlipX & FlipY)
             {
                 drawable.Add(
-                    CreateVertex(0, 0, 0, Height),
-                    CreateVertex(Width, 0, Width, Height),
-                    CreateVertex(0, Height, 0, 0),
-                    CreateVertex(Width, Height, Width, 0)
+                    new Vertex(vert1Pos, tileColor, texLowerLeft),
+                    new Vertex(vert2Pos, tileColor, texLowerRight),
+                    new Vertex(vert3Pos, tileColor, texUpperLeft),
+                    new Vertex(vert4Pos, tileColor, texUpperRight)
                 );
             }
         }
@@ -160,37 +217,37 @@ public class TileInfo
             if (!FlipX && !FlipY)
             {
                 drawable.Add(
-                    CreateVertex(0, 0, 0, 0), //upper-left
-                    CreateVertex(0, Height, Width, 0), //upper-right
-                    CreateVertex(Width, 0, 0, Height), //lower-left
-                    CreateVertex(Width, Height, Width, Height) //lower-right
+                    new Vertex(vert1Pos, tileColor, texUpperLeft),
+                    new Vertex(vert2Pos, tileColor, texLowerLeft),
+                    new Vertex(vert3Pos, tileColor, texUpperRight),
+                    new Vertex(vert4Pos, tileColor, texLowerRight)
                 );
             }
             if (FlipX && FlipY)
             {
                 drawable.Add(
-                    CreateVertex(0, 0, Width, Height),
-                    CreateVertex(0, Height, 0, Height),
-                    CreateVertex(Width, 0, Width, 0),
-                    CreateVertex(Width, Height, 0, 0)
+                    new Vertex(vert1Pos, tileColor, texLowerRight),
+                    new Vertex(vert2Pos, tileColor, texUpperRight),
+                    new Vertex(vert3Pos, tileColor, texLowerLeft),
+                    new Vertex(vert4Pos, tileColor, texUpperLeft)
                 );
             }
             if (!FlipX & FlipY)
             {
                 drawable.Add(
-                    CreateVertex(0, 0, Width, 0),
-                    CreateVertex(0, Height, 0, 0),
-                    CreateVertex(Width, 0, Width, Height),
-                    CreateVertex(Width, Height, 0, Height)
+                    new Vertex(vert1Pos, tileColor, texUpperRight),
+                    new Vertex(vert2Pos, tileColor, texLowerRight),
+                    new Vertex(vert3Pos, tileColor, texUpperLeft),
+                    new Vertex(vert4Pos, tileColor, texLowerLeft)
                 );
             }
             if (FlipX & !FlipY)
             {
                 drawable.Add(
-                    CreateVertex(0, 0, 0, Height),
-                    CreateVertex(0, Height, Width, Height),
-                    CreateVertex(Width, 0, 0, 0),
-                    CreateVertex(Width, Height, Width, 0)
+                    new Vertex(vert1Pos, tileColor, texLowerLeft),
+                    new Vertex(vert2Pos, tileColor, texUpperLeft),
+                    new Vertex(vert3Pos, tileColor, texLowerRight),
+                    new Vertex(vert4Pos, tileColor, texUpperRight)
                 );
             }
         }

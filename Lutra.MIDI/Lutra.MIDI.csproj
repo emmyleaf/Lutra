@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Lutra Game Framework - Audio Library - OpenAL</Description>
-    <Authors>Emmy Leadley</Authors>
-    <RepositoryUrl>https://github.com/emmyleaf/Lutra</RepositoryUrl>
+    <Description>Lutra Game Framework - MIDI Control </Description>
+    <Authors>DrMelon</Authors>
+    <RepositoryUrl>https://github.com/melonleaf/lutra-dev</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <TargetFramework>net6.0</TargetFramework>
     <Platforms>x64</Platforms>
@@ -16,9 +16,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NVorbis" Version="0.10.4" />
-    <PackageReference Include="Silk.NET.OpenAL" Version="2.14.0" />
-    <PackageReference Include="Silk.NET.OpenAL.Soft.Native" Version="1.21.1.1" />
+    <ProjectReference Include="../Lutra/Lutra.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="managed-midi" Version="1.10.1" />
   </ItemGroup>
 
 </Project>

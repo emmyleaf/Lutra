@@ -1,13 +1,15 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using ImGuiNET;
 using Lutra.Input;
 
 namespace Lutra.Utility.Debugging;
 
-public class DebugConsole
+public class DebugConsole : IDisposable, IAsyncDisposable
 {
     public static DebugConsole Instance;
     public static Key SummonKey = Key.Grave;
@@ -22,6 +24,8 @@ public class DebugConsole
 
     private string CurrentInput = "";
     private bool ScrollToBottom = false;
+    private bool FileLoggingEnabled = false;
+    private FileStream LogFileHandle;
 
     [Conditional("DEBUG")]
     public static void Initialize()
@@ -30,13 +34,15 @@ public class DebugConsole
         Instance.RegisterCommands();
     }
 
+    [Conditional("DEBUG")]
+    public static void EnableLogToFile(string filePath)
+    {
+        Instance.FileLoggingEnabled = true;
+        Instance.LogFileHandle = File.OpenWrite(filePath);
+    }
+
     private DebugConsole()
     {
-        Log("Welcome to the Debug Log, traveller.");
-        LogInfo("Helpful information.");
-        LogQuiet("Shh... some boring info...");
-        LogWarning("Warning Log..!");
-        LogError("UH OH, AN ERROR!");
     }
 
     [Conditional("DEBUG")]
@@ -283,6 +289,24 @@ public class DebugConsole
         });
 
         ScrollToBottom = true;
+
+        LogToStdOutput(str);
+        LogToFile(str);
+    }
+
+    public void LogToFile(string logText)
+    {
+        if (FileLoggingEnabled && LogFileHandle.CanWrite)
+        {
+            LogFileHandle.Write(System.Text.Encoding.UTF8.GetBytes(logText + "\n"));
+            LogFileHandle.Flush();
+        }
+    }
+
+    [Conditional("DEBUG")]
+    public void LogToStdOutput(string logText)
+    {
+        Console.WriteLine(logText);
     }
 
     // Looks through assemblies to find DebugCommand tagged methods.
@@ -294,36 +318,40 @@ public class DebugConsole
 
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
-            foreach (var type in assembly.GetTypes())
+            if (!assembly.GetName().FullName.ToLower().Contains("steam")) // Stops this from walking through API DLLs which doesn't work properly.
             {
-                foreach (var method in type.GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
+                foreach (var type in assembly.GetTypes())
                 {
-                    if (method.IsDefined(typeof(DebugCommand), false))
+                    foreach (var method in type.GetMethods(BindingFlags.NonPublic | BindingFlags.Public |
+                                                           BindingFlags.Instance | BindingFlags.Static))
                     {
-                        var key = method.Name.ToLower();
-                        var attr = GetDebugCommand(method);
-                        if (attr.Alias != "")
+                        if (method.IsDefined(typeof(DebugCommand), false))
                         {
-                            key = attr.Alias.ToLower();
-                        }
-
-                        if (attr.Group != "")
-                        {
-                            EnabledGroups.Add(attr.Group);
-                        }
-
-                        Commands.Add(key, method);
-
-                        if (!method.IsStatic)
-                        {
-                            if (method.DeclaringType != typeof(DebugConsole))
+                            var key = method.Name.ToLower();
+                            var attr = GetDebugCommand(method);
+                            if (attr.Alias != "")
                             {
-                                if (!TypeInstances.ContainsKey(method.DeclaringType))
+                                key = attr.Alias.ToLower();
+                            }
+
+                            if (attr.Group != "")
+                            {
+                                EnabledGroups.Add(attr.Group);
+                            }
+
+                            Commands.Add(key, method);
+
+                            if (!method.IsStatic)
+                            {
+                                if (method.DeclaringType != typeof(DebugConsole))
                                 {
-                                    TypeInstances.Add(
-                                        method.DeclaringType,
-                                        Activator.CreateInstance(method.DeclaringType, null)
-                                    );
+                                    if (!TypeInstances.ContainsKey(method.DeclaringType))
+                                    {
+                                        TypeInstances.Add(
+                                            method.DeclaringType,
+                                            Activator.CreateInstance(method.DeclaringType, null)
+                                        );
+                                    }
                                 }
                             }
                         }
@@ -629,5 +657,16 @@ public class DebugConsole
             return "bool";
         }
         return "";
+    }
+
+    public void Dispose()
+    {
+        LogFileHandle?.Close();
+        LogFileHandle?.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (LogFileHandle != null) await LogFileHandle.DisposeAsync();
     }
 }

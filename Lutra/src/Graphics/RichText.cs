@@ -644,6 +644,9 @@ public class RichText : SpriteGraphic
     {
         switch (command)
         {
+            case "clear":
+                Clear();
+                break;
             case "color":
                 currentCharColor = Color.FromString(args);
                 break;
@@ -914,9 +917,10 @@ public class RichText : SpriteGraphic
     {
         UpdateCharacters();
 
+        RelativeIsIntegerFixed = !Smooth;
         InitializeDrawable(Texture, WorldMatrix);
 
-        advanceSpace = font.GetAdvanceSpace(charSize, currentBold); //Figure out space ahead of time.
+        advanceSpace = Util.Ceil(font.GetAdvanceSpace(charSize, currentBold)); //Figure out space ahead of time.
 
         int currentLine = 0;
 
@@ -945,15 +949,11 @@ public class RichText : SpriteGraphic
 
         for (var i = 0; i < chars.Count; i++)
         {
-
             var c = chars[i].Character;
-
             if (c == ' ' || c == '\t' || c == '\n')
             {
-
                 minX = Util.Min(minX, x - LineStartPosition(currentLine));
                 minY = Util.Min(minY, y);
-
                 switch (c)
                 {
                     case ' ':
@@ -974,40 +974,27 @@ public class RichText : SpriteGraphic
                         x = LineStartPosition(currentLine);
                         break;
                 }
-
                 maxX = Util.Max(maxX, x - LineStartPosition(currentLine));
                 maxY = Util.Max(maxY, y);
-
             }
             else
             {
                 var glyph = Glyph(c);
                 var sourceRect = font.GetGlyphSourceRect(c, charSize, currentBold);
+                var glyphPosition = new Vector2(x + glyph.BearingX + chars[i].OffsetX, y - glyph.BearingY + chars[i].OffsetY);
+                
+                var x1y1 = new Vector2(glyphPosition.X, glyphPosition.Y);
+                var x2y1 = new Vector2(glyphPosition.X + sourceRect.Width, glyphPosition.Y);
+                var x2y2 = new Vector2(glyphPosition.X + sourceRect.Width, glyphPosition.Y + sourceRect.Height);
+                var x1y2 = new Vector2(glyphPosition.X, glyphPosition.Y + sourceRect.Height);
+                
+                var u1 = sourceRect.Left / (float)Texture.Width;
+                var v1 = sourceRect.Top / (float)Texture.Height;
+                var u2 = sourceRect.Right / (float)Texture.Width;
+                var v2 = sourceRect.Bottom / (float)Texture.Height;
 
-                // This is how you do kerning I guess
-                // Pretty sure this is, in fact, how you do kerning :)
-                x += font.GetKerning(prevChar, chars[i].Character, FontSize, currentBold);
-
-                var cx = chars[i].OffsetX;
-                var cy = chars[i].OffsetY;
-
-                var left = glyph.BearingX;
-                var right = glyph.BearingX + glyph.Width;
-                var top = -glyph.BearingY;
-                var bottom = -glyph.BearingY + glyph.Height;
-
-                var x1y1 = new Vector2(cx + x + left, cy + y + top);
-                var x2y1 = new Vector2(cx + x + right, cy + y + top);
-                var x2y2 = new Vector2(cx + x + right, cy + y + bottom);
-                var x1y2 = new Vector2(cx + x + left, cy + y + bottom);
-
-                var u1 = (float)sourceRect.Left / Texture.Width;
-                var v1 = (float)sourceRect.Top / Texture.Height;
-                var u2 = (float)(sourceRect.Left + sourceRect.Width) / Texture.Width;
-                var v2 = (float)(sourceRect.Top + sourceRect.Height) / Texture.Height;
-
-                var charCenterX = cx + x + glyph.BearingX + glyph.Width / 2;
-                var charCenterY = cy + y - glyph.BearingY + glyph.Height / 2;
+                var charCenterX = glyphPosition.X + glyph.Width / 2.0f;
+                var charCenterY = glyphPosition.Y + glyph.Height / 2.0f;
 
                 var charCenter = new Vector2(charCenterX, charCenterY);
 
@@ -1088,11 +1075,11 @@ public class RichText : SpriteGraphic
                 quadCount++;
 
                 // Update bounds.
-                minX = Util.Min(minX, x + left - LineStartPosition(currentLine));
-                minY = Util.Min(minY, y + top);
+                minX = Util.Min(minX, x + glyph.BearingX - LineStartPosition(currentLine));
+                minY = Util.Min(minY, y  - glyph.BearingY);
 
-                maxX = Util.Max(maxX, x + right - LineStartPosition(currentLine));
-                maxY = Util.Max(maxY, y + bottom);
+                maxX = Util.Max(maxX, x + glyph.BearingX + glyph.Width - LineStartPosition(currentLine));
+                maxY = Util.Max(maxY, y - glyph.BearingY + glyph.Height);
 
                 // Advance position
                 x += Advance(glyph) * LetterSpacing;
@@ -1100,8 +1087,9 @@ public class RichText : SpriteGraphic
                 // Keep track of line length separately
                 lineLength += Advance(glyph) * LetterSpacing;
 
-                // Keep track of prev char for kernin'
-                prevChar = chars[i].Character;
+                // kernin'
+                if(i < chars.Count - 1)
+                    x += font.GetKerning(chars[i].Character, chars[i+1].Character, FontSize, currentBold);
             }
         }
 
@@ -1147,7 +1135,7 @@ public class RichText : SpriteGraphic
                 lineStart = Width - lineLength;
                 break;
         }
-        return lineStart;
+        return Util.Round(lineStart);
     }
 
     #endregion
@@ -1301,6 +1289,38 @@ public class RichText : SpriteGraphic
     public void Refresh()
     {
         UpdateCharacterData();
+    }
+
+    /// <summary>
+    /// Set the style of the text to the provided config. This will update the text image, as it calls Refresh().
+    /// </summary>
+    public void SetConfig(RichTextConfig config)
+    {
+        if (config == null) config = Default;
+
+        DefaultSineAmpX = config.SineAmpX;
+        DefaultSineAmpY = config.SineAmpY;
+        DefaultSineRateX = config.SineRateX;
+        DefaultSineRateY = config.SineRateY;
+        DefaultSineOffsetX = config.SineOffsetX;
+        DefaultSineOffsetY = config.SineOffsetY;
+        DefaultOffsetAmount = config.OffsetAmount;
+        DefaultShadowX = config.ShadowX;
+        DefaultShadowY = config.ShadowY;
+        DefaultOutlineThickness = config.OutlineThickness;
+        DefaultShakeX = config.ShakeX;
+        DefaultShakeY = config.ShakeY;
+        DefaultCharColor = config.CharColor;
+        DefaultCharColor0 = config.CharColor0;
+        DefaultCharColor1 = config.CharColor1;
+        DefaultCharColor2 = config.CharColor2;
+        DefaultCharColor3 = config.CharColor3;
+        DefaultShadowColor = config.ShadowColor;
+        DefaultOutlineColor = config.OutlineColor;
+        DefaultScaleX = config.ScaleX;
+        DefaultScaleY = config.ScaleY;
+        DefaultAngle = config.Angle;
+        Refresh();
     }
 
     #endregion

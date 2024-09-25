@@ -14,6 +14,7 @@ namespace Lutra
     {
         private RectInt _textureRegion;
         private bool _relative = true;
+        private bool _fixed = false;
         private int? layer = null;
         private Color color = Color.White;
 
@@ -82,6 +83,19 @@ namespace Lutra
             set
             {
                 _relative = value;
+                NeedsUpdate = true;
+            }
+        }
+        
+        /// <summary>
+        /// Determines if the Graphic, when inheriting transforms, should snap to the integer grid.
+        /// </summary>
+        public bool RelativeIsIntegerFixed
+        {
+            get => _fixed;
+            set
+            {
+                _fixed = value;
                 NeedsUpdate = true;
             }
         }
@@ -314,6 +328,16 @@ namespace Lutra
             {
                 if (Relative && Entity != null)
                 {
+                    if (RelativeIsIntegerFixed)
+                    {
+                        var mat = Transform.Matrix * Entity.Transform.Matrix;
+                        // Floor all position elements of matrix to affix this to the grid..
+                        mat.M41 = MathF.Floor(mat.M41);
+                        mat.M42 = MathF.Floor(mat.M42);
+                        mat.M43 = MathF.Floor(mat.M43);
+                        mat.M44 = MathF.Floor(mat.M44);
+                        return mat;
+                    }
                     return Transform.Matrix * Entity.Transform.Matrix;
                 }
 

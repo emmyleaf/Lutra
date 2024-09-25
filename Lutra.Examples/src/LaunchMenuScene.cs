@@ -87,6 +87,14 @@ namespace Lutra.Examples
                     {
                         Game.AddScene(new SurfaceLayeredTestScene());
                     }
+                    if (ImGui.MenuItem("Asset Archives"))
+                    {
+                        Game.AddScene(new AssetArchiveTestScene());
+                    }
+                    if (ImGui.MenuItem("MIDI Controller"))
+                    {
+                        Game.AddScene(new MIDIScene());
+                    }
                     ImGui.EndMenu();
                 }
                 ImGui.EndMainMenuBar();

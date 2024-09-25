@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Lutra.Utility.Profiling;
 
 namespace Lutra
 {
@@ -58,6 +59,11 @@ namespace Lutra
             TargetElapsedTime = TimeSpan.FromTicks((long)Math.Round(TicksPerSecond / targetFrameRate));
         }
 
+        public void SetFixedTimestep(bool fixedStep)
+        {
+            FixedTimeStep = fixedStep;
+        }
+
         public void Exit()
         {
             Active = false;
@@ -83,7 +89,9 @@ namespace Lutra
 
             while (Active)
             {
+                Profiler.StartFrame();
                 Tick();
+                Profiler.EndFrame();
             }
 
             game.ShutDown();

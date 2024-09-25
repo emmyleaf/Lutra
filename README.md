@@ -3,7 +3,7 @@
 <img align="right" src="Lutra.Examples/Assets/lutra.png">
 
 Lutra is a framework for making 2D games in C# with a focus on cross-platform builds, pixel perfect rendering, and ease of use.
-It adapts code from (and functions as a spiritual successor to) [Kyle Pulver's Otter framework](http://otter2d.com/).
+It adapts code from (and functions as a spiritual successor to) [Kyle Pulver's Otter framework](https://web.archive.org/web/20240324143723/http://otter2d.com/).
 
 This project was started with the aim to port games away from Otter's dependency on SFML.NET, due to various cross-platform runtime issues.
 The renderer was built from scratch using [Veldrid](http://veldrid.dev/), which provides a low-level graphics API with many backends.

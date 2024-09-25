@@ -2,7 +2,6 @@
 
 using System.IO;
 using Veldrid;
-using Veldrid.ImageSharp;
 
 namespace Lutra.Rendering;
 

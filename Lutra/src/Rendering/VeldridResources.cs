@@ -3,7 +3,6 @@ using System.Numerics;
 using Lutra.Input;
 using Lutra.Utility;
 using Veldrid;
-using Veldrid.ImageSharp;
 using Veldrid.Sdl2;
 using Veldrid.SPIRV;
 using Veldrid.StartupUtilities;
@@ -25,6 +24,11 @@ public static class VeldridResources
     public static ResourceFactory Factory => _factory;
 
     public static bool IsOpenGL;
+
+    static VeldridResources()
+    {
+        SixLabors.ImageSharp.Configuration.Default.PreferContiguousImageBuffers = true;
+    }
 
     public static void Initialize(Game game, GraphicsBackend? preferredBackend)
     {

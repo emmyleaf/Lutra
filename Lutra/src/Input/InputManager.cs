@@ -101,10 +101,11 @@ public static class InputManager
     public static int MouseX
     {
         get
-        {   // TODO: Scaling
+        {   // NOTE: Scaling might only work with locked aspect scaling? Needs testing.
             float mouseX = MouseRawX;
-            // mouseX -= Game.Surface.X - Game.Surface.ScaledWidth * 0.5f;
-            // mouseX /= Game.Surface.ScaleX;
+            var windowStart = (Util.Scale(Game.Instance.Window.SurfaceBounds.X, -1.0f, 1.0f, 0.0f, 1.0f) * Game.Instance.Window.Width) / Game.Instance.Window.SurfaceScale;
+            mouseX -= windowStart;
+            mouseX /= Game.Instance.Window.SurfaceScale;
             return (int)mouseX;
         }
     }
@@ -115,28 +116,29 @@ public static class InputManager
     public static int MouseY
     {
         get
-        {   // TODO: Scaling
+        {   // NOTE: Scaling might only work with locked aspect scaling? Needs testing.
             float mouseY = MouseRawY;
-            // mouseY -= Game.Surface.Y - Game.Surface.ScaledHeight * 0.5f;
-            // mouseY /= Game.Surface.ScaleY;
+            var windowStart = (Util.Scale(Game.Instance.Window.SurfaceBounds.Y, -1.0f, 1.0f, 0.0f, 1.0f) * Game.Instance.Window.Height) / Game.Instance.Window.SurfaceScale;
+            mouseY -= windowStart;
+            mouseY /= Game.Instance.Window.SurfaceScale;
             return (int)mouseY;
         }
     }
 
     /// <summary>
-    /// The X position of the mouse in screen space.
+    /// The X position of the mouse in world space.
     /// </summary>
-    public static float MouseScreenX => MouseX + Game.Instance.CameraManager.ActiveCamera.X;
+    public static float MouseWorldX => MouseX + (Game.Instance.CameraManager.ActiveCamera.X - Game.Instance.HalfWidth);
 
     /// <summary>
-    /// The Y position of the mouse in screen space.
+    /// The Y position of the mouse in world space.
     /// </summary>
-    public static float MouseScreenY => MouseY + Game.Instance.CameraManager.ActiveCamera.Y;
+    public static float MouseWorldY => MouseY + (Game.Instance.CameraManager.ActiveCamera.Y - Game.Instance.HalfHeight);
 
     /// <summary>
     /// The current string of keys that were pressed.
     /// </summary>
-    public static string KeyString { get; private set; } = "";
+    public static string KeyString = "";
 
     #endregion
 
@@ -317,6 +319,21 @@ public static class InputManager
         }
     }
 
+    public static void MoveMouseTo(int x, int y)
+    {
+        float mouseX = x;
+        var windowStartX = (Util.Scale(Game.Instance.Window.SurfaceBounds.X, -1.0f, 1.0f, 0.0f, 1.0f) * Game.Instance.Window.Width) / Game.Instance.Window.SurfaceScale;
+        mouseX += windowStartX;
+        mouseX *= Game.Instance.Window.SurfaceScale;
+        
+        float mouseY = y;
+        var windowStartY = (Util.Scale(Game.Instance.Window.SurfaceBounds.Y, -1.0f, 1.0f, 0.0f, 1.0f) * Game.Instance.Window.Height) / Game.Instance.Window.SurfaceScale;
+        mouseY += windowStartY;
+        mouseY *= Game.Instance.Window.SurfaceScale;
+        
+        Sdl2Native.SDL_WarpMouseInWindow(VeldridResources.Sdl2Window.SdlWindowHandle, (int)mouseX, (int)mouseY);
+    }
+
     #endregion
 
     #region Private Methods
@@ -394,6 +411,10 @@ public static class InputManager
                 var textEvent = Unsafe.As<SDL_Event, SDL_TextInputEvent>(ref sdlEvent);
                 ProcessSdlTextEvent(ref textEvent);
                 break;
+            case SDL_EventType.TextEditing:
+                var editEvent = Unsafe.As<SDL_Event, SDL2.SDL_TextEditingEvent>(ref sdlEvent);
+                ProcessSdlTextEditEvent(ref editEvent);
+                break;
             // Mouse Events
             case SDL_EventType.MouseButtonDown:
             case SDL_EventType.MouseButtonUp:
@@ -453,6 +474,11 @@ public static class InputManager
         {
             keysDown.Add(key);
             LastKey = key;
+
+            if(key == Key.Backspace)
+            {
+                KeyString = KeyString.Substring(0, (int)Util.Max(0, KeyString.Length - 1));
+            }
         }
         else
         {
@@ -468,6 +494,19 @@ public static class InputManager
         {
             var textInput = Marshal.PtrToStringAnsi((IntPtr)textBytes);
             KeyString += textInput;
+        }
+    }
+
+    private unsafe static void ProcessSdlTextEditEvent(ref SDL2.SDL_TextEditingEvent editEvent)
+    {
+        fixed (byte* textBytes = editEvent.text)
+        {
+            var editText = Marshal.PtrToStringUTF8((IntPtr)textBytes);
+            int startIndex = editEvent.start;
+            int editLength = editEvent.length;
+
+            KeyString = KeyString.Remove(startIndex, editLength);
+            KeyString = KeyString.Insert(startIndex, editText.Substring(0, editLength));
         }
     }
 

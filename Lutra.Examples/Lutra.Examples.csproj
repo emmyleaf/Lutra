@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
     <Platforms>x64</Platforms>
     <LangVersion>10.0</LangVersion>
   </PropertyGroup>
@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="../Lutra/Lutra.csproj" />
     <ProjectReference Include="../Lutra.Audio.OpenAL/Lutra.Audio.OpenAL.csproj" />
+    <ProjectReference Include="../Lutra.MIDI/Lutra.MIDI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

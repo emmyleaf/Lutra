@@ -8,7 +8,7 @@ namespace Lutra.Utility.Collections;
 /// The internal array can be accessed using the Items member. Be careful!
 /// Also implements the stable sorting algorithms from Lutra.Utility.Sorting.
 /// </summary>
-public class LutraList<T> : ICollection<T>, IReadOnlyList<T>
+public class LutraList<T> : IList<T>, IReadOnlyList<T>
 {
     private const int INITIAL_SIZE = 64;
     private const int GROW_SIZE = 16;
@@ -23,6 +23,17 @@ public class LutraList<T> : ICollection<T>, IReadOnlyList<T>
     public LutraList(int initialSize = INITIAL_SIZE)
     {
         Items = new T[initialSize];
+    }
+
+    /// <summary>
+    /// Remove the last item from this list and return it.
+    /// </summary>
+    public T RemoveLast()
+    {
+        count -= 1;
+        T item = Items[count];
+        Items[count] = default;
+        return item;
     }
 
     /// <summary>
@@ -135,6 +146,17 @@ public class LutraList<T> : ICollection<T>, IReadOnlyList<T>
         Array.Copy(Items, 0, array, arrayIndex, count);
     }
 
+    public int IndexOf(T item)
+    {
+        return Array.IndexOf(Items, item, 0, count);
+    }
+
+    public void Insert(int index, T item)
+    {
+        ((IList<T>)Items).Insert(index, item);
+        count += 1;
+    }
+
     public bool Remove(T item)
     {
         int index = Array.IndexOf(Items, item, 0, count);
@@ -153,6 +175,23 @@ public class LutraList<T> : ICollection<T>, IReadOnlyList<T>
         }
 
         return false;
+    }
+
+    public void RemoveAt(int index)
+    {
+        if (index < 0 || index >= count)
+        {
+            throw new ArgumentOutOfRangeException("index", index, null);
+        }
+
+        int nextIndex = index + 1;
+        if (nextIndex < count)
+        {
+            Array.Copy(Items, nextIndex, Items, index, count - nextIndex);
+        }
+
+        count -= 1;
+        Items[count] = default;
     }
 
     public IEnumerator<T> GetEnumerator() => new Enumerator(this);

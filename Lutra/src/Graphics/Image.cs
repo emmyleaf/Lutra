@@ -12,7 +12,7 @@ public class Image : SpriteGraphic
     #region Private Fields
 
     private bool repeatX, repeatY, flipX, flipY;
-    private int dropshadowDistanceX, dropshadowDistanceY;
+    private float dropshadowDistanceX, dropshadowDistanceY;
     private Color dropshadowColor = Color.Black;
 
     #endregion
@@ -119,7 +119,7 @@ public class Image : SpriteGraphic
     /// <summary>
     /// The distance of the drop shadow in the X direction.
     /// </summary>
-    public int DropshadowDistanceX
+    public float DropshadowDistanceX
     {
         get
         {
@@ -135,7 +135,7 @@ public class Image : SpriteGraphic
     /// <summary>
     /// The distance of the drop shadow in the Y direction.
     /// </summary>
-    public int DropshadowDistanceY
+    public float DropshadowDistanceY
     {
         get
         {
@@ -151,7 +151,7 @@ public class Image : SpriteGraphic
     /// <summary>
     /// Set both DropshadowDistanceX and DropshadowDistanceY.
     /// </summary>
-    public int Dropshadow
+    public float Dropshadow
     {
         set
         {

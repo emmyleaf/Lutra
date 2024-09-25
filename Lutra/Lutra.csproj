@@ -5,26 +5,38 @@
     <Authors>Emmy Leadley</Authors>
     <RepositoryUrl>https://github.com/emmyleaf/Lutra</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
     <Platforms>x64</Platforms>
     <LangVersion>10.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="ImGui.NET" Version="1.86.0" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
 
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
+  <PropertyGroup>
+    <VeldridVersion>4.9.0</VeldridVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ImGui.NET" Version="1.87.3" />
+
+    <!-- Regarding ImageSharp licensing:
+         Lutra is open source, therefore ImageSharp is licensed under Apache 2.0
+         For Lutra's users, it's a transitive dependency, therefore also licensed under Apache 2.0 -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
 
     <PackageReference Include="SpaceWizards.SharpFont" Version="1.0.1" />
 
-    <PackageReference Include="Veldrid" Version="4.9.0-beta1" />
-    <PackageReference Include="Veldrid.ImageSharp" Version="4.9.0-beta1" />
-    <PackageReference Include="Veldrid.ImGui" Version="5.72.0" />
-    <PackageReference Include="Veldrid.Sdl2" Version="4.9.0-beta1" />
+    <PackageReference Include="Veldrid" Version="$(VeldridVersion)" />
+    <PackageReference Include="Veldrid.ImGui" Version="5.87.0-g181a86f652 " />
+    <PackageReference Include="Veldrid.Sdl2" Version="$(VeldridVersion)" />
     <PackageReference Include="Veldrid.SPIRV" Version="1.0.14" />
-    <PackageReference Include="Veldrid.StartupUtilities" Version="4.9.0-beta1" />
-    <PackageReference Include="Veldrid.Utilities" Version="4.9.0-beta1" />
+    <PackageReference Include="Veldrid.StartupUtilities" Version="$(VeldridVersion)" />
+    <PackageReference Include="Veldrid.Utilities" Version="$(VeldridVersion)" />
+
+    <PackageReference Include="ZstdNet" Version="1.4.5" />
   </ItemGroup>
 
   <ItemGroup>

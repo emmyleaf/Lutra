@@ -42,6 +42,10 @@ public class ShaderData
             {
                 CreateSmallUniformBuffer(i, param.Name, (Color)value);
             }
+            else if (value is Vector4)
+            {
+                CreateSmallUniformBuffer(i, param.Name, (Vector4)value);
+            }
             else if (value is Vector2)
             {
                 CreateSmallUniformBuffer(i, param.Name, (Vector2)value);
@@ -72,7 +76,7 @@ public class ShaderData
     private void CreateSmallUniformBuffer<T>(int index, string name, T value) where T : unmanaged
     {
         Elements[index] = new ResourceLayoutElementDescription($"{name}Buffer", ResourceKind.UniformBuffer, ShaderStages.Fragment);
-        var uniformBuffer = VeldridResources.Factory.CreateBuffer(new BufferDescription(16u, BufferUsage.UniformBuffer));
+        var uniformBuffer = VeldridResources.Factory.CreateBuffer(new BufferDescription(32u, BufferUsage.UniformBuffer));
         VeldridResources.GraphicsDevice.UpdateBuffer(uniformBuffer, 0, value);
         Resources[index] = uniformBuffer;
         BufferDictionary.Add(name, uniformBuffer);

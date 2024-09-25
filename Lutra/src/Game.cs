@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using Lutra.Cameras;
 using Lutra.Collision;
 using Lutra.Graphics;
@@ -8,6 +9,7 @@ using Lutra.Input;
 using Lutra.Rendering;
 using Lutra.Utility;
 using Lutra.Utility.Debugging;
+using Lutra.Utility.Profiling;
 
 namespace Lutra;
 
@@ -143,6 +145,8 @@ public class Game
         get
         {
             var myDocs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                myDocs = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             return Path.Combine(myDocs, gameFolder);
         }
     }
@@ -154,6 +158,15 @@ public class Game
     {
         get => GameLoop.TargetFrameRate;
         set => GameLoop.SetTargetFrameRate(value);
+    }
+
+    /// <summary>
+    /// If the timestep should be fixed and the game should update faster/slower to hit the target when the framerate changes.
+    /// </summary>
+    public bool FixedTimeStep
+    {
+        get => GameLoop.FixedTimeStep;
+        set => GameLoop.SetFixedTimestep(value);
     }
 
     public Action OnInitialize = delegate { };

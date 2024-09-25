@@ -63,6 +63,11 @@ public static class Ease
         return (t) => (t <= 0.5f) ? easeIn(t * 2) / 2 : 0.5f + easeOut(t * 2 - 1) / 2;
     }
 
+    public static Easer Mirror(Easer easeIn, Easer easeOut)
+    {
+        return (t) => t < 0.5f ? easeIn(t*2): 1 - (easeOut((t - 0.5f) * 2f));
+    }
+
     private const float PI = MathHelper.Pi;
     private const float PI_OVER_2 = MathHelper.PiOver2;
     private const float BT1 = 4f / 11f;

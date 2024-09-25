@@ -145,6 +145,32 @@ namespace Lutra.Utility
             return (t >= 0f) && (t <= 1f) && (u >= 0f) && (u <= 1f);
         }
 
+        public (float, float) IntersectTU(Line2 other)
+        {
+            //A = X1, Y1; B = X2, Y2; C = other.X1, other.Y1; D = other.X2, other.Y2;
+            Vector2 A = new Vector2(X1, Y1);
+            Vector2 B = new Vector2(X2, Y2);
+            Vector2 C = new Vector2(other.X1, other.Y1);
+            Vector2 D = new Vector2(other.X2, other.Y2);
+
+            Vector2 CmP = new Vector2(C.X - A.X, C.Y - A.Y);
+            Vector2 r = new Vector2(B.X - A.X, B.Y - A.Y);
+            Vector2 s = new Vector2(D.X - C.X, D.Y - C.Y);
+
+            float CmPxr = (float)CmP.X * (float)r.Y - (float)CmP.Y * (float)r.X;
+            float CmPxs = (float)CmP.X * (float)s.Y - (float)CmP.Y * (float)s.X;
+            float rxs = (float)r.X * (float)s.Y - (float)r.Y * (float)s.X;
+
+            if (rxs == 0f)
+                return (-1.0f, -1.0f);
+
+            float rxsr = 1f / rxs;
+            float t = CmPxs * rxsr;
+            float u = CmPxr * rxsr;
+
+            return (t, u);
+        }
+
         public override string ToString()
         {
             return "{X1: " + X1 + " Y1: " + Y1 + " X2: " + X2 + " Y2: " + Y2 + "}";

@@ -56,6 +56,12 @@ public class Window
     /// Only applies when LockAspectRatio is also true.
     /// </summary>
     public bool LockIntegerScale { get; set; }
+    
+    /// <summary>
+    /// This property returns the current relative scale
+    /// of the rendered Surface along its biggest dimension.
+    /// </summary>
+    public float SurfaceScale { get; private set; }
 
     /// <summary>
     /// The visibilty of the mouse.
@@ -70,6 +76,11 @@ public class Window
     /// If the game window is currently fullscreen.
     /// </summary>
     public bool Fullscreen => VeldridResources.Sdl2Window.WindowState == Veldrid.WindowState.FullScreen;
+    
+    /// <summary>
+    /// If the game window is currently borderless fullscreen.
+    /// </summary>
+    public bool BorderlessFullscreen => VeldridResources.Sdl2Window.WindowState == Veldrid.WindowState.BorderlessFullScreen;
 
     #endregion
 
@@ -115,6 +126,14 @@ public class Window
         VeldridResources.Sdl2Window.Width = (int)(_game.Width * scaleXY);
         VeldridResources.Sdl2Window.Height = (int)(_game.Height * scaleXY);
     }
+    
+    /// <summary>
+    /// Set the window to use a borderless fullscreen mode.
+    /// </summary>
+    public void SetBorderlessFullscreen()
+    {
+        VeldridResources.Sdl2Window.WindowState = Veldrid.WindowState.BorderlessFullScreen;
+    }
 
     /// <summary>
     /// Set the window title.
@@ -139,6 +158,7 @@ public class Window
         SurfaceBounds = FullWindowBounds;
         LockAspectRatio = options.LockAspectRatio;
         LockIntegerScale = options.LockIntegerScale;
+        UpdateSurfaceBounds();
     }
 
     internal void OnResized()
@@ -164,10 +184,12 @@ public class Window
             {
                 surfaceScale = (float)Width / (float)_game.Width;
             }
+            SurfaceScale = surfaceScale;
 
             if (LockIntegerScale)
             {
                 surfaceScale = MathF.Max(MathF.Floor(surfaceScale), 1f);
+                SurfaceScale = surfaceScale;
 
                 var surfaceX = (surfaceScale * _game.Width) / (-2f * MathF.Floor(Width / 2f));
                 var surfaceY = (surfaceScale * _game.Height) / (-2f * MathF.Floor(Height / 2f));
@@ -188,6 +210,7 @@ public class Window
         else
         {
             SurfaceBounds = FullWindowBounds;
+            SurfaceScale = (float)Width / (float)_game.Width;
         }
     }
 

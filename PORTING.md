@@ -30,7 +30,6 @@ Here is a list of common changed names that were found when porting a project fr
 * `Vector2.Normalize` is now static and doesn't modify the Vector2, so `vec.Normalize()` would become `vec = Vector2.Normalize(vec)`
 * `scene.GetEntitiesAll()` is now `scene.Entities`
 * Color constructor from hex string is now static method `Color.FromString(str)`
-* `Game.Color` is now `Game.ClearColor` to more clearly show its function
 
 TODO: Soon, I will take another pass over the changes made to TMFBMA and update this section with more of the changes.
 

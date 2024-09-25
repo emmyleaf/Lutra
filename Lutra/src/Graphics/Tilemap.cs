@@ -340,9 +340,24 @@ public class Tilemap : SpriteGraphic
     /// <returns>The TileInfo from the altered tile.</returns>
     public TileInfo SetTile(int tileX, int tileY, bool flipX, bool flipY)
     {
-        GetTile(tileX, tileY).FlipX = flipX;
-        GetTile(tileX, tileY).FlipY = flipY;
-        return GetTile(tileX, tileY);
+        var tile = GetTile(tileX, tileY);
+        tile.FlipX = flipX;
+        tile.FlipY = flipY;
+        return tile;
+    }
+
+    /// <summary>
+    /// Set a tile on the Tilemap to be rotated by setting the flip options.
+    /// </summary>
+    /// <param name="tileX">The X position of the tile to change.</param>
+    /// <param name="tileY">The Y position of the tile to change.</param>
+    /// <param name="rotation">The angle to rotate the tile to.</param>
+    /// <returns>The TileInfo from the altered tile.</returns>
+    public TileInfo SetTile(int tileX, int tileY, TileRotationAndFlips rotation)
+    {
+        var tile = GetTile(tileX, tileY);
+        tile.RotationAndFlips = rotation;
+        return tile;
     }
 
     /// <summary>
