@@ -40,7 +40,7 @@ public class LTypeScene : Scene
         musicA = new Music(AssetManager.LoadStream("LType/engramloopA.ogg"), true);
         musicA.Play();
 
-        Controller = new LTypeController();
+        Controller = new LTypeController(InputManager.Controllers); // use all controllers for testing
         InputManager.AddVirtualController(Controller);
     }
 

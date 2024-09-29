@@ -5,10 +5,11 @@
     <Authors>DrMelon</Authors>
     <RepositoryUrl>https://github.com/melonleaf/lutra-dev</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Platforms>x64</Platforms>
     <LangVersion>10.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">

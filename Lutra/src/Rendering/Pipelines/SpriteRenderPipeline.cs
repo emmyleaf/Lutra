@@ -36,9 +36,9 @@ public class SpriteRenderPipeline
 
         PipelineDescTemplate = new GraphicsPipelineDescription();
         PipelineDescTemplate.PrimitiveTopology = PrimitiveTopology.TriangleList;
-        PipelineDescTemplate.DepthStencilState = DepthStencilStateDescription.Disabled;
+        PipelineDescTemplate.DepthStencilState = DepthStencilStateDescription.DISABLED;
         PipelineDescTemplate.Outputs = VeldridResources.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
-        PipelineDescTemplate.RasterizerState = RasterizerStateDescription.Default;
+        PipelineDescTemplate.RasterizerState = RasterizerStateDescription.DEFAULT;
 
         WorldBuffer = VeldridResources.CreateMatrixUniformBuffer();
         VertexBuffer = VeldridResources.CreateVertexBuffer(MAX_VERTICES * VertexPositionColorTexture.SizeInBytes);
@@ -56,12 +56,12 @@ public class SpriteRenderPipeline
         );
 
         var alphaBlendDesc = PipelineDescTemplate;
-        alphaBlendDesc.BlendState = BlendStateDescription.SingleAlphaBlend;
+        alphaBlendDesc.BlendState = BlendStateDescription.SINGLE_ALPHA_BLEND;
         alphaBlendDesc.ResourceLayouts = new[] { PipelineCommon.PerFrameResourceLayout, PerSpriteResourceLayout };
         alphaBlendDesc.ShaderSet = shaderSet;
 
         var addBlendDesc = alphaBlendDesc;
-        addBlendDesc.BlendState = BlendStateDescription.SingleAdditiveBlend;
+        addBlendDesc.BlendState = BlendStateDescription.SINGLE_ADDITIVE_BLEND;
 
         Pipelines.Add(
             HashCode.Combine(NO_SHADER, BlendMode.Alpha),
@@ -83,12 +83,12 @@ public class SpriteRenderPipeline
         var shaderResourceLayout = VeldridResources.Factory.CreateResourceLayout(layoutDesc);
 
         var alphaBlendDesc = PipelineDescTemplate;
-        alphaBlendDesc.BlendState = BlendStateDescription.SingleAlphaBlend;
+        alphaBlendDesc.BlendState = BlendStateDescription.SINGLE_ALPHA_BLEND;
         alphaBlendDesc.ResourceLayouts = new[] { PipelineCommon.PerFrameResourceLayout, PerSpriteResourceLayout, shaderResourceLayout };
         alphaBlendDesc.ShaderSet = shaderSet;
 
         var addBlendDesc = alphaBlendDesc;
-        addBlendDesc.BlendState = BlendStateDescription.SingleAdditiveBlend;
+        addBlendDesc.BlendState = BlendStateDescription.SINGLE_ADDITIVE_BLEND;
 
         Pipelines.Add(
             HashCode.Combine(shaderName, BlendMode.Alpha),

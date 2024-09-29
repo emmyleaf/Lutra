@@ -1,12 +1,9 @@
 using System.Diagnostics;
 using System.Numerics;
-using Lutra.Input;
 using Lutra.Utility;
+using Lutra.Utility.Veldrid;
 using Veldrid;
-using Veldrid.Sdl2;
 using Veldrid.SPIRV;
-using Veldrid.StartupUtilities;
-using Veldrid.Utilities;
 
 namespace Lutra.Rendering;
 
@@ -15,10 +12,9 @@ public static class VeldridResources
     private static GraphicsDevice _graphicsDevice;
     private static DisposeCollectorResourceFactory _factory;
     private static CommandList _utilityCommandList;
-    private static bool _windowResized;
 
-    internal static Sdl2Window Sdl2Window;
-    internal static Action OnResize = delegate { };
+    internal static Window Window;
+    internal static bool WindowResized;
 
     public static GraphicsDevice GraphicsDevice => _graphicsDevice;
     public static ResourceFactory Factory => _factory;
@@ -30,16 +26,19 @@ public static class VeldridResources
         SixLabors.ImageSharp.Configuration.Default.PreferContiguousImageBuffers = true;
     }
 
+    #region Initialization
+
     public static void Initialize(Game game, GraphicsBackend? preferredBackend)
     {
+        Window = game.Window;
+
         if (!preferredBackend.HasValue || !GraphicsDevice.IsBackendSupported(preferredBackend.Value))
         {
             preferredBackend = GetDefaultBackend();
         }
+        IsOpenGL = preferredBackend == GraphicsBackend.OpenGL || preferredBackend == GraphicsBackend.OpenGLES;
 
-        System.Console.WriteLine($"Graphics Backend: {Enum.GetName(preferredBackend.Value)}");
-
-        var windowCreateInfo = new WindowCreateInfo(100, 100, game.Window.Width, game.Window.Height, WindowState.Normal, game.Window.Title);
+        Console.WriteLine($"Graphics Backend: {Enum.GetName(preferredBackend.Value)}");
 
         var gdOptions = new GraphicsDeviceOptions()
         {
@@ -51,11 +50,7 @@ public static class VeldridResources
             SyncToVerticalBlank = true,
         };
 
-        VeldridStartup.CreateWindowAndGraphicsDevice(windowCreateInfo, gdOptions, preferredBackend.Value, out Sdl2Window, out _graphicsDevice);
-        IsOpenGL = _graphicsDevice.BackendType == Veldrid.GraphicsBackend.OpenGL || _graphicsDevice.BackendType == Veldrid.GraphicsBackend.OpenGLES;
-
-        Sdl2Window.Resized += () => _windowResized = true;
-        OnResize += game.Window.OnResized;
+        _graphicsDevice = VeldridStartup.CreateGraphicsDevice(Window, gdOptions, preferredBackend.Value);
 
         _factory = new DisposeCollectorResourceFactory(_graphicsDevice.ResourceFactory);
         _utilityCommandList = _factory.CreateCommandList();
@@ -63,13 +58,40 @@ public static class VeldridResources
         DEBUG_Initialize();
     }
 
+    private static GraphicsBackend GetDefaultBackend()
+    {
+        if (GraphicsDevice.IsBackendSupported(GraphicsBackend.Direct3D11))
+        {
+            return GraphicsBackend.Direct3D11;
+        }
+
+        if (GraphicsDevice.IsBackendSupported(GraphicsBackend.Metal))
+        {
+            return GraphicsBackend.Metal;
+        }
+
+        if (GraphicsDevice.IsBackendSupported(GraphicsBackend.Vulkan))
+        {
+            return GraphicsBackend.Vulkan;
+        }
+
+        if (GraphicsDevice.IsBackendSupported(GraphicsBackend.OpenGL))
+        {
+            return GraphicsBackend.OpenGL;
+        }
+
+        return GraphicsBackend.OpenGLES;
+    }
+
+    #endregion
+
     public static void HandleResize()
     {
-        if (Sdl2Window.Exists && _windowResized)
+        if (Window.Exists && WindowResized)
         {
-            _windowResized = false;
-            _graphicsDevice.MainSwapchain.Resize((uint)Sdl2Window.Width, (uint)Sdl2Window.Height);
-            OnResize?.Invoke();
+            WindowResized = false;
+            _graphicsDevice.MainSwapchain.Resize((uint)Window.Width, (uint)Window.Height);
+            DEBUG_ImGuiRenderer.WindowResized(Window.Width, Window.Height);
         }
     }
 
@@ -110,7 +132,7 @@ public static class VeldridResources
     public static MappedResourceView<byte> GetMappedTexture(Texture texture)
     {
         var stagingDesc = TextureDescription.Texture2D(
-            texture.Width, texture.Height, 1u, 1u, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Staging);
+            texture.Width, texture.Height, 1u, 1u, PixelFormat.R8G8B8A8UNorm, TextureUsage.Staging);
         var stagingTexture = _factory.CreateTexture(ref stagingDesc);
 
         _utilityCommandList.Begin();
@@ -138,38 +160,19 @@ public static class VeldridResources
         _graphicsDevice.WaitForIdle();
         _factory.DisposeCollector.DisposeAll();
         _graphicsDevice.Dispose();
-    }
-
-    public static GraphicsBackend GetDefaultBackend()
-    {
-        if (GraphicsDevice.IsBackendSupported(GraphicsBackend.Vulkan))
-        {
-            return GraphicsBackend.Vulkan;
-        }
-
-        if (GraphicsDevice.IsBackendSupported(GraphicsBackend.Direct3D11))
-        {
-            return GraphicsBackend.Direct3D11;
-        }
-
-        if (GraphicsDevice.IsBackendSupported(GraphicsBackend.OpenGL))
-        {
-            return GraphicsBackend.OpenGL;
-        }
-
-        return GraphicsBackend.OpenGLES;
+        DEBUG_ImGuiDispose();
     }
 
     #region Factory Methods
 
     public static DeviceBuffer CreateVertexBuffer(uint size)
     {
-        return _factory.CreateBuffer(new BufferDescription(size, BufferUsage.VertexBuffer));
+        return _factory.CreateBuffer(new BufferDescription(size, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
     }
 
     public static DeviceBuffer CreateIndexBuffer(uint size)
     {
-        return _factory.CreateBuffer(new BufferDescription(size, BufferUsage.IndexBuffer));
+        return _factory.CreateBuffer(new BufferDescription(size, BufferUsage.IndexBuffer | BufferUsage.Dynamic));
     }
 
     public static DeviceBuffer CreateMatrixUniformBuffer()
@@ -207,7 +210,7 @@ public static class VeldridResources
     public static Texture CreateSquareTexture(uint textureSize)
     {
         var desc = TextureDescription.Texture2D(
-            textureSize, textureSize, 1u, 1u, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled);
+            textureSize, textureSize, 1u, 1u, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled);
         return _factory.CreateTexture(ref desc);
     }
 
@@ -246,8 +249,6 @@ public static class VeldridResources
         DEBUG_CommandList = _factory.CreateCommandList();
         DEBUG_ImGuiRenderer = new ImGuiRenderer(_graphicsDevice, _graphicsDevice.SwapchainFramebuffer.OutputDescription,
             (int)_graphicsDevice.SwapchainFramebuffer.Width, (int)_graphicsDevice.SwapchainFramebuffer.Height);
-
-        OnResize += () => DEBUG_ImGuiRenderer.WindowResized(Sdl2Window.Width, Sdl2Window.Height);
     }
 
     [Conditional("DEBUG")]
@@ -263,7 +264,13 @@ public static class VeldridResources
     [Conditional("DEBUG")]
     internal static void DEBUG_ImGuiUpdate(double deltaTime)
     {
-        DEBUG_ImGuiRenderer!.Update((float)deltaTime, InputManager.DEBUG_LatestInput);
+        DEBUG_ImGuiRenderer.Update((float)deltaTime);
+    }
+
+    [Conditional("DEBUG")]
+    internal static void DEBUG_ImGuiDispose()
+    {
+        DEBUG_ImGuiRenderer.DestroyDeviceObjects();
     }
 
     #endregion

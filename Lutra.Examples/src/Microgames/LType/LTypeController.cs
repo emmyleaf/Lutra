@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Lutra.Input;
 
 public class LTypeController : VirtualController
@@ -7,25 +8,26 @@ public class LTypeController : VirtualController
     public readonly VirtualButton StartButton;
     public readonly VirtualButton MuteButton;
 
-    public LTypeController()
+    public LTypeController(IEnumerable<Controller> controllers)
     {
-        MovementAxis = VirtualAxis.CreateWASD()
-            .AddControllerAxis(ControllerAxis.LeftX, ControllerAxis.LeftY, 0);
+        MovementAxis = VirtualAxis.CreateWASD();
         AddAxis("Movement", MovementAxis);
 
-        ShootButton = new VirtualButton()
-            .AddKey(Key.Space)
-            .AddControllerButton(ControllerButton.A, 0);
+        ShootButton = new VirtualButton().AddKey(Key.Space);
         AddButton("Shoot", ShootButton);
 
-        StartButton = new VirtualButton()
-            .AddKey(Key.Enter)
-            .AddControllerButton(ControllerButton.Start, 0);
+        StartButton = new VirtualButton().AddKey(Key.Enter);
         AddButton("Start", StartButton);
 
-        MuteButton = new VirtualButton()
-            .AddKey(Key.M)
-            .AddControllerButton(ControllerButton.Back, 0);
+        MuteButton = new VirtualButton().AddKey(Key.M);
         AddButton("Mute", MuteButton);
+
+        foreach (var controller in controllers)
+        {
+            MovementAxis.AddControllerAxis(controller, ControllerAxis.LeftX, ControllerAxis.LeftY);
+            ShootButton.AddControllerButton(controller, ControllerButton.A);
+            StartButton.AddControllerButton(controller, ControllerButton.Start);
+            MuteButton.AddControllerButton(controller, ControllerButton.Back);
+        }
     }
 }

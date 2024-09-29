@@ -9,7 +9,7 @@ namespace Lutra;
 /// </summary>
 public struct GameOptions
 {
-    public GameOptions() {}
+    public GameOptions() { }
 
     /// <summary>
     /// The window title. Default: "Lutra"
@@ -60,10 +60,8 @@ public struct GameOptions
 
     /// <summary>
     /// The preferred graphics backend for the Veldrid renderer. Default: null
-    /// If set to null or an unsupported backend, Lutra will fall back to defaults.
-    /// Preference order of defaults: Vulkan, Direct3D11, OpenGL, OpenGLES.
-    /// NOTE: Metal backend currently has major rendering issues on my device (Early 2015 MacBook Pro).
-    /// OpenGL has been successfully tested on all supported platforms (including macOS).
+    /// If set to null or an unsupported backend, Lutra will fall back to its own preferred backends.
+    /// Preference order of fallbacks: Direct3D11, Metal, Vulkan, OpenGL, OpenGLES.
     /// Be aware of differences between backends: https://veldrid.dev/articles/backend-differences.html
     /// </summary>
     public GraphicsBackend? PreferredGraphicsBackend = null;

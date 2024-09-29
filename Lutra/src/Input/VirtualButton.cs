@@ -27,12 +27,12 @@ public class VirtualButton
     /// <summary>
     /// The controller Buttons registered to the Button.
     /// </summary>
-    public List<(int, ControllerButton)> ControllerButtons = new();
+    public List<(Controller, ControllerButton)> ControllerButtons = new();
 
     /// <summary>
     /// The controller Axes and thresholds registered to the Button.
     /// </summary>
-    public List<(int, ControllerAxis, bool)> ControllerAxisButtons = new();
+    public List<(Controller, ControllerAxis, bool)> ControllerAxisButtons = new();
 
     /// <summary>
     /// The mouse buttons registered to the Button.
@@ -182,11 +182,11 @@ public class VirtualButton
     /// Add a controller button to the Button.
     /// </summary>
     /// <param name="button">The controller button to add.</param>
-    /// <param name="controllerId">The controller id.</param>
+    /// <param name="controller">The controller.</param>
     /// <returns>The Button.</returns>
-    public VirtualButton AddControllerButton(ControllerButton button, int controllerId = 0)
+    public VirtualButton AddControllerButton(Controller controller, ControllerButton button)
     {
-        ControllerButtons.Add((controllerId, button));
+        ControllerButtons.Add((controller, button));
         return this;
     }
 
@@ -195,11 +195,11 @@ public class VirtualButton
     /// </summary>
     /// <param name="axis">The controller axis to add.</param>
     /// <param name="positive">If true, use +ve axis. If false, use -ve axis.</param>
-    /// <param name="controllerId">The controller id.</param>
+    /// <param name="controller">The controller.</param>
     /// <returns>The Button.</returns>
-    public VirtualButton AddAxisButton(ControllerAxis axis, bool positive, int controllerId = 0)
+    public VirtualButton AddAxisButton(Controller controller, ControllerAxis axis, bool positive)
     {
-        ControllerAxisButtons.Add((controllerId, axis, positive));
+        ControllerAxisButtons.Add((controller, axis, positive));
         return this;
     }
 
@@ -263,31 +263,25 @@ public class VirtualButton
             }
         }
 
-        foreach (var (id, button) in ControllerButtons)
+        foreach (var (controller, button) in ControllerButtons)
         {
-            if (InputManager.Controllers.TryGetValue(id, out var controller))
+            if (controller.ButtonDown(button))
             {
-                if (controller.ButtonDown(button))
-                {
-                    return true;
-                }
+                return true;
             }
         }
 
-        foreach (var (id, axis, positive) in ControllerAxisButtons)
+        foreach (var (controller, axis, positive) in ControllerAxisButtons)
         {
-            if (InputManager.Controllers.TryGetValue(id, out var controller))
-            {
-                float val = controller.GetAxis(axis);
+            float val = controller.GetAxis(axis);
 
-                if (positive && val >= AxisButtonThreshold)
-                {
-                    return true;
-                }
-                if (!positive && val <= -AxisButtonThreshold)
-                {
-                    return true;
-                }
+            if (positive && val >= AxisButtonThreshold)
+            {
+                return true;
+            }
+            if (!positive && val <= -AxisButtonThreshold)
+            {
+                return true;
             }
         }
 

@@ -1,6 +1,6 @@
 using System.IO;
 using System.Collections.Generic;
-using ZstdNet;
+using ZstdSharp;
 
 using Lutra.Utility;
 
@@ -74,9 +74,9 @@ namespace Lutra.Assets
 
             if (Manifest.Compressed)
             {
-                Decompressor decompressor = new Decompressor();
-                byte[] fileBytes = decompressor.Unwrap(ArchiveFileReader.ReadBytes((int)file.LengthBytes));
-                return fileBytes;
+                var decompressor = new Decompressor();
+                var compressedBytes = ArchiveFileReader.ReadBytes((int)file.LengthBytes);
+                return decompressor.Unwrap(compressedBytes).ToArray();
             }
             else
             {
@@ -203,7 +203,7 @@ namespace Lutra.Assets
                     long currentOffset = 0;
 
                     Dictionary<string, byte[]> compressedFiles = new Dictionary<string, byte[]>();
-                    Compressor compressor = new Compressor(new CompressionOptions(11));
+                    Compressor compressor = new Compressor(11);
 
                     foreach (FileInfo file in fileListing)
                     {
@@ -213,9 +213,10 @@ namespace Lutra.Assets
                         if (compressed)
                         {
                             Util.LogInfo($"* Compressing file {file.Name}...");
-                            var compressedFile = compressor.Wrap(File.ReadAllBytes(file.FullName));
-                            compressedFiles.Add(file.FullName, compressedFile);
-                            fileLength = compressedFile.Length;
+                            var fileBytes = File.ReadAllBytes(file.FullName);
+                            var compressedBytes = compressor.Wrap(fileBytes).ToArray();
+                            compressedFiles.Add(file.FullName, compressedBytes);
+                            fileLength = compressedBytes.Length;
                             Util.LogInfo($"* Compressed. Orig:{file.Length} After:{fileLength}");
                         }
 

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Lutra.Utility.Collections;
-using Veldrid.Sdl2;
+using SDL;
 
 namespace Lutra.Input;
 
@@ -10,18 +10,18 @@ namespace Lutra.Input;
 /// </summary>
 public class Controller
 {
-    internal readonly SDL_GameController SdlController;
-    internal readonly SDL_Joystick SdlJoystick;
+    internal readonly SDL_Gamepad SdlGamepad;
+    internal readonly SDL_JoystickID SdlJoystickID;
 
     internal HashSet<ControllerButton> PrevButtonsDown;
     internal HashSet<ControllerButton> ButtonsDown;
     internal readonly Dictionary<ControllerAxis, float> Axes;
     internal ControllerButton LastButtonDown;
 
-    internal Controller(SDL_GameController controller, SDL_Joystick joystick)
+    internal Controller(SDL_Gamepad gamepad, SDL_JoystickID joystickID)
     {
-        SdlController = controller;
-        SdlJoystick = joystick;
+        SdlGamepad = gamepad;
+        SdlJoystickID = joystickID;
         PrevButtonsDown = new();
         ButtonsDown = new();
         Axes = new();
@@ -54,6 +54,8 @@ public class Controller
     }
 
     #region Public Methods
+
+    public int ID => (int)SdlJoystickID;
 
     /// <summary>
     /// Check if any controller button was pressed.

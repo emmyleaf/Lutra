@@ -38,7 +38,6 @@ namespace Lutra.Utility
         {
             BasePath = AppDomain.CurrentDomain.BaseDirectory;
 
-            PreloadBuiltinShaders();
             PreloadAssets();
         }
 
@@ -74,6 +73,20 @@ namespace Lutra.Utility
             return texture;
         }
 
+        internal static void PreloadBuiltinShaders()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var names = assembly.GetManifestResourceNames();
+            foreach (var name in names)
+            {
+                if (name.StartsWith("Lutra.Shaders"))
+                {
+                    using var stream = assembly.GetManifestResourceStream(name);
+                    BuiltinShaderBytesCache.Add(name, stream.ToArray());
+                }
+            }
+        }
+
         private static string GetAssetPath(string filename)
         {
             if (Path.IsPathRooted(filename) || filename.Contains("Assets/"))
@@ -93,20 +106,6 @@ namespace Lutra.Utility
             using (var fileStream = LoadStream(filename))
             {
                 return new LutraTexture(fileStream);
-            }
-        }
-
-        private static void PreloadBuiltinShaders()
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var names = assembly.GetManifestResourceNames();
-            foreach (var name in names)
-            {
-                if (name.StartsWith("Lutra.Shaders"))
-                {
-                    using var stream = assembly.GetManifestResourceStream(name);
-                    BuiltinShaderBytesCache.Add(name, stream.ToArray());
-                }
             }
         }
     }

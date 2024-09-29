@@ -40,7 +40,7 @@ public class ImageSharpTexture
     public ImageSharpTexture(Image<Rgba32> image) : this(image, false) { }
     public ImageSharpTexture(Image<Rgba32> image, bool srgb)
     {
-        Format = srgb ? PixelFormat.R8_G8_B8_A8_UNorm_SRgb : PixelFormat.R8_G8_B8_A8_UNorm;
+        Format = srgb ? PixelFormat.R8G8B8A8UNormSRgb : PixelFormat.R8G8B8A8UNorm;
         ISImage = image;
     }
 

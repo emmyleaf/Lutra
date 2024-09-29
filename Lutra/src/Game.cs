@@ -201,6 +201,8 @@ public class Game
 
     protected internal virtual void Initialize()
     {
+        AssetManager.PreloadBuiltinShaders();
+        Window.Initialize();
         VeldridResources.Initialize(this, initialOptions.PreferredGraphicsBackend);
         AssetManager.Initialize();
         InputManager.Initialize();
@@ -228,7 +230,7 @@ public class Game
         CollisionSystem.Update();
         Scene?.InternalUpdate();
 
-        if (!VeldridResources.Sdl2Window.Exists)
+        if (!Window.Exists)
         {
             GameLoop.Exit();
         }
@@ -281,7 +283,7 @@ public class Game
     public void Stop()
     {
         GameLoop.Exit();
-        VeldridResources.Sdl2Window.Close();
+        Window.Close();
     }
 
     /// <summary>
@@ -369,7 +371,7 @@ public class Game
         if (fpsCounterElapsed >= 1f)
         {
             var memoryInMegabytes = (GC.GetTotalMemory(false) / 1048576f).ToString("F");
-            VeldridResources.Sdl2Window.Title = $"{Window.Title} ~ {fpsCounter.ToString()} fps ~ {GameLoop.ElapsedGameTime.TotalSeconds} delta ~ {memoryInMegabytes} MB";
+            Window.Title = $"{Window.Title} ~ {fpsCounter.ToString()} fps ~ {GameLoop.ElapsedGameTime.TotalSeconds} delta ~ {memoryInMegabytes} MB";
             fpsCounter = 0;
             fpsCounterElapsed -= 1f;
         }

@@ -43,9 +43,9 @@ namespace Lutra.Examples
             {
                 Movement = VirtualAxis.CreateArrowKeys();
 
-                if (InputManager.ControllersConnected > 0)
+                foreach (var controller in InputManager.Controllers)
                 {
-                    Movement.AddControllerAxis(ControllerAxis.LeftX, ControllerAxis.LeftY, 0);
+                    Movement.AddControllerAxis(controller, ControllerAxis.LeftX, ControllerAxis.LeftY);
                 }
 
                 AddAxis("Movement", Movement);
@@ -58,11 +58,11 @@ namespace Lutra.Examples
             {
                 if (ImGui.BeginMenu("Visualise (Xbox)...", InputManager.ControllersConnected > 0))
                 {
-                    foreach (var id in InputManager.ControllerIds)
+                    foreach (var controller in InputManager.Controllers)
                     {
-                        if (ImGui.MenuItem($"Controller {id}"))
+                        if (ImGui.MenuItem($"Controller {controller.ID}"))
                         {
-                            ControllerDisplay.OpenControllerAsXboxIMGUIWindow(id);
+                            ControllerDisplay.OpenControllerAsXboxIMGUIWindow(controller);
                         }
                     }
 

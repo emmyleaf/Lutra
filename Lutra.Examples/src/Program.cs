@@ -14,7 +14,8 @@ Game game = new Game(new GameOptions()
     Width = 640,
     Height = 360,
     ScaleXY = 2f,
-    TargetFrameRate = 60.0
+    TargetFrameRate = 60.0,
+    PreferredGraphicsBackend = null,
 });
 
 game.Start(new LaunchMenuScene());

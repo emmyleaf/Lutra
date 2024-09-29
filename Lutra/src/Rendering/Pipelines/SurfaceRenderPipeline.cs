@@ -29,14 +29,14 @@ public class SurfaceRenderPipeline : IDisposable
         );
 
         var description = new GraphicsPipelineDescription();
-        description.BlendState = BlendStateDescription.SingleDisabled;
+        description.BlendState = BlendStateDescription.SINGLE_DISABLED;
         description.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
         description.ResourceLayouts = new[] { SurfaceLayout };
         description.ResourceBindingModel = ResourceBindingModel.Improved;
         description.ShaderSet = shaderSet;
         description.Outputs = VeldridResources.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
-        description.DepthStencilState = DepthStencilStateDescription.Disabled;
-        description.RasterizerState = RasterizerStateDescription.Default;
+        description.DepthStencilState = DepthStencilStateDescription.DISABLED;
+        description.RasterizerState = RasterizerStateDescription.DEFAULT;
 
         Pipeline = VeldridResources.Factory.CreateGraphicsPipeline(description);
     }

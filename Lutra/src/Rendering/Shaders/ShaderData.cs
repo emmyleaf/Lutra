@@ -14,7 +14,7 @@ public class ShaderData
     // * Create buffer and blit using unsafe code
     internal string ShaderName;
     internal ResourceLayoutElementDescription[] Elements;
-    internal BindableResource[] Resources;
+    internal IBindableResource[] Resources;
     internal Dictionary<string, DeviceBuffer> BufferDictionary;
 
     public ShaderData(string shaderFilename, params (string Name, object Value)[] parameters)
@@ -25,7 +25,7 @@ public class ShaderData
         var count = parameters.Length;
 
         Elements = new ResourceLayoutElementDescription[count];
-        Resources = new BindableResource[count];
+        Resources = new IBindableResource[count];
         BufferDictionary = new();
 
         for (int i = 0; i < count; i++)
@@ -58,7 +58,7 @@ public class ShaderData
             {
                 CreateSmallUniformBuffer(i, param.Name, (int)value);
             }
-            else if (value is BindableResource)
+            else if (value is IBindableResource)
             {
                 throw new NotImplementedException($"Parameter {param.Name} type is not implemented for SpriteShader");
             }

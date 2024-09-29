@@ -5,54 +5,55 @@
     <Authors>Emmy Leadley</Authors>
     <RepositoryUrl>https://github.com/emmyleaf/Lutra</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Platforms>x64</Platforms>
     <LangVersion>10.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <VeldridVersion>4.9.0</VeldridVersion>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="ImGui.NET" Version="1.87.3" />
+    <PackageReference Include="ImGui.NET" Version="1.91.0.1" />
 
     <!-- Regarding ImageSharp licensing:
          Lutra is open source, therefore ImageSharp is licensed under Apache 2.0
          For Lutra's users, it's a transitive dependency, therefore also licensed under Apache 2.0 -->
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
 
-    <PackageReference Include="SpaceWizards.SharpFont" Version="1.0.1" />
+    <!-- TODO: Ideally, replace with something, idk :) -->
+    <PackageReference Include="SpaceWizards.SharpFont" Version="1.0.2" />
 
-    <PackageReference Include="Veldrid" Version="$(VeldridVersion)" />
-    <PackageReference Include="Veldrid.ImGui" Version="5.87.0-g181a86f652 " />
-    <PackageReference Include="Veldrid.Sdl2" Version="$(VeldridVersion)" />
-    <PackageReference Include="Veldrid.SPIRV" Version="1.0.14" />
-    <PackageReference Include="Veldrid.StartupUtilities" Version="$(VeldridVersion)" />
-    <PackageReference Include="Veldrid.Utilities" Version="$(VeldridVersion)" />
+    <!-- TODO: Make sure we use the released version of SDL3 (3.2.0?) when it is released -->
+    <PackageReference Include="ppy.SDL3-CS" Version="2024.916.0" />
 
-    <PackageReference Include="ZstdNet" Version="1.4.5" />
+    <!-- Using ppy's fork of Veldrid until we use SDL3_GPU instead >:) -->
+    <PackageReference Include="ppy.Veldrid" Version="4.9.62-gca0239da6b" />
+    <PackageReference Include="ppy.Veldrid.SPIRV" Version="1.0.15-gfbb03d21c2" />
+
+    <PackageReference Include="ZstdSharp.Port" Version="0.8.1" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Shaders/**/*.*" />
   </ItemGroup>
 
-  <!-- Providing a newer SDL dylib for macOS x64 -->
+  <!-- Providing patched freetype dll for Windows x64 -->
   <ItemGroup>
-    <Content Include="libsdl2.dylib" Condition="('$(RuntimeIdentifier)' == 'osx-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('OSX')))">
+    <Content Include="freetype6.dll" Condition="('$(RuntimeIdentifier)' == 'win-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('Windows')))">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
-  <!-- Providing patched freetype dll for Windows x64 -->
+  <!-- Providing patched freetype dylibs for macOS x64 -->
   <ItemGroup>
-    <Content Include="freetype6.dll" Condition="('$(RuntimeIdentifier)' == 'win-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('Windows')))">
+    <Content Include="libfreetype.6.dylib" Condition="('$(RuntimeIdentifier)' == 'osx-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('macOS')))">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libpng16.16.dylib" Condition="('$(RuntimeIdentifier)' == 'osx-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('macOS')))">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

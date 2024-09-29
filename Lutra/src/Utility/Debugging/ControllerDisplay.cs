@@ -51,12 +51,12 @@ namespace Lutra.Utility.Debugging
         private static Color StartBackOffColor = Color.Grey;
         private static Color StartBackOnColor = Color.Pink;
 
-        private static int ControllerID = 0;
+        private static Controller Controller;
         private static bool WindowOpen = false;
 
-        public static void OpenControllerAsXboxIMGUIWindow(int controllerID)
+        public static void OpenControllerAsXboxIMGUIWindow(Controller controller)
         {
-            ControllerID = controllerID;
+            Controller = controller;
             WindowOpen = true;
         }
 
@@ -67,55 +67,59 @@ namespace Lutra.Utility.Debugging
                 return;
             }
 
-            var controller = InputManager.Controller(ControllerID);
-
             if (ImGui.Begin($"Controller Display", ref WindowOpen))
             {
-                if (controller == null)
+                if (Controller == null)
                 {
-                    ImGui.Text($"Controller {ControllerID} Disconnected!");
+                    ImGui.Text($"Controller Disconnected!");
                     ImGui.End();
                     return;
                 }
 
-                ImGui.Text($"Controller {ControllerID} Info:");
-                ImGui.Text($"Name: {InputManager.GetControllerName(ControllerID)}");
-                ImGui.Text($"Vendor ID: {InputManager.GetControllerVendorId(ControllerID)}");
-                ImGui.Text($"Product ID: {InputManager.GetControllerProductId(ControllerID)}");
+                ImGui.Text($"Controller {Controller} Info:");
+                ImGui.Text($"Name: {InputManager.GetControllerName(Controller)}");
+                ImGui.Text($"Vendor ID: {InputManager.GetControllerVendorId(Controller)}");
+                ImGui.Text($"Product ID: {InputManager.GetControllerProductId(Controller)}");
 
                 ImGui.Text($"Axes & Button Display:");
 
                 // Left Stick
                 ImGuiHelper.DrawCircle(ControllerCenterX + LeftStickOffsetX, ControllerCenterY + LeftStickOffsetY, StickSize, StickBorder, true);
-                ImGuiHelper.DrawCircle(ControllerCenterX + LeftStickOffsetX + ((StickSize - StickIndicatorSize) * controller.GetAxis(ControllerAxis.LeftX)), ControllerCenterY + LeftStickOffsetY + ((StickSize - StickIndicatorSize) * controller.GetAxis(ControllerAxis.LeftY)), StickIndicatorSize, controller.ButtonDown(ControllerButton.LeftStick) ? StickClickColor : StickColor, true);
+                ImGuiHelper.DrawCircle(
+                    ControllerCenterX + LeftStickOffsetX + ((StickSize - StickIndicatorSize) * Controller.GetAxis(ControllerAxis.LeftX)),
+                    ControllerCenterY + LeftStickOffsetY + ((StickSize - StickIndicatorSize) * Controller.GetAxis(ControllerAxis.LeftY)),
+                    StickIndicatorSize, Controller.ButtonDown(ControllerButton.LeftStick) ? StickClickColor : StickColor, true);
 
                 // Right Stick
                 ImGuiHelper.DrawCircle(ControllerCenterX + RightStickOffsetX, ControllerCenterY + RightStickOffsetY, StickSize, StickBorder, true);
-                ImGuiHelper.DrawCircle(ControllerCenterX + RightStickOffsetX + ((StickSize - StickIndicatorSize) * controller.GetAxis(ControllerAxis.RightX)), ControllerCenterY + RightStickOffsetY + ((StickSize - StickIndicatorSize) * controller.GetAxis(ControllerAxis.RightY)), StickIndicatorSize, controller.ButtonDown(ControllerButton.RightStick) ? StickClickColor : StickColor, true);
+                ImGuiHelper.DrawCircle(
+                    ControllerCenterX + RightStickOffsetX + ((StickSize - StickIndicatorSize) * Controller.GetAxis(ControllerAxis.RightX)),
+                    ControllerCenterY + RightStickOffsetY + ((StickSize - StickIndicatorSize) * Controller.GetAxis(ControllerAxis.RightY)),
+                    StickIndicatorSize, Controller.ButtonDown(ControllerButton.RightStick) ? StickClickColor : StickColor, true);
 
                 // D-Pad (U, D, L, R)
-                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + DPadCenterOffsetX, ControllerCenterY + DPadCenterOffsetY - DPadButtonDistance, DPadButtonWidth, DPadButtonHeight, controller.ButtonDown(ControllerButton.DPadUp) ? DPadOnColor : DPadOffColor, true);
-                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + DPadCenterOffsetX, ControllerCenterY + DPadCenterOffsetY + DPadButtonDistance, DPadButtonWidth, DPadButtonHeight, controller.ButtonDown(ControllerButton.DPadDown) ? DPadOnColor : DPadOffColor, true);
-                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + DPadCenterOffsetX - DPadButtonDistance, ControllerCenterY + DPadCenterOffsetY, DPadButtonHeight, DPadButtonWidth, controller.ButtonDown(ControllerButton.DPadLeft) ? DPadOnColor : DPadOffColor, true);
-                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + DPadCenterOffsetX + DPadButtonDistance, ControllerCenterY + DPadCenterOffsetY, DPadButtonHeight, DPadButtonWidth, controller.ButtonDown(ControllerButton.DPadRight) ? DPadOnColor : DPadOffColor, true);
+                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + DPadCenterOffsetX, ControllerCenterY + DPadCenterOffsetY - DPadButtonDistance, DPadButtonWidth, DPadButtonHeight, Controller.ButtonDown(ControllerButton.DPadUp) ? DPadOnColor : DPadOffColor, true);
+                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + DPadCenterOffsetX, ControllerCenterY + DPadCenterOffsetY + DPadButtonDistance, DPadButtonWidth, DPadButtonHeight, Controller.ButtonDown(ControllerButton.DPadDown) ? DPadOnColor : DPadOffColor, true);
+                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + DPadCenterOffsetX - DPadButtonDistance, ControllerCenterY + DPadCenterOffsetY, DPadButtonHeight, DPadButtonWidth, Controller.ButtonDown(ControllerButton.DPadLeft) ? DPadOnColor : DPadOffColor, true);
+                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + DPadCenterOffsetX + DPadButtonDistance, ControllerCenterY + DPadCenterOffsetY, DPadButtonHeight, DPadButtonWidth, Controller.ButtonDown(ControllerButton.DPadRight) ? DPadOnColor : DPadOffColor, true);
 
                 // Face Buttons (A, B, X, Y)
-                ImGuiHelper.DrawCircle(ControllerCenterX + FaceButtonsCenterOffsetX, ControllerCenterY + FaceButtonsCenterOffsetY + FaceButtonDistance, FaceButtonRadius, controller.ButtonDown(ControllerButton.A) ? Color.Green : Color.Green * Color.Grey, true);
-                ImGuiHelper.DrawCircle(ControllerCenterX + FaceButtonsCenterOffsetX + FaceButtonDistance, ControllerCenterY + FaceButtonsCenterOffsetY, FaceButtonRadius, controller.ButtonDown(ControllerButton.B) ? Color.Red : Color.Red * Color.Grey, true);
-                ImGuiHelper.DrawCircle(ControllerCenterX + FaceButtonsCenterOffsetX - FaceButtonDistance, ControllerCenterY + FaceButtonsCenterOffsetY, FaceButtonRadius, controller.ButtonDown(ControllerButton.X) ? Color.Blue : Color.Blue * Color.Grey, true);
-                ImGuiHelper.DrawCircle(ControllerCenterX + FaceButtonsCenterOffsetX, ControllerCenterY + FaceButtonsCenterOffsetY - FaceButtonDistance, FaceButtonRadius, controller.ButtonDown(ControllerButton.Y) ? Color.Yellow : Color.Yellow * Color.Grey, true);
+                ImGuiHelper.DrawCircle(ControllerCenterX + FaceButtonsCenterOffsetX, ControllerCenterY + FaceButtonsCenterOffsetY + FaceButtonDistance, FaceButtonRadius, Controller.ButtonDown(ControllerButton.A) ? Color.Green : Color.Green * Color.Grey, true);
+                ImGuiHelper.DrawCircle(ControllerCenterX + FaceButtonsCenterOffsetX + FaceButtonDistance, ControllerCenterY + FaceButtonsCenterOffsetY, FaceButtonRadius, Controller.ButtonDown(ControllerButton.B) ? Color.Red : Color.Red * Color.Grey, true);
+                ImGuiHelper.DrawCircle(ControllerCenterX + FaceButtonsCenterOffsetX - FaceButtonDistance, ControllerCenterY + FaceButtonsCenterOffsetY, FaceButtonRadius, Controller.ButtonDown(ControllerButton.X) ? Color.Blue : Color.Blue * Color.Grey, true);
+                ImGuiHelper.DrawCircle(ControllerCenterX + FaceButtonsCenterOffsetX, ControllerCenterY + FaceButtonsCenterOffsetY - FaceButtonDistance, FaceButtonRadius, Controller.ButtonDown(ControllerButton.Y) ? Color.Yellow : Color.Yellow * Color.Grey, true);
 
                 // LT, RT
-                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + LeftTriggerBumperOffsetX, ControllerCenterY + LeftTriggerBumperOffsetY - TriggerBumperSpacing, TriggerBumperWidth, TriggerBumperHeight, Util.LerpColor(TriggerOffColor, TriggerOnColor, controller.GetAxis(ControllerAxis.LeftTrigger)), true);
-                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + RightTriggerBumperOffsetX, ControllerCenterY + RightTriggerBumperOffsetY - TriggerBumperSpacing, TriggerBumperWidth, TriggerBumperHeight, Util.LerpColor(TriggerOffColor, TriggerOnColor, controller.GetAxis(ControllerAxis.RightTrigger)), true);
+                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + LeftTriggerBumperOffsetX, ControllerCenterY + LeftTriggerBumperOffsetY - TriggerBumperSpacing, TriggerBumperWidth, TriggerBumperHeight, Util.LerpColor(TriggerOffColor, TriggerOnColor, Controller.GetAxis(ControllerAxis.LeftTrigger)), true);
+                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + RightTriggerBumperOffsetX, ControllerCenterY + RightTriggerBumperOffsetY - TriggerBumperSpacing, TriggerBumperWidth, TriggerBumperHeight, Util.LerpColor(TriggerOffColor, TriggerOnColor, Controller.GetAxis(ControllerAxis.RightTrigger)), true);
 
                 // LB, RB
-                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + LeftTriggerBumperOffsetX, ControllerCenterY + LeftTriggerBumperOffsetY, TriggerBumperWidth, TriggerBumperHeight, controller.ButtonDown(ControllerButton.LeftShoulder) ? TriggerOnColor : TriggerOffColor, true);
-                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + RightTriggerBumperOffsetX, ControllerCenterY + RightTriggerBumperOffsetY, TriggerBumperWidth, TriggerBumperHeight, controller.ButtonDown(ControllerButton.RightShoulder) ? TriggerOnColor : TriggerOffColor, true);
+                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + LeftTriggerBumperOffsetX, ControllerCenterY + LeftTriggerBumperOffsetY, TriggerBumperWidth, TriggerBumperHeight, Controller.ButtonDown(ControllerButton.LeftShoulder) ? TriggerOnColor : TriggerOffColor, true);
+                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + RightTriggerBumperOffsetX, ControllerCenterY + RightTriggerBumperOffsetY, TriggerBumperWidth, TriggerBumperHeight, Controller.ButtonDown(ControllerButton.RightShoulder) ? TriggerOnColor : TriggerOffColor, true);
 
                 // Start & Back
-                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + StartBackSpacing, ControllerCenterY, StartBackWidth, StartBackHeight, controller.ButtonDown(ControllerButton.Start) ? StartBackOnColor : StartBackOffColor, true);
-                ImGuiHelper.DrawRectangleCentered(ControllerCenterX - StartBackSpacing, ControllerCenterY, StartBackWidth, StartBackHeight, controller.ButtonDown(ControllerButton.Back) ? StartBackOnColor : StartBackOffColor, true);
+                ImGuiHelper.DrawRectangleCentered(ControllerCenterX + StartBackSpacing, ControllerCenterY, StartBackWidth, StartBackHeight, Controller.ButtonDown(ControllerButton.Start) ? StartBackOnColor : StartBackOffColor, true);
+                ImGuiHelper.DrawRectangleCentered(ControllerCenterX - StartBackSpacing, ControllerCenterY, StartBackWidth, StartBackHeight, Controller.ButtonDown(ControllerButton.Back) ? StartBackOnColor : StartBackOffColor, true);
 
                 ImGui.End();
             }

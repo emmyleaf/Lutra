@@ -1,11 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Lutra.Rendering;
 using Lutra.Utility;
 using Lutra.Utility.Collections;
-using Veldrid.Sdl2;
+using SDL;
 
 namespace Lutra.Input;
 
@@ -16,7 +13,7 @@ public static class InputManager
 {
     #region Private Fields
 
-    private static List<int> controllerIds = new();
+    private static List<SDL_JoystickID> controllerIds = new();
 
     private static HashSet<Key> prevKeysDown = new();
     private static HashSet<Key> keysDown = new();
@@ -25,12 +22,15 @@ public static class InputManager
 
     private static List<VirtualController> virtualControllers = new();
 
+    private static Dictionary<SDL_JoystickID, Controller> controllers = new();
+
     #endregion
 
-    #region Internal Fields
+    #region Internal Fields & Properties
 
-    internal static Dictionary<int, Controller> Controllers = new();
-    internal static Veldrid.InputSnapshot DEBUG_LatestInput;
+    internal static IEnumerable<Key> KeysPressedThisFrame => keysDown.Except(prevKeysDown);
+    internal static IEnumerable<Key> KeysReleasedThisFrame => prevKeysDown.Except(keysDown);
+    internal static string KeyStringPerFrame = "";
 
     #endregion
 
@@ -56,9 +56,9 @@ public static class InputManager
     public static int ControllersConnected => controllerIds.Count;
 
     /// <summary>
-    /// The controller ids of the currently connected controllers.
+    /// The currently connected controllers.
     /// </summary>
-    public static IReadOnlyList<int> ControllerIds => controllerIds;
+    public static IReadOnlyCollection<Controller> Controllers => controllers.Values;
 
     /// <summary>
     /// The last known key that was pressed.
@@ -145,25 +145,13 @@ public static class InputManager
     #region Public Methods
 
     /// <summary>
-    /// Get a Controller.
-    /// </summary>
-    /// <param name="id">The connection id of the Controller.</param>
-    /// <returns>The last button pressed. null if invalid id.</returns>
-    public static Controller Controller(int id)
-    {
-        return Controllers.GetValueOrDefault(id);
-    }
-
-    /// <summary>
     /// Get the name of the Controller.
     /// </summary>
     /// <param name="id">The connection id of the Controller.</param>
     /// <returns>The name of the Controller. null if invalid id.</returns>
-    public unsafe static string GetControllerName(int id)
+    public static string GetControllerName(Controller controller)
     {
-        if (!Controllers.TryGetValue(id, out var controller)) return null;
-        var nameBytes = (IntPtr)Sdl2Native.SDL_GameControllerName(controller.SdlController);
-        return Marshal.PtrToStringAnsi(nameBytes);
+        return controllerIds.Contains(controller.SdlJoystickID) ? SDL3.SDL_GetGamepadNameForID(controller.SdlJoystickID) : null;
     }
 
     /// <summary>
@@ -171,10 +159,9 @@ public static class InputManager
     /// </summary>
     /// <param name="id">The connection id of the Controller.</param>
     /// <returns>The vendor id of the Controller. 0 if invalid id.</returns>
-    public static int GetControllerVendorId(int id)
+    public static ushort GetControllerVendorId(Controller controller)
     {
-        if (!Controllers.TryGetValue(id, out var controller)) return 0;
-        return Sdl2Native.SDL_GameControllerGetVendor(controller.SdlController);
+        return controllerIds.Contains(controller.SdlJoystickID) ? SDL3.SDL_GetGamepadVendorForID(controller.SdlJoystickID) : default;
     }
 
     /// <summary>
@@ -182,10 +169,9 @@ public static class InputManager
     /// </summary>
     /// <param name="id">The connection id of the Controller.</param>
     /// <returns>The name of the Controller. 0 if invalid id.</returns>
-    public static int GetControllerProductId(int id)
+    public static ushort GetControllerProductId(Controller controller)
     {
-        if (!Controllers.TryGetValue(id, out var controller)) return 0;
-        return Sdl2Native.SDL_GameControllerGetProduct(controller.SdlController);
+        return controllerIds.Contains(controller.SdlJoystickID) ? SDL3.SDL_GetGamepadProductForID(controller.SdlJoystickID) : default;
     }
 
     /// <summary>
@@ -303,15 +289,16 @@ public static class InputManager
 
     internal static void Initialize()
     {
-        Sdl2Native.SDL_Init(SDLInitFlags.GameController);
-        Sdl2Events.Subscribe(ProcessSdlEvent);
+        SDL3.SDL_Init(SDL_InitFlags.SDL_INIT_GAMEPAD);
+        unsafe { SDL3.SDL_StartTextInput(Game.Instance.Window.SdlWindowHandle); }
+        ProcessSdlEvents();
         RegisterControllers();
     }
 
     internal static void Update()
     {
         StartNewFrame();
-        ProcessSdl2Events();
+        ProcessSdlEvents();
 
         foreach (var virtualController in virtualControllers)
         {
@@ -321,17 +308,17 @@ public static class InputManager
 
     public static void MoveMouseTo(int x, int y)
     {
-        float mouseX = x;
-        var windowStartX = (Util.Scale(Game.Instance.Window.SurfaceBounds.X, -1.0f, 1.0f, 0.0f, 1.0f) * Game.Instance.Window.Width) / Game.Instance.Window.SurfaceScale;
-        mouseX += windowStartX;
-        mouseX *= Game.Instance.Window.SurfaceScale;
-        
-        float mouseY = y;
-        var windowStartY = (Util.Scale(Game.Instance.Window.SurfaceBounds.Y, -1.0f, 1.0f, 0.0f, 1.0f) * Game.Instance.Window.Height) / Game.Instance.Window.SurfaceScale;
-        mouseY += windowStartY;
-        mouseY *= Game.Instance.Window.SurfaceScale;
-        
-        Sdl2Native.SDL_WarpMouseInWindow(VeldridResources.Sdl2Window.SdlWindowHandle, (int)mouseX, (int)mouseY);
+        var window = Game.Instance.Window;
+
+        var boundsStartX = Util.Scale(window.SurfaceBounds.X, -1.0f, 1.0f, 0.0f, 1.0f);
+        var windowStartX = boundsStartX * window.Width / window.SurfaceScale;
+        var mouseX = (x + windowStartX) * window.SurfaceScale;
+
+        var boundsStartY = Util.Scale(window.SurfaceBounds.Y, -1.0f, 1.0f, 0.0f, 1.0f);
+        var windowStartY = boundsStartY * window.Height / window.SurfaceScale;
+        var mouseY = (y + windowStartY) * window.SurfaceScale;
+
+        window.MoveMouseTo((int)mouseX, (int)mouseY);
     }
 
     #endregion
@@ -342,106 +329,101 @@ public static class InputManager
     {
         prevKeysDown = keysDown.Clone();
         prevMouseButtonsDown = mouseButtonsDown.Clone();
+        KeyStringPerFrame = "";
 
-        foreach (var controller in Controllers.Values)
+        foreach (var controller in controllers.Values)
         {
             controller.StartNewFrame();
         }
     }
 
-    private static void ProcessSdl2Events()
+    private unsafe static void ProcessSdlEvents()
     {
-        DEBUG_LatestInput = VeldridResources.Sdl2Window.PumpEvents();
+        SDL_Event sdlEvent;
+        while (SDL3.SDL_PollEvent(&sdlEvent).Bool())
+        {
+            ProcessSdlEvent(ref sdlEvent);
+            Game.Instance?.Window?.ProcessSdlEvent(ref sdlEvent);
+        }
     }
 
     private static unsafe void RegisterControllers()
     {
         controllerIds.Clear();
 
-        for (var i = 0; i < Sdl2Native.SDL_NumJoysticks(); i++)
+        var gamepadIDs = SDL3.SDL_GetGamepads();
+        for (var i = 0; i < gamepadIDs.Count; i++)
         {
-            if (Sdl2Native.SDL_IsGameController(i))
-            {
-                var sdlController = Sdl2Native.SDL_GameControllerOpen(i);
-                var sdlJoystick = Sdl2Native.SDL_GameControllerGetJoystick(sdlController);
-                var instanceId = Sdl2Native.SDL_JoystickInstanceID(sdlJoystick);
-                controllerIds.Add(instanceId);
+            var joystickID = gamepadIDs[i];
+            var sdlGamepad = SDL3.SDL_OpenGamepad(joystickID);
+            var sdlJoystick = SDL3.SDL_GetGamepadJoystick(sdlGamepad);
+            controllerIds.Add(joystickID);
 
-                Controllers.Remove(instanceId);
-                Controllers.Add(instanceId, new Controller(sdlController, sdlJoystick));
-            }
+            controllers.Remove(joystickID);
+            controllers.Add(joystickID, new Controller(*sdlGamepad, joystickID));
         }
 
         // Remove controllers that are no longer connected
-        foreach (var controllerId in Controllers.Keys.ToArray())
+        foreach (var controllerId in controllers.Keys.ToArray())
         {
             if (!controllerIds.Contains(controllerId))
             {
-                Controllers.Remove(controllerId);
+                controllers.Remove(controllerId);
             }
         }
     }
 
     private static void ProcessSdlEvent(ref SDL_Event sdlEvent)
     {
-        switch (sdlEvent.type)
+        switch (sdlEvent.Type)
         {
             // Controller Events
-            case SDL_EventType.ControllerDeviceAdded:
-            case SDL_EventType.ControllerDeviceRemoved:
-            case SDL_EventType.ControllerDeviceRemapped:
+            case SDL_EventType.SDL_EVENT_GAMEPAD_ADDED:
+            case SDL_EventType.SDL_EVENT_GAMEPAD_REMOVED:
+            case SDL_EventType.SDL_EVENT_GAMEPAD_REMAPPED:
                 RegisterControllers();
                 break;
-            case SDL_EventType.ControllerButtonUp:
-            case SDL_EventType.ControllerButtonDown:
-                var buttonEvent = Unsafe.As<SDL_Event, SDL_ControllerButtonEvent>(ref sdlEvent);
-                ProcessSdlButtonEvent(ref buttonEvent);
+            case SDL_EventType.SDL_EVENT_GAMEPAD_BUTTON_UP:
+            case SDL_EventType.SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+                ProcessSdlButtonEvent(ref sdlEvent.gbutton);
                 break;
-            case SDL_EventType.ControllerAxisMotion:
-                var axisEvent = Unsafe.As<SDL_Event, SDL_ControllerAxisEvent>(ref sdlEvent);
-                ProcessSdlAxisEvent(ref axisEvent);
+            case SDL_EventType.SDL_EVENT_GAMEPAD_AXIS_MOTION:
+                ProcessSdlAxisEvent(ref sdlEvent.gaxis);
                 break;
             // Keyboard Events
-            case SDL_EventType.KeyDown:
-            case SDL_EventType.KeyUp:
-                var keyEvent = Unsafe.As<SDL_Event, SDL_KeyboardEvent>(ref sdlEvent);
-                ProcessSdlKeyEvent(ref keyEvent);
+            case SDL_EventType.SDL_EVENT_KEY_DOWN:
+            case SDL_EventType.SDL_EVENT_KEY_UP:
+                ProcessSdlKeyEvent(ref sdlEvent.key);
                 break;
-            case SDL_EventType.TextInput:
-                var textEvent = Unsafe.As<SDL_Event, SDL_TextInputEvent>(ref sdlEvent);
-                ProcessSdlTextEvent(ref textEvent);
+            case SDL_EventType.SDL_EVENT_TEXT_INPUT:
+                ProcessSdlTextEvent(ref sdlEvent.text);
                 break;
-            case SDL_EventType.TextEditing:
-                var editEvent = Unsafe.As<SDL_Event, SDL2.SDL_TextEditingEvent>(ref sdlEvent);
-                ProcessSdlTextEditEvent(ref editEvent);
+            case SDL_EventType.SDL_EVENT_TEXT_EDITING:
+                ProcessSdlTextEditEvent(ref sdlEvent.edit);
                 break;
             // Mouse Events
-            case SDL_EventType.MouseButtonDown:
-            case SDL_EventType.MouseButtonUp:
-                var mbEvent = Unsafe.As<SDL_Event, SDL_MouseButtonEvent>(ref sdlEvent);
-                ProcessSdlMouseButtonEvent(ref mbEvent);
+            case SDL_EventType.SDL_EVENT_MOUSE_BUTTON_DOWN:
+            case SDL_EventType.SDL_EVENT_MOUSE_BUTTON_UP:
+                ProcessSdlMouseButtonEvent(ref sdlEvent.button);
                 break;
-            case SDL_EventType.MouseWheel:
-                var mwEvent = Unsafe.As<SDL_Event, SDL_MouseWheelEvent>(ref sdlEvent);
-                MouseWheelDelta = mwEvent.y;
+            case SDL_EventType.SDL_EVENT_MOUSE_WHEEL:
+                MouseWheelDelta = sdlEvent.wheel.y;
                 break;
-            case SDL_EventType.MouseMotion:
-                var mmEvent = Unsafe.As<SDL_Event, SDL_MouseMotionEvent>(ref sdlEvent);
-                ProcessSdlMouseMotionEvent(ref mmEvent);
+            case SDL_EventType.SDL_EVENT_MOUSE_MOTION:
+                ProcessSdlMouseMotionEvent(ref sdlEvent.motion);
                 break;
         }
     }
 
-    private static void ProcessSdlButtonEvent(ref SDL_ControllerButtonEvent buttonEvent)
+    private static void ProcessSdlButtonEvent(ref SDL_GamepadButtonEvent buttonEvent)
     {
         var controllerId = buttonEvent.which;
 
-        if (Controllers.TryGetValue(controllerId, out var controller))
+        if (controllers.TryGetValue(controllerId, out var controller))
         {
-            var button = (ControllerButton)(buttonEvent.button);
-            var down = buttonEvent.state == 1;
+            var button = (ControllerButton)buttonEvent.button;
 
-            if (down)
+            if (buttonEvent.down.Bool())
             {
                 controller.ButtonDownEvent(button);
             }
@@ -452,11 +434,11 @@ public static class InputManager
         }
     }
 
-    private static void ProcessSdlAxisEvent(ref SDL_ControllerAxisEvent axisEvent)
+    private static void ProcessSdlAxisEvent(ref SDL_GamepadAxisEvent axisEvent)
     {
         var controllerId = axisEvent.which;
 
-        if (Controllers.TryGetValue(controllerId, out var controller))
+        if (controllers.TryGetValue(controllerId, out var controller))
         {
             var axis = (ControllerAxis)(axisEvent.axis);
             var value = Util.Scale(axisEvent.value, short.MinValue, short.MaxValue, -1f, 1f);
@@ -467,15 +449,14 @@ public static class InputManager
 
     private static void ProcessSdlKeyEvent(ref SDL_KeyboardEvent keyEvent)
     {
-        var key = (Key)keyEvent.keysym.scancode;
-        var down = keyEvent.state == 1;
+        var key = (Key)keyEvent.scancode;
 
-        if (down)
+        if (keyEvent.down.Bool())
         {
             keysDown.Add(key);
             LastKey = key;
 
-            if(key == Key.Backspace)
+            if (key == Key.Backspace)
             {
                 KeyString = KeyString.Substring(0, (int)Util.Max(0, KeyString.Length - 1));
             }
@@ -488,34 +469,25 @@ public static class InputManager
 
     private unsafe static void ProcessSdlTextEvent(ref SDL_TextInputEvent textEvent)
     {
-        // This only adds valid text chars to KeyString.
-        // If we want to handle backspace etc, we will need more logic here.
-        fixed (byte* textBytes = textEvent.text)
-        {
-            var textInput = Marshal.PtrToStringAnsi((IntPtr)textBytes);
-            KeyString += textInput;
-        }
+        KeyString += textEvent.GetText();
+        KeyStringPerFrame += textEvent.GetText();
     }
 
-    private unsafe static void ProcessSdlTextEditEvent(ref SDL2.SDL_TextEditingEvent editEvent)
+    private static void ProcessSdlTextEditEvent(ref SDL_TextEditingEvent editEvent)
     {
-        fixed (byte* textBytes = editEvent.text)
-        {
-            var editText = Marshal.PtrToStringUTF8((IntPtr)textBytes);
-            int startIndex = editEvent.start;
-            int editLength = editEvent.length;
+        var editText = editEvent.GetText();
+        int startIndex = editEvent.start;
+        int editLength = editEvent.length;
 
-            KeyString = KeyString.Remove(startIndex, editLength);
-            KeyString = KeyString.Insert(startIndex, editText.Substring(0, editLength));
-        }
+        KeyString = KeyString.Remove(startIndex, editLength);
+        KeyString = KeyString.Insert(startIndex, editText.Substring(0, editLength));
     }
 
     private static void ProcessSdlMouseButtonEvent(ref SDL_MouseButtonEvent mbEvent)
     {
         var button = (MouseButton)mbEvent.button;
-        var down = mbEvent.state == 1;
 
-        if (down)
+        if (mbEvent.down.Bool())
         {
             mouseButtonsDown.Add(button);
             LastMouseButton = button;
@@ -528,10 +500,11 @@ public static class InputManager
 
     private static void ProcessSdlMouseMotionEvent(ref SDL_MouseMotionEvent mmEvent)
     {
-        MouseDeltaX = mmEvent.xrel;
-        MouseDeltaY = mmEvent.yrel;
-        MouseRawX = mmEvent.x;
-        MouseRawY = mmEvent.y;
+        // TODO: test this
+        MouseDeltaX = (int)mmEvent.xrel;
+        MouseDeltaY = (int)mmEvent.yrel;
+        MouseRawX = (int)mmEvent.x;
+        MouseRawY = (int)mmEvent.y;
     }
 
     #endregion

@@ -56,7 +56,7 @@ public static class Draw
     {
         CommandList.End();
 
-        if (VeldridResources.Sdl2Window.Exists)
+        if (VeldridResources.Window.Exists)
         {
             VeldridResources.GraphicsDevice.SubmitCommands(CommandList);
             VeldridResources.DEBUG_ImGuiRender();

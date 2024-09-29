@@ -1,5 +1,5 @@
-using System.Runtime.InteropServices;
 using Lutra.Utility;
+using SDL;
 
 namespace Lutra.Rendering;
 
@@ -7,9 +7,23 @@ public class Window
 {
     #region Private Fields
 
+    //TODO: only use opengl flag when opengl is the selected backend!
+    private const SDL_WindowFlags DEFAULT_FLAGS =
+        SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_RESIZABLE;
+
     private readonly static RectFloat FullWindowBounds = new RectFloat(-1, -1, 2, 2);
 
     private readonly Game _game;
+
+    private bool _windowTitleUpdated;
+    private string _titleSuffix;
+
+    #endregion
+
+    #region Internal Fields
+
+    internal unsafe SDL_Window* SdlWindowHandle;
+    internal SDL_WindowID SdlWindowID;
 
     #endregion
 
@@ -56,7 +70,7 @@ public class Window
     /// Only applies when LockAspectRatio is also true.
     /// </summary>
     public bool LockIntegerScale { get; set; }
-    
+
     /// <summary>
     /// This property returns the current relative scale
     /// of the rendered Surface along its biggest dimension.
@@ -68,23 +82,66 @@ public class Window
     /// </summary>
     public bool MouseVisible
     {
-        get => VeldridResources.Sdl2Window.CursorVisible;
-        set => VeldridResources.Sdl2Window.CursorVisible = value;
+        get => SDL3.SDL_CursorVisible().Bool();
+        set => _ = value ? SDL3.SDL_ShowCursor() : SDL3.SDL_HideCursor();
     }
+
+    /// <summary>
+    /// If the game window is currently focused.
+    /// </summary>
+    public unsafe bool Focused =>
+        SDL3.SDL_GetWindowFlags(SdlWindowHandle).HasFlag(SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS);
 
     /// <summary>
     /// If the game window is currently fullscreen.
     /// </summary>
-    public bool Fullscreen => VeldridResources.Sdl2Window.WindowState == Veldrid.WindowState.FullScreen;
-    
+    public unsafe bool Fullscreen =>
+        SDL3.SDL_GetWindowFlags(SdlWindowHandle).HasFlag(SDL_WindowFlags.SDL_WINDOW_FULLSCREEN);
+
     /// <summary>
-    /// If the game window is currently borderless fullscreen.
+    /// If the game window is currently resizable.
     /// </summary>
-    public bool BorderlessFullscreen => VeldridResources.Sdl2Window.WindowState == Veldrid.WindowState.BorderlessFullScreen;
+    public unsafe bool Resizable
+    {
+        get => SDL3.SDL_GetWindowFlags(SdlWindowHandle).HasFlag(SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+        set => SDL3.SDL_SetWindowResizable(SdlWindowHandle, value.SdlBool());
+    }
+
+    /// <summary>
+    /// If the game window currently has a border.
+    /// </summary>
+    public unsafe bool BorderVisible
+    {
+        get => SDL3.SDL_GetWindowFlags(SdlWindowHandle).HasFlag(SDL_WindowFlags.SDL_WINDOW_BORDERLESS);
+        set => SDL3.SDL_SetWindowBordered(SdlWindowHandle, value.SdlBool());
+    }
+
+    /// <summary>
+    /// If the game window is currently visible.
+    /// </summary>
+    public unsafe bool Visible
+    {
+        get => !SDL3.SDL_GetWindowFlags(SdlWindowHandle).HasFlag(SDL_WindowFlags.SDL_WINDOW_HIDDEN);
+        set => _ = value ? SDL3.SDL_ShowWindow(SdlWindowHandle) : SDL3.SDL_HideWindow(SdlWindowHandle);
+    }
+
+    /// <summary>
+    /// If the game window currently exists!
+    /// </summary>
+    public bool Exists { get; private set; }
 
     #endregion
 
     #region Public Methods
+
+    /// <summary>
+    /// Close the window.
+    /// </summary>
+    public void Close()
+    {
+        unsafe { SDL3.SDL_DestroyWindow(SdlWindowHandle); }
+        Exists = false;
+    }
 
     /// <summary>
     /// Sets the window to the resolution of the screen in fullscreen mode.
@@ -92,23 +149,9 @@ public class Window
     /// </summary>
     public void SetFullscreen()
     {
-        if (VeldridResources.Sdl2Window.WindowState != Veldrid.WindowState.FullScreen)
+        if (!Fullscreen)
         {
-            unsafe
-            {
-                Veldrid.Sdl2.SDL_DisplayMode displayMode;
-                if (Veldrid.Sdl2.Sdl2Native.SDL_GetDesktopDisplayMode(0, &displayMode) == 0)
-                {
-                    VeldridResources.Sdl2Window.Width = displayMode.w;
-                    VeldridResources.Sdl2Window.Height = displayMode.h;
-                }
-                else
-                {
-                    var errorMsg = Marshal.PtrToStringAnsi((IntPtr)Veldrid.Sdl2.Sdl2Native.SDL_GetError());
-                    Util.LogError($"SDL_GetDesktopDisplayMode failed: {errorMsg}");
-                }
-            }
-            VeldridResources.Sdl2Window.WindowState = Veldrid.WindowState.FullScreen;
+            unsafe { SDL3.SDL_SetWindowFullscreen(SdlWindowHandle, SDL_bool.SDL_TRUE); }
         }
         else
         {
@@ -120,30 +163,29 @@ public class Window
     /// Set the window size to a scalar multiplier of the game's size.
     /// </summary>
     /// <param name="scaleXY">The scaling value for both directions.</param>
-    public void SetScale(float scaleXY)
+    public unsafe void SetScale(float scaleXY)
     {
-        VeldridResources.Sdl2Window.WindowState = Veldrid.WindowState.Normal;
-        VeldridResources.Sdl2Window.Width = (int)(_game.Width * scaleXY);
-        VeldridResources.Sdl2Window.Height = (int)(_game.Height * scaleXY);
-    }
-    
-    /// <summary>
-    /// Set the window to use a borderless fullscreen mode.
-    /// </summary>
-    public void SetBorderlessFullscreen()
-    {
-        VeldridResources.Sdl2Window.WindowState = Veldrid.WindowState.BorderlessFullScreen;
+        SDL3.SDL_SetWindowFullscreen(SdlWindowHandle, SDL_bool.SDL_FALSE);
+        SDL3.SDL_SetWindowSize(SdlWindowHandle, (int)(_game.Width * scaleXY), (int)(_game.Height * scaleXY));
     }
 
     /// <summary>
     /// Set the window title.
     /// </summary>
     /// <param name="title">The new title.</param>
-    public void SetTitle(string title)
+    public void SetTitle(string title, string suffix = null)
     {
         Title = title;
-        VeldridResources.Sdl2Window.Title = title;
+        _titleSuffix = suffix;
+        _windowTitleUpdated = true;
     }
+
+    public unsafe void MoveMouseTo(int x, int y)
+    {
+        SDL3.SDL_WarpMouseInWindow(SdlWindowHandle, x, y);
+    }
+
+    //TODO: setting the window size if the game's size changes!
 
     #endregion
 
@@ -155,17 +197,75 @@ public class Window
         Title = options.Title;
         Width = (int)(game.Width * options.ScaleXY);
         Height = (int)(game.Height * options.ScaleXY);
-        SurfaceBounds = FullWindowBounds;
         LockAspectRatio = options.LockAspectRatio;
         LockIntegerScale = options.LockIntegerScale;
         UpdateSurfaceBounds();
     }
 
-    internal void OnResized()
+    internal unsafe void Initialize()
     {
-        Width = VeldridResources.Sdl2Window.Width;
-        Height = VeldridResources.Sdl2Window.Height;
+        SDL3.SDL_SetHint("SDL_MOUSE_FOCUS_CLICKTHROUGH", "1");
+
+        SdlWindowHandle = SDL3.SDL_CreateWindow(Title, Width, Height, DEFAULT_FLAGS);
+        SdlWindowID = SDL3.SDL_GetWindowID(SdlWindowHandle);
+        Exists = true;
+
+        // TODO: care about window position more... // UpdateWindowPosition();
+        UpdateWindowSize();
+    }
+
+    internal void Update()
+    {
+        CheckWindowTitle();
+    }
+
+    internal void ProcessSdlEvent(ref SDL_Event sdlEvent)
+    {
+        switch (sdlEvent.Type)
+        {
+            case SDL_EventType.SDL_EVENT_QUIT:
+            case SDL_EventType.SDL_EVENT_TERMINATING:
+            case SDL_EventType.SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                Close();
+                break;
+            case SDL_EventType.SDL_EVENT_WINDOW_RESIZED:
+            case SDL_EventType.SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+            case SDL_EventType.SDL_EVENT_WINDOW_MINIMIZED:
+            case SDL_EventType.SDL_EVENT_WINDOW_MAXIMIZED:
+            case SDL_EventType.SDL_EVENT_WINDOW_RESTORED:
+                UpdateWindowSize();
+                break;
+            case SDL_EventType.SDL_EVENT_WINDOW_MOVED:
+                // TODO: set window position? // (windowEvent.data1, windowEvent.data2);
+                break;
+            default:
+                break; // Ignore
+        }
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    private void CheckWindowTitle()
+    {
+        if (_windowTitleUpdated)
+        {
+            _windowTitleUpdated = false;
+            unsafe { SDL3.SDL_SetWindowTitle(SdlWindowHandle, Title + _titleSuffix); }
+        }
+    }
+
+    private unsafe void UpdateWindowSize()
+    {
+        int width, height;
+        SDL3.SDL_GetWindowSize(SdlWindowHandle, &width, &height);
+        Width = width;
+        Height = height;
+
         UpdateSurfaceBounds();
+
+        VeldridResources.WindowResized = true;
     }
 
     private void UpdateSurfaceBounds()
@@ -174,35 +274,32 @@ public class Window
         {
             float gameAspectRatio = (float)_game.Width / (float)_game.Height;
             float windowAspectRatio = (float)Width / (float)Height;
-            float surfaceScale;
 
             if (gameAspectRatio < windowAspectRatio)
             {
-                surfaceScale = (float)Height / (float)_game.Height;
+                SurfaceScale = (float)Height / (float)_game.Height;
             }
             else
             {
-                surfaceScale = (float)Width / (float)_game.Width;
+                SurfaceScale = (float)Width / (float)_game.Width;
             }
-            SurfaceScale = surfaceScale;
 
             if (LockIntegerScale)
             {
-                surfaceScale = MathF.Max(MathF.Floor(surfaceScale), 1f);
-                SurfaceScale = surfaceScale;
+                SurfaceScale = MathF.Max(MathF.Floor(SurfaceScale), 1f);
 
-                var surfaceX = (surfaceScale * _game.Width) / (-2f * MathF.Floor(Width / 2f));
-                var surfaceY = (surfaceScale * _game.Height) / (-2f * MathF.Floor(Height / 2f));
+                var surfaceX = (SurfaceScale * _game.Width) / (-2f * MathF.Floor(Width / 2f));
+                var surfaceY = (SurfaceScale * _game.Height) / (-2f * MathF.Floor(Height / 2f));
 
-                var surfaceWidth = (surfaceScale * _game.Width) / Width;
-                var surfaceHeight = (surfaceScale * _game.Height) / Height;
+                var surfaceWidth = (SurfaceScale * _game.Width) / Width;
+                var surfaceHeight = (SurfaceScale * _game.Height) / Height;
 
                 SurfaceBounds = new RectFloat(surfaceX, surfaceY, (2f * surfaceWidth), (2f * surfaceHeight));
             }
             else
             {
-                var surfaceWidth = (surfaceScale * _game.Width) / Width;
-                var surfaceHeight = (surfaceScale * _game.Height) / Height;
+                var surfaceWidth = (SurfaceScale * _game.Width) / Width;
+                var surfaceHeight = (SurfaceScale * _game.Height) / Height;
 
                 SurfaceBounds = new RectFloat(-surfaceWidth, -surfaceHeight, (2f * surfaceWidth), (2f * surfaceHeight));
             }

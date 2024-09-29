@@ -945,8 +945,6 @@ public class RichText : SpriteGraphic
             buildLineCache = true;
         }
 
-        char prevChar = (char)0;
-
         for (var i = 0; i < chars.Count; i++)
         {
             var c = chars[i].Character;
@@ -982,12 +980,12 @@ public class RichText : SpriteGraphic
                 var glyph = Glyph(c);
                 var sourceRect = font.GetGlyphSourceRect(c, charSize, currentBold);
                 var glyphPosition = new Vector2(x + glyph.BearingX + chars[i].OffsetX, y - glyph.BearingY + chars[i].OffsetY);
-                
+
                 var x1y1 = new Vector2(glyphPosition.X, glyphPosition.Y);
                 var x2y1 = new Vector2(glyphPosition.X + sourceRect.Width, glyphPosition.Y);
                 var x2y2 = new Vector2(glyphPosition.X + sourceRect.Width, glyphPosition.Y + sourceRect.Height);
                 var x1y2 = new Vector2(glyphPosition.X, glyphPosition.Y + sourceRect.Height);
-                
+
                 var u1 = sourceRect.Left / (float)Texture.Width;
                 var v1 = sourceRect.Top / (float)Texture.Height;
                 var u2 = sourceRect.Right / (float)Texture.Width;
@@ -1076,7 +1074,7 @@ public class RichText : SpriteGraphic
 
                 // Update bounds.
                 minX = Util.Min(minX, x + glyph.BearingX - LineStartPosition(currentLine));
-                minY = Util.Min(minY, y  - glyph.BearingY);
+                minY = Util.Min(minY, y - glyph.BearingY);
 
                 maxX = Util.Max(maxX, x + glyph.BearingX + glyph.Width - LineStartPosition(currentLine));
                 maxY = Util.Max(maxY, y - glyph.BearingY + glyph.Height);
@@ -1088,8 +1086,8 @@ public class RichText : SpriteGraphic
                 lineLength += Advance(glyph) * LetterSpacing;
 
                 // kernin'
-                if(i < chars.Count - 1)
-                    x += font.GetKerning(chars[i].Character, chars[i+1].Character, FontSize, currentBold);
+                if (i < chars.Count - 1)
+                    x += font.GetKerning(chars[i].Character, chars[i + 1].Character, FontSize, currentBold);
             }
         }
 

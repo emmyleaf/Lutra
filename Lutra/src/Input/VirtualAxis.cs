@@ -43,17 +43,17 @@ public class VirtualAxis
     /// <summary>
     /// The controller Buttons registered to the Button.
     /// </summary>
-    private Dictionary<Direction, List<(int, ControllerButton)>> ControllerButtons = new();
+    private Dictionary<Direction, List<(Controller, ControllerButton)>> ControllerButtons = new();
 
     /// <summary>
     /// The X axes to use.
     /// </summary>
-    private List<(int, ControllerAxis)> AxesX = new();
+    private List<(Controller, ControllerAxis)> AxesX = new();
 
     /// <summary>
     /// The Y axes to use.
     /// </summary>
-    private List<(int, ControllerAxis)> AxesY = new();
+    private List<(Controller, ControllerAxis)> AxesY = new();
 
     #endregion
 
@@ -196,10 +196,10 @@ public class VirtualAxis
     /// <param name="x">The ControllerAxis to use for X.</param>
     /// <param name="y">The ControllerAxis to use for Y.</param>
     /// <param name="controller">The controller id to use.</param>
-    public VirtualAxis(ControllerAxis x, ControllerAxis y, int controller)
+    public VirtualAxis(Controller controller, ControllerAxis x, ControllerAxis y)
         : this()
     {
-        AddControllerAxis(x, y, controller);
+        AddControllerAxis(controller, x, y);
     }
 
     /// <summary>
@@ -210,13 +210,13 @@ public class VirtualAxis
     /// <param name="down">The ControllerButton for Down.</param>
     /// <param name="left">The ControllerButton for Left.</param>
     /// <param name="controller">The controller id to use.</param>
-    public VirtualAxis(ControllerButton up, ControllerButton right, ControllerButton down, ControllerButton left, int controller)
+    public VirtualAxis(Controller controller, ControllerButton up, ControllerButton right, ControllerButton down, ControllerButton left)
         : this()
     {
-        AddButton(up, Direction.Up, controller);
-        AddButton(right, Direction.Right, controller);
-        AddButton(down, Direction.Down, controller);
-        AddButton(left, Direction.Left, controller);
+        AddButton(controller, up, Direction.Up);
+        AddButton(controller, right, Direction.Right);
+        AddButton(controller, down, Direction.Down);
+        AddButton(controller, left, Direction.Left);
     }
 
     #endregion
@@ -256,7 +256,7 @@ public class VirtualAxis
     /// <param name="y">The y axis of the controller.</param>
     /// <param name="controller">The controller id.</param>
     /// <returns>The Axis.</returns>
-    public VirtualAxis AddControllerAxis(ControllerAxis x, ControllerAxis y, int controller)
+    public VirtualAxis AddControllerAxis(Controller controller, ControllerAxis x, ControllerAxis y)
     {
         AxesX.Add((controller, x));
         AxesY.Add((controller, y));
@@ -270,7 +270,7 @@ public class VirtualAxis
     /// <param name="direction">The direction this button should effect.</param>
     /// <param name="controller">The controller id.</param>
     /// <returns>The Axis.</returns>
-    public VirtualAxis AddButton(ControllerButton button, Direction direction, int controller)
+    public VirtualAxis AddButton(Controller controller, ControllerButton button, Direction direction)
     {
         ControllerButtons[direction].Add((controller, button));
         return this;
@@ -388,27 +388,21 @@ public class VirtualAxis
         X = 0;
         Y = 0;
 
-        foreach (var (id, axis) in AxesX)
+        foreach (var (controller, axis) in AxesX)
         {
-            if (InputManager.Controllers.TryGetValue(id, out var controller))
+            float value = controller.GetAxis(axis);
+            if (value >= DeadZone || value <= -DeadZone)
             {
-                float value = controller.GetAxis(axis);
-                if (value >= DeadZone || value <= -DeadZone)
-                {
-                    X += MapAxisValue(value);
-                }
+                X += MapAxisValue(value);
             }
         }
 
-        foreach (var (id, axis) in AxesY)
+        foreach (var (controller, axis) in AxesY)
         {
-            if (InputManager.Controllers.TryGetValue(id, out var controller))
+            float value = controller.GetAxis(axis);
+            if (value >= DeadZone || value <= -DeadZone)
             {
-                float value = controller.GetAxis(axis);
-                if (value >= DeadZone || value <= -DeadZone)
-                {
-                    Y += MapAxisValue(value);
-                }
+                Y += MapAxisValue(value);
             }
         }
 
@@ -441,30 +435,30 @@ public class VirtualAxis
             }
         }
 
-        foreach (var (id, button) in ControllerButtons[Direction.Up])
+        foreach (var (controller, button) in ControllerButtons[Direction.Up])
         {
-            if (InputManager.Controllers.TryGetValue(id, out var controller) && controller.ButtonDown(button))
+            if (controller.ButtonDown(button))
             {
                 Y -= 1;
             }
         }
-        foreach (var (id, button) in ControllerButtons[Direction.Down])
+        foreach (var (controller, button) in ControllerButtons[Direction.Down])
         {
-            if (InputManager.Controllers.TryGetValue(id, out var controller) && controller.ButtonDown(button))
+            if (controller.ButtonDown(button))
             {
                 Y += 1;
             }
         }
-        foreach (var (id, button) in ControllerButtons[Direction.Left])
+        foreach (var (controller, button) in ControllerButtons[Direction.Left])
         {
-            if (InputManager.Controllers.TryGetValue(id, out var controller) && controller.ButtonDown(button))
+            if (controller.ButtonDown(button))
             {
                 X -= 1;
             }
         }
-        foreach (var (id, button) in ControllerButtons[Direction.Right])
+        foreach (var (controller, button) in ControllerButtons[Direction.Right])
         {
-            if (InputManager.Controllers.TryGetValue(id, out var controller) && controller.ButtonDown(button))
+            if (controller.ButtonDown(button))
             {
                 X += 1;
             }
