@@ -261,7 +261,7 @@ public class Particle : Entity
     public Color Color
     {
         set { color = value; hasColor = true; }
-        get { return color; }
+        get => color;
     }
 
     /// <summary>
@@ -270,7 +270,7 @@ public class Particle : Entity
     public float SpeedLen
     {
         set { speedLen = value; hasSpeedLen = true; }
-        get { return speedLen; }
+        get => speedLen;
     }
 
     /// <summary>
@@ -279,7 +279,7 @@ public class Particle : Entity
     public float SpeedDir
     {
         set { speedDir = value; hasSpeedDir = true; }
-        get { return speedDir; }
+        get => speedDir;
     }
 
     /// <summary>
@@ -288,7 +288,7 @@ public class Particle : Entity
     public int FrameCount
     {
         set { frameCount = value; hasFrameCount = true; }
-        get { return frameCount; }
+        get => frameCount;
     }
 
     /// <summary>
@@ -297,7 +297,7 @@ public class Particle : Entity
     public float FinalSpeedX
     {
         set { finalSpeedX = value; hasFinalSpeedX = true; }
-        get { return finalSpeedX; }
+        get => finalSpeedX;
     }
 
     /// <summary>
@@ -306,7 +306,7 @@ public class Particle : Entity
     public float FinalSpeedY
     {
         set { finalSpeedY = value; hasFinalSpeedY = true; }
-        get { return finalSpeedY; }
+        get => finalSpeedY;
     }
 
     /// <summary>
@@ -315,7 +315,7 @@ public class Particle : Entity
     public float FinalScaleX
     {
         set { finalScaleX = value; hasFinalScaleX = true; }
-        get { return finalScaleX; }
+        get => finalScaleX;
     }
 
     /// <summary>
@@ -324,7 +324,7 @@ public class Particle : Entity
     public float FinalScaleY
     {
         set { finalScaleY = value; hasFinalScaleY = true; }
-        get { return finalScaleY; }
+        get => finalScaleY;
     }
 
     /// <summary>
@@ -333,7 +333,7 @@ public class Particle : Entity
     public float FinalAngle
     {
         set { finalAngle = value; hasFinalAngle = true; }
-        get { return finalAngle; }
+        get => finalAngle;
     }
 
     /// <summary>
@@ -342,7 +342,7 @@ public class Particle : Entity
     public float FinalX
     {
         set { finalX = value; hasFinalX = true; }
-        get { return finalX; }
+        get => finalX;
     }
 
     /// <summary>
@@ -351,7 +351,7 @@ public class Particle : Entity
     public float FinalY
     {
         set { finalY = value; hasFinalY = true; }
-        get { return finalY; }
+        get => finalY;
     }
 
     /// <summary>
@@ -360,7 +360,7 @@ public class Particle : Entity
     public float FinalAlpha
     {
         set { finalAlpha = value; hasFinalAlpha = true; }
-        get { return finalAlpha; }
+        get => finalAlpha;
     }
 
     /// <summary>
@@ -369,7 +369,7 @@ public class Particle : Entity
     public float FinalColorR
     {
         set { finalColorR = value; hasFinalColorR = true; }
-        get { return finalColorR; }
+        get => finalColorR;
     }
 
     /// <summary>
@@ -378,7 +378,7 @@ public class Particle : Entity
     public float FinalColorG
     {
         set { finalColorG = value; hasFinalColorG = true; }
-        get { return finalColorG; }
+        get => finalColorG;
     }
 
     /// <summary>
@@ -387,7 +387,7 @@ public class Particle : Entity
     public float FinalColorB
     {
         set { finalColorB = value; hasFinalColorB = true; }
-        get { return finalColorB; }
+        get => finalColorB;
     }
 
     /// <summary>
@@ -396,7 +396,7 @@ public class Particle : Entity
     public Color FinalColor
     {
         set { finalColor = value; hasFinalColor = true; }
-        get { return finalColor; }
+        get => finalColor;
     }
 
     /// <summary>
@@ -405,7 +405,7 @@ public class Particle : Entity
     public float FinalSpeedLen
     {
         set { finalSpeedLen = value; hasFinalSpeedLen = true; }
-        get { return finalSpeedLen; }
+        get => finalSpeedLen;
     }
 
     /// <summary>
@@ -414,7 +414,7 @@ public class Particle : Entity
     public float FinalSpeedDir
     {
         set { finalSpeedDir = value; hasFinalSpeedDir = true; }
-        get { return finalSpeedDir; }
+        get => finalSpeedDir;
     }
 
     /// <summary>
@@ -422,7 +422,7 @@ public class Particle : Entity
     /// </summary>
     public float OriginX
     {
-        get { return originX; }
+        get => originX;
         set
         {
             originX = value;
@@ -435,7 +435,7 @@ public class Particle : Entity
     /// </summary>
     public float OriginY
     {
-        get { return originY; }
+        get => originY;
         set
         {
             originY = value;
@@ -656,10 +656,7 @@ public class Particle : Entity
             Y += SpeedY;
         }
 
-        if (Ease == null)
-        {
-            Ease = Utility.Ease.Linear;
-        }
+        Ease ??= Utility.Ease.Linear;
 
         // if (Shader != null)
         // {
@@ -691,7 +688,7 @@ public class Particle : Entity
         }
 
         // Update values
-        float lerp = Ease((float)Timer / LifeSpan);
+        float lerp = Ease(Timer / LifeSpan);
         SpeedX = MathHelper.Lerp(initSpeedX, finalSpeedX, lerp);
         SpeedY = MathHelper.Lerp(initSpeedY, finalSpeedY, lerp);
         ScaleX = MathHelper.Lerp(initScaleX, finalScaleX, lerp);
@@ -731,14 +728,13 @@ public class Particle : Entity
         }
 
         // Set up animation
-        int endFrame;
         if (hasFrameCount)
         {
-            endFrame = FrameOffset + FrameCount;
+            _ = FrameOffset + FrameCount;
         }
         else
         {
-            endFrame = Image.Frames;
+            _ = Image.Frames;
         }
 
         // Animate the particle

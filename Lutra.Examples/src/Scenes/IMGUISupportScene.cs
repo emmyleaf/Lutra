@@ -117,7 +117,6 @@ namespace Lutra.Examples
             if (openedConfirmPopup)
             {
                 ImGui.OpenPopup("ConfirmAllDelete");
-                openedConfirmPopup = false;
             }
         }
     }

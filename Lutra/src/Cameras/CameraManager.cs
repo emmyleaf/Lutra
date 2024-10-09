@@ -5,7 +5,7 @@ namespace Lutra.Cameras
 {
     public class CameraManager
     {
-        private Stack<Camera> CameraStack = new();
+        private readonly Stack<Camera> CameraStack = new();
 
         public CameraManager(float InitialViewportWidth, float InitialViewportHeight)
         {

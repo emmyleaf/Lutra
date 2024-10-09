@@ -5,12 +5,15 @@ using Lutra.Utility;
 
 namespace Lutra.Cameras
 {
-    public class Camera
+    /// <summary>
+    /// Create a camera. X and Y represent the camera's focus point, the center of its bounds.
+    /// </summary>
+    public class Camera(float x, float y, float width, float height, float angle = 0.0f, float scale = 1.0f)
     {
-        private float _x, _y, _width, _height, _angle, _scale;
+        private float _x = x, _y = y, _width = width, _height = height, _angle = angle, _scale = scale;
         private Matrix4x4 _projection, _view;
-        private RectFloat _bounds;
-        private bool _needsUpdate;
+        private RectFloat _bounds = new(x - width / 2f, y - height / 2f, width, height);
+        private bool _needsUpdate = true;
 
         #region Public Properties
 
@@ -106,25 +109,7 @@ namespace Lutra.Cameras
         }
 
         #endregion
-
         #region Constructors
-
-        /// <summary>
-        /// Create a camera. X and Y represent the camera's focus point, the center of its bounds.
-        /// </summary>
-        public Camera(float x, float y, float width, float height, float angle = 0.0f, float scale = 1.0f)
-        {
-            _x = x;
-            _y = y;
-            _width = width;
-            _height = height;
-            _angle = angle;
-            _scale = scale;
-
-            _bounds = new RectFloat(x - width / 2f, y - height / 2f, width, height);
-
-            _needsUpdate = true;
-        }
 
         /// <summary>
         /// Create a default camera centred in a Game's bounds.

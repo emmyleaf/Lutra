@@ -8,7 +8,7 @@ namespace Lutra.Examples
     // This scene shows off managed drawing to a Surface using Layer property to set render order.
     public class SurfaceLayeredTestScene : Scene
     {
-        public List<Image> Lutras = new();
+        public List<Image> Lutras = [];
         public Surface LutrasSurface;
 
         public override void Begin()

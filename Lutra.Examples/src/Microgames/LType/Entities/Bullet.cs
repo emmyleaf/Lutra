@@ -12,8 +12,8 @@ public class Bullet : Entity
     public Vector2 Direction;
     public WeaponData WeaponData;
 
-    private Collider hitCollider;
-    private Collider rangeCollider;
+    private readonly Collider hitCollider;
+    private readonly Collider rangeCollider;
 
     private float hitTimer = float.MaxValue;
 

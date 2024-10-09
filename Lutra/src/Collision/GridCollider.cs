@@ -12,7 +12,7 @@ namespace Lutra.Collision
 
         #region Private Fields
 
-        List<bool> collisions = new List<bool>();
+        readonly List<bool> collisions = [];
 
         #endregion
 
@@ -41,18 +41,12 @@ namespace Lutra.Collision
         /// <summary>
         /// The width of the grid. (TileColumns * TileWidth)
         /// </summary>
-        public override float Width
-        {
-            get { return TileColumns * TileWidth; }
-        }
+        public override float Width => TileColumns * TileWidth;
 
         /// <summary>
         /// The height of the grid (TileRows * TileHeight)
         /// </summary>
-        public override float Height
-        {
-            get { return TileRows * TileHeight; }
-        }
+        public override float Height => TileRows * TileHeight;
 
         /// <summary>
         /// Convert an X position to a tile on the grid.
@@ -77,18 +71,12 @@ namespace Lutra.Collision
         /// <summary>
         /// The area in tile size.
         /// </summary>
-        public int TileArea
-        {
-            get { return TileRows * TileHeight; }
-        }
+        public int TileArea => TileRows * TileHeight;
 
         /// <summary>
         /// The area in pixels.
         /// </summary>
-        public int Area
-        {
-            get { return (int)(Width * Height); }
-        }
+        public int Area => (int)(Width * Height);
 
         #endregion
 
@@ -104,8 +92,8 @@ namespace Lutra.Collision
         /// <param name="tags">The tags to register for the collider.</param>
         public GridCollider(int width, int height, int tileWidth, int tileHeight, params int[] tags)
         {
-            if (width < 0) throw new ArgumentOutOfRangeException("Width must be greater than 0.");
-            if (height < 0) throw new ArgumentOutOfRangeException("Height must be greater than 0.");
+            ArgumentOutOfRangeException.ThrowIfNegative(width);
+            ArgumentOutOfRangeException.ThrowIfNegative(height);
 
             TileColumns = (int)Util.Ceil((float)width / tileWidth);
             TileRows = (int)Util.Ceil((float)height / tileHeight);
@@ -140,7 +128,7 @@ namespace Lutra.Collision
         {
             if (x < 0 || y < 0) return;
             if (x >= TileColumns || y >= TileRows) return;
-            collisions[Util.OneDee((int)TileColumns, (int)x, (int)y)] = collidable;
+            collisions[Util.OneDee(TileColumns, x, y)] = collidable;
         }
 
         /// <summary>
@@ -184,7 +172,7 @@ namespace Lutra.Collision
         {
             if (x < 0 || y < 0) return false;
             if (x >= TileColumns || y >= TileRows) return false;
-            var index = Util.OneDee((int)TileColumns, (int)x, (int)y);
+            var index = Util.OneDee(TileColumns, x, y);
             if (index >= collisions.Count) return false;
             return collisions[index];
         }
@@ -197,9 +185,6 @@ namespace Lutra.Collision
         /// <returns>True if the tile at that position is collidable.</returns>
         public bool GetTileAtPosition(float x, float y)
         {
-            var ox = x;
-            var oy = y;
-
             x -= Left;
             y -= Top;
 

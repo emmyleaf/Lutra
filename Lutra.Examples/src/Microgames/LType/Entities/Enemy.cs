@@ -7,10 +7,8 @@ namespace Lutra.Examples.Microgames.LType;
 
 public class Enemy : Entity
 {
-    private const float ALIVE_AFTER_HIT = 1f;
-
-    private static readonly Vector2 weaponPosition = new Vector2(-10, 0);
-    private Image enemySprite;
+    private static readonly Vector2 weaponPosition = new(-10, 0);
+    private readonly Image enemySprite;
     private float aliveTimer = 0f;
     private float lastShotTimer = float.MaxValue;
 

@@ -5,21 +5,14 @@ using Veldrid;
 
 namespace Lutra.Utility.Veldrid
 {
-    public class DisposeCollectorResourceFactory : ResourceFactory
+    public class DisposeCollectorResourceFactory(ResourceFactory factory, DisposeCollector disposeCollector) : ResourceFactory(factory.Features)
     {
-        public ResourceFactory Factory { get; }
-        public DisposeCollector DisposeCollector { get; }
+        public ResourceFactory Factory { get; } = factory;
+        public DisposeCollector DisposeCollector { get; } = disposeCollector;
 
         public DisposeCollectorResourceFactory(ResourceFactory factory)
             : this(factory, new DisposeCollector())
         {
-        }
-
-        public DisposeCollectorResourceFactory(ResourceFactory factory, DisposeCollector disposeCollector)
-            : base(factory.Features)
-        {
-            Factory = factory;
-            DisposeCollector = disposeCollector;
         }
 
         public override GraphicsBackend BackendType => Factory.BackendType;

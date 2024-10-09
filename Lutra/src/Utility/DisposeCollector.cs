@@ -4,7 +4,7 @@ namespace Lutra.Utility
 {
     public class DisposeCollector
     {
-        private readonly List<IDisposable> _disposables = new();
+        private readonly List<IDisposable> _disposables = [];
 
         public void Add<T>(T disposable) where T : IDisposable
         {

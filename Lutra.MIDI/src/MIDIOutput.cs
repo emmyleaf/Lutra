@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Commons.Music.Midi;
-using Lutra;
-using Lutra.Utility.Collections;
 
 namespace Lutra.MIDI;
 
@@ -14,9 +11,9 @@ namespace Lutra.MIDI;
 public class MIDIOutput : IDisposable
 {
     // Private Fields
-    private IMidiAccess accessManager;
-    private IMidiOutput midiOutput;
-    private Queue<MIDICommandEvent> outgoingCommandQueue = new Queue<MIDICommandEvent>();
+    private readonly IMidiAccess accessManager;
+    private readonly IMidiOutput midiOutput;
+    private readonly Queue<MIDICommandEvent> outgoingCommandQueue = new();
 
 
 
@@ -38,8 +35,8 @@ public class MIDIOutput : IDisposable
             Utility.Util.LogError("Cannot open MIDI Output. No devices available.");
         }
 
-        Utility.Util.Log($"Attempting to connect to MIDI Output {(portID == null ? availableOutputs.Last().Id : portID)}");
-        midiOutput = accessManager.OpenOutputAsync(portID == null ? availableOutputs.Last().Id : portID).Result;
+        Utility.Util.Log($"Attempting to connect to MIDI Output {(portID ?? availableOutputs.Last().Id)}");
+        midiOutput = accessManager.OpenOutputAsync(portID ?? availableOutputs.Last().Id).Result;
 
         if (midiOutput != null)
         {
@@ -49,19 +46,19 @@ public class MIDIOutput : IDisposable
 
         if (!connectSuccess)
         {
-            Utility.Util.LogError($"Failed to connect to MIDI Output {(portID == null ? availableOutputs.Last().Id : portID)}.");
+            Utility.Util.LogError($"Failed to connect to MIDI Output {(portID ?? availableOutputs.Last().Id)}.");
         }
 
     }
 
-    private void EncodeEventBytes(ref MIDICommandEvent outputEvent)
+    private static void EncodeEventBytes(ref MIDICommandEvent outputEvent)
     {
         outputEvent.RawBytes = Util.CommandEventToBytes(outputEvent);
     }
 
     public void SendNoteOn(int channel, int note, int velocity)
     {
-        MIDICommandEvent outputEvent = new MIDICommandEvent
+        MIDICommandEvent outputEvent = new()
         {
             EventType = MIDICommandEventType.NoteOn,
             Value = note,
@@ -80,7 +77,7 @@ public class MIDIOutput : IDisposable
 
     public void SendNoteOff(int channel, int note)
     {
-        MIDICommandEvent outputEvent = new MIDICommandEvent
+        MIDICommandEvent outputEvent = new()
         {
             EventType = MIDICommandEventType.NoteOff,
             Value = note,
@@ -93,7 +90,7 @@ public class MIDIOutput : IDisposable
 
     public void SendValueUpdateOnly(int valueA, int valueB)
     {
-        MIDICommandEvent outputEvent = new MIDICommandEvent
+        MIDICommandEvent outputEvent = new()
         {
             EventType = MIDICommandEventType.NoStatusSent,
             Value = valueA,
@@ -106,7 +103,7 @@ public class MIDIOutput : IDisposable
 
     public void SendValueUpdateOnlyWithController(int valueA, int controller)
     {
-        MIDICommandEvent outputEvent = new MIDICommandEvent
+        MIDICommandEvent outputEvent = new()
         {
             EventType = MIDICommandEventType.NoStatusSent,
             Value = controller,
@@ -119,7 +116,7 @@ public class MIDIOutput : IDisposable
 
     public void SendControllerValueChanged(int channel, int controller, int value)
     {
-        MIDICommandEvent outputEvent = new MIDICommandEvent
+        MIDICommandEvent outputEvent = new()
         {
             EventType = MIDICommandEventType.ControllerValueChanged,
             Value = controller,
@@ -133,7 +130,7 @@ public class MIDIOutput : IDisposable
 
     public void SendPitchbend(int channel, int lsb, int msb)
     {
-        MIDICommandEvent outputEvent = new MIDICommandEvent
+        MIDICommandEvent outputEvent = new()
         {
             EventType = MIDICommandEventType.PitchBend,
             Value = lsb,

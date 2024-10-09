@@ -11,7 +11,7 @@ namespace Lutra.Utility
 
         #region Static Fields
 
-        static List<Random> randoms = new List<Random>();
+        static readonly List<Random> randoms = [];
 
         #endregion
 
@@ -25,52 +25,34 @@ namespace Lutra.Utility
                 {
                     randoms.Add(new Random());
                 }
-                return randoms[randoms.Count - 1];
+                return randoms[^1];
             }
         }
 
         /// <summary>
         /// A raw random value.
         /// </summary>
-        public static float Value
-        {
-            get { return (float)random.NextDouble(); }
-        }
+        public static float Value => (float)random.NextDouble();
 
         /// <summary>
         /// A random float from 0 to 360.
         /// </summary>
-        public static float Angle
-        {
-            get { return Float(360); }
-        }
+        public static float Angle => Float(360);
 
         /// <summary>
         /// Generate a random bool.
         /// </summary>
-        public static bool Bool
-        {
-            get { return random.Next(2) > 0; }
-        }
+        public static bool Bool => random.Next(2) > 0;
 
         /// <summary>
         /// Generate a random bool.
         /// </summary>
-        public static bool Flip
-        {
-            get
-            {
-                return Bool;
-            }
-        }
+        public static bool Flip => Bool;
 
         /// <summary>
         /// Generate a random sign.
         /// </summary>
-        public static int Sign
-        {
-            get { return Bool ? 1 : -1; }
-        }
+        public static int Sign => Bool ? 1 : -1;
 
         #endregion
 
@@ -164,7 +146,7 @@ namespace Lutra.Utility
         /// <returns>The chosen object.</returns>
         public static T Choose<T>(params T[] choices)
         {
-            return (T)choices[Int(choices.Length)];
+            return choices[Int(choices.Length)];
         }
 
         /// <summary>

@@ -27,58 +27,42 @@ namespace Lutra.Collision
         /// <summary>
         /// The width of the area the line occupies.
         /// </summary>
-        public override float Width
-        {
-            get { return Math.Abs(X - X2); }
-        }
+        public override float Width => Math.Abs(X - X2);
 
         /// <summary>
         /// The height of the area the line occupies.
         /// </summary>
-        public override float Height
-        {
-            get { return Math.Abs(Y - Y2); }
-        }
+        public override float Height => Math.Abs(Y - Y2);
 
         /// <summary>
         /// The bottom most Y position of the line.
         /// </summary>
-        public override float Bottom
-        {
-            get { return Math.Max(Y, Y2) - OriginY + Entity.Y; }
-        }
+        public override float Bottom => Math.Max(Y, Y2) - OriginY + Entity.Y;
 
         /// <summary>
         /// The top most Y position of the line.
         /// </summary>
-        public override float Top
-        {
-            get { return Math.Min(Y, Y2) - OriginY + Entity.Y; }
-        }
+        public override float Top => Math.Min(Y, Y2) - OriginY + Entity.Y;
 
         /// <summary>
         /// The left most X position of the line.
         /// </summary>
-        public override float Left
-        {
-            get { return Math.Min(X, X2) - OriginX + Entity.X; }
-        }
+        public override float Left => Math.Min(X, X2) - OriginX + Entity.X;
 
         /// <summary>
         /// The right most X position of the line.
         /// </summary>
-        public override float Right
-        {
-            get { return Math.Max(X, X2) - OriginX + Entity.X; }
-        }
+        public override float Right => Math.Max(X, X2) - OriginX + Entity.X;
 
         /// <summary>
         /// Convert the LineCollider into a Line2 object.
         /// </summary>
-        public Line2 Line2
-        {
-            get { return new Line2(X - OriginX + Entity.X, Y - OriginY + Entity.Y, X2 - OriginX + Entity.X, Y2 - OriginY + Entity.Y); }
-        }
+        public Line2 Line2 => new(
+            X - OriginX + Entity.X,
+            Y - OriginY + Entity.Y,
+            X2 - OriginX + Entity.X,
+            Y2 - OriginY + Entity.Y
+        );
 
         #endregion
 
@@ -102,7 +86,8 @@ namespace Lutra.Collision
             AddTag(tags);
         }
 
-        public LineCollider(float x1, float y1, float x2, float y2, Enum tag, params Enum[] tags) : this(x1, y1, x2, y2)
+        public LineCollider(float x1, float y1, float x2, float y2, Enum tag, params Enum[] tags)
+        : this(x1, y1, x2, y2)
         {
             AddTag(tag);
             AddTag(tags);

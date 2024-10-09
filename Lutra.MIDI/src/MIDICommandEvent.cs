@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Commons.Music.Midi;
-using Lutra;
-
 namespace Lutra.MIDI;
 
 public enum MIDICommandEventType
@@ -32,5 +25,4 @@ public struct MIDICommandEvent
     public MIDICommandEventType EventType;
     public long Timestamp;
     public byte[] RawBytes;
-
 }

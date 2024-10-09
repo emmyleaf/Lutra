@@ -7,16 +7,10 @@ namespace Lutra.Rendering;
 
 public readonly record struct SpriteParams(LutraTexture Texture, Matrix4x4 WorldMatrix);
 
-public class SpriteDrawable
+public class SpriteDrawable(LutraTexture texture, Matrix4x4 worldMatrix)
 {
-    public SpriteParams Params;
-    public List<Vertex> Vertices;
-
-    public SpriteDrawable(LutraTexture texture, Matrix4x4 worldMatrix)
-    {
-        Params = new(texture, worldMatrix);
-        Vertices = new();
-    }
+    public SpriteParams Params = new(texture, worldMatrix);
+    public List<Vertex> Vertices = [];
 
     public void Reinitialise(LutraTexture texture, Matrix4x4 worldMatrix)
     {

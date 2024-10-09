@@ -19,7 +19,7 @@ public class Music : IDisposable
     private static readonly TimeSpan THREAD_SLEEP_TIME = TimeSpan.FromSeconds(0.05);
 
     private static float globalVolume = 1f;
-    private static List<Music> musicList = new List<Music>();
+    private static readonly List<Music> musicList = new();
 
     #endregion
 

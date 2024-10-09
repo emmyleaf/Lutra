@@ -13,16 +13,16 @@ public static class InputManager
 {
     #region Private Fields
 
-    private static List<SDL_JoystickID> controllerIds = new();
+    private static readonly List<SDL_JoystickID> controllerIds = [];
 
-    private static HashSet<Key> prevKeysDown = new();
-    private static HashSet<Key> keysDown = new();
-    private static HashSet<MouseButton> prevMouseButtonsDown = new();
-    private static HashSet<MouseButton> mouseButtonsDown = new();
+    private static HashSet<Key> prevKeysDown = [];
+    private static readonly HashSet<Key> keysDown = [];
+    private static HashSet<MouseButton> prevMouseButtonsDown = [];
+    private static readonly HashSet<MouseButton> mouseButtonsDown = [];
 
-    private static List<VirtualController> virtualControllers = new();
+    private static readonly List<VirtualController> virtualControllers = [];
 
-    private static Dictionary<SDL_JoystickID, Controller> controllers = new();
+    private static readonly Dictionary<SDL_JoystickID, Controller> controllers = [];
 
     #endregion
 
@@ -458,7 +458,7 @@ public static class InputManager
 
             if (key == Key.Backspace)
             {
-                KeyString = KeyString.Substring(0, (int)Util.Max(0, KeyString.Length - 1));
+                KeyString = KeyString[..(int)Util.Max(0, KeyString.Length - 1)];
             }
         }
         else
@@ -480,7 +480,7 @@ public static class InputManager
         int editLength = editEvent.length;
 
         KeyString = KeyString.Remove(startIndex, editLength);
-        KeyString = KeyString.Insert(startIndex, editText.Substring(0, editLength));
+        KeyString = KeyString.Insert(startIndex, editText[..editLength]);
     }
 
     private static void ProcessSdlMouseButtonEvent(ref SDL_MouseButtonEvent mbEvent)

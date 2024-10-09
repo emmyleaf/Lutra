@@ -104,10 +104,7 @@ public class Image : SpriteGraphic
     /// </summary>
     public Color DropshadowColor
     {
-        get
-        {
-            return dropshadowColor;
-        }
+        get => dropshadowColor;
 
         set
         {
@@ -121,10 +118,7 @@ public class Image : SpriteGraphic
     /// </summary>
     public float DropshadowDistanceX
     {
-        get
-        {
-            return dropshadowDistanceX;
-        }
+        get => dropshadowDistanceX;
         set
         {
             dropshadowDistanceX = value;
@@ -137,10 +131,7 @@ public class Image : SpriteGraphic
     /// </summary>
     public float DropshadowDistanceY
     {
-        get
-        {
-            return dropshadowDistanceY;
-        }
+        get => dropshadowDistanceY;
         set
         {
             dropshadowDistanceY = value;

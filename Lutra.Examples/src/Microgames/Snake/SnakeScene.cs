@@ -18,10 +18,10 @@ namespace Lutra.Examples.Microgames.Snake
         public static readonly int GridSize = 32;
         private SnakeGameState GameState;
 
-        private Entity StartNewGameHUD = new();
-        private Entity PlayingHUD = new();
+        private readonly Entity StartNewGameHUD = new();
+        private readonly Entity PlayingHUD = new();
         private RichText PlayingScore;
-        private Entity GameOverHUD = new();
+        private readonly Entity GameOverHUD = new();
         private RichText GameOverScore;
 
         private int CurrentScore = 0;

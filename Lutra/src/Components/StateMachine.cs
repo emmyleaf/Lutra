@@ -12,9 +12,9 @@ namespace Lutra.Components;
 public class StateMachine<TState> : Component
 where TState : Enum
 {
-    private Dictionary<TState, Action> stateEntryFuncs = new();
-    private Dictionary<TState, Action<TState>> stateExitFuncs = new();
-    private Dictionary<TState, Action> stateUpdateFuncs = new();
+    private readonly Dictionary<TState, Action> stateEntryFuncs = [];
+    private readonly Dictionary<TState, Action<TState>> stateExitFuncs = [];
+    private readonly Dictionary<TState, Action> stateUpdateFuncs = [];
 
     private Func<TState, TState, bool> canSwitchStateFunc;
 
@@ -26,9 +26,9 @@ where TState : Enum
 
     public override void Update()
     {
-        if (running && stateUpdateFuncs.ContainsKey(currentState))
+        if (running && stateUpdateFuncs.TryGetValue(currentState, out Action update))
         {
-            stateUpdateFuncs[currentState]();
+            update.Invoke();
         }
     }
 
@@ -59,9 +59,9 @@ where TState : Enum
     {
         if (!running)
         {
-            if (!skipEntry && stateEntryFuncs.ContainsKey(startState))
+            if (!skipEntry && stateEntryFuncs.TryGetValue(startState, out Action entry))
             {
-                stateEntryFuncs[startState]();
+                entry.Invoke();
             }
 
             currentState = startState;
@@ -73,9 +73,9 @@ where TState : Enum
     {
         if (running)
         {
-            if (!skipExit && stateExitFuncs.ContainsKey(currentState))
+            if (!skipExit && stateExitFuncs.TryGetValue(currentState, out Action<TState> exit))
             {
-                stateExitFuncs[currentState](currentState);
+                exit.Invoke(currentState);
             }
 
             running = false;
@@ -98,14 +98,14 @@ where TState : Enum
 
     private void SwitchStateInternal(TState nextState)
     {
-        if (stateExitFuncs.ContainsKey(currentState))
+        if (stateExitFuncs.TryGetValue(currentState, out Action<TState> exit))
         {
-            stateExitFuncs[currentState](nextState);
+            exit.Invoke(nextState);
         }
 
-        if (stateEntryFuncs.ContainsKey(nextState))
+        if (stateEntryFuncs.TryGetValue(nextState, out Action entry))
         {
-            stateEntryFuncs[nextState]();
+            entry.Invoke();
         }
 
         currentState = nextState;

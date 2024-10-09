@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Commons.Music.Midi;
-using Lutra;
-using Lutra.Utility.Collections;
 
 namespace Lutra.MIDI;
 
@@ -15,7 +11,7 @@ namespace Lutra.MIDI;
 public class SimpleMIDIPlayer
 {
     // MIDI Backend
-    private MIDIOutput midiOutput;
+    private readonly MIDIOutput midiOutput;
     private SmfReader smfReader;
     private MidiPlayer midiPlayer;
 
@@ -23,10 +19,7 @@ public class SimpleMIDIPlayer
     // API
     public void LoadFile(string path)
     {
-        if (smfReader == null)
-        {
-            smfReader = new SmfReader();
-        }
+        smfReader ??= new SmfReader();
 
         using (FileStream fs = File.Open(path, FileMode.Open))
         {
@@ -114,7 +107,7 @@ public class SimpleMIDIPlayer
 
     public static SimpleMIDIPlayer SimpleMIDIPlayerOnDefaultMIDIDevice()
     {
-        SimpleMIDIPlayer player = new SimpleMIDIPlayer(0);
+        SimpleMIDIPlayer player = new(0);
 
         return player;
     }
@@ -140,11 +133,7 @@ public class SimpleMIDIPlayer
 
     private void OnMidiEventInternal(MidiEvent midiEvent)
     {
-        byte[] bytes = new byte[3];
-        bytes[0] = midiEvent.StatusByte;
-        bytes[1] = midiEvent.Lsb;
-        bytes[2] = midiEvent.Msb;
-
+        byte[] bytes = [midiEvent.StatusByte, midiEvent.Lsb, midiEvent.Msb];
         OnMidiEvent?.Invoke(Util.BytesToCommandEvent(bytes, ref previousChannel, ref previousEventType));
     }
 

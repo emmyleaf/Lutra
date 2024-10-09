@@ -65,7 +65,7 @@ public static class Ease
 
     public static Easer Mirror(Easer easeIn, Easer easeOut)
     {
-        return (t) => t < 0.5f ? easeIn(t*2): 1 - (easeOut((t - 0.5f) * 2f));
+        return (t) => t < 0.5f ? easeIn(t * 2) : 1 - (easeOut((t - 0.5f) * 2f));
     }
 
     private const float PI = MathHelper.Pi;

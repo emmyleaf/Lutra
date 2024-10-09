@@ -19,14 +19,7 @@ public static class CollectionExtensions
     /// </summary>
     public static void AddOrUpdate<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue value)
     {
-        if (dict.ContainsKey(key))
-        {
-            dict[key] = value;
-        }
-        else
-        {
-            dict.Add(key, value);
-        }
+        dict[key] = value;
     }
 
     /// <summary>
@@ -50,7 +43,7 @@ public static class CollectionExtensions
     /// </summary>
     public static T RandomElement<T>(this IReadOnlyList<T> list)
     {
-        if (list.Count == 0) return default(T);
+        if (list.Count == 0) return default;
 
         return list[Rand.Int(list.Count)];
     }

@@ -21,7 +21,7 @@ public static class Util
 
     public static MIDICommandEvent BytesToCommandEvent(byte[] bytes, ref int previousChannel, ref MIDICommandEventType previousType)
     {
-        MIDICommandEvent midiEvent = new MIDICommandEvent();
+        MIDICommandEvent midiEvent = new();
 
         midiEvent.RawBytes = bytes;
 
@@ -59,7 +59,7 @@ public static class Util
                 if (midiEvent.Value2 == 0)
                 {
                     midiEvent.EventType = MIDICommandEventType.NoteOff;
-                    previousType = midiEvent.EventType;
+                    _ = midiEvent.EventType;
                 }
                 previousType = midiEvent.EventType;
             }

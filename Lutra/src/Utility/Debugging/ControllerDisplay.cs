@@ -38,18 +38,18 @@ namespace Lutra.Utility.Debugging
         private const float StartBackWidth = 32;
         private const float StartBackHeight = 16;
 
-        private static Color StickBorder = Color.Grey;
-        private static Color StickColor = Color.Pink;
-        private static Color StickClickColor = Color.Yellow;
+        private static readonly Color StickBorder = Color.Grey;
+        private static readonly Color StickColor = Color.Pink;
+        private static readonly Color StickClickColor = Color.Yellow;
 
-        private static Color DPadOffColor = Color.Grey;
-        private static Color DPadOnColor = Color.Pink;
+        private static readonly Color DPadOffColor = Color.Grey;
+        private static readonly Color DPadOnColor = Color.Pink;
 
-        private static Color TriggerOffColor = Color.Grey;
-        private static Color TriggerOnColor = Color.Pink;
+        private static readonly Color TriggerOffColor = Color.Grey;
+        private static readonly Color TriggerOnColor = Color.Pink;
 
-        private static Color StartBackOffColor = Color.Grey;
-        private static Color StartBackOnColor = Color.Pink;
+        private static readonly Color StartBackOffColor = Color.Grey;
+        private static readonly Color StartBackOnColor = Color.Pink;
 
         private static Controller Controller;
         private static bool WindowOpen = false;

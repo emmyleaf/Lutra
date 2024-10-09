@@ -29,7 +29,7 @@ namespace Lutra.Rendering
         private Pipeline _pipeline;
         private ResourceSet _mainResourceSet;
         private ResourceSet _fontTextureResourceSet;
-        private IntPtr _fontAtlasID = (IntPtr)1;
+        private readonly IntPtr _fontAtlasID = 1;
 
         private int _windowWidth;
         private int _windowHeight;
@@ -94,13 +94,13 @@ namespace Lutra.Rendering
             _fragmentShader = factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, fragmentShaderBytes, _gd.BackendType == GraphicsBackend.Vulkan ? "main" : "FS"));
             _fragmentShader.Name = "ImGui.NET Fragment Shader";
 
-            VertexLayoutDescription[] vertexLayouts = new VertexLayoutDescription[]
-            {
-                new VertexLayoutDescription(
+            VertexLayoutDescription[] vertexLayouts =
+            [
+                new(
                     new VertexElementDescription("in_position", VertexElementSemantic.Position, VertexElementFormat.Float2),
                     new VertexElementDescription("in_texCoord", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
                     new VertexElementDescription("in_color", VertexElementSemantic.Color, VertexElementFormat.Byte4Norm))
-            };
+            ];
 
             _layout = factory.CreateResourceLayout(new ResourceLayoutDescription(
                 new ResourceLayoutElementDescription("ProjectionMatrixBuffer", ResourceKind.UniformBuffer, ShaderStages.Vertex),
@@ -110,20 +110,19 @@ namespace Lutra.Rendering
                 new ResourceLayoutElementDescription("MainTexture", ResourceKind.TextureReadOnly, ShaderStages.Fragment)));
             _textureLayout.Name = "ImGui.NET Texture Layout";
 
-            GraphicsPipelineDescription pd = new GraphicsPipelineDescription(
+            GraphicsPipelineDescription pd = new(
                 BlendStateDescription.SINGLE_ALPHA_BLEND,
                 new DepthStencilStateDescription(false, false, ComparisonKind.Always),
                 new RasterizerStateDescription(FaceCullMode.None, PolygonFillMode.Solid, FrontFace.Clockwise, true, true),
                 PrimitiveTopology.TriangleList,
                 new ShaderSetDescription(
                     vertexLayouts,
-                    new[] { _vertexShader, _fragmentShader },
-                    new[]
-                    {
+                    [_vertexShader, _fragmentShader],
+                    [
                         new SpecializationConstant(0, gd.IsClipSpaceYInverted),
                         new SpecializationConstant(1, true), // always legacy
-                    }),
-                new ResourceLayout[] { _layout, _textureLayout },
+                    ]),
+                [_layout, _textureLayout],
                 outputDescription,
                 ResourceBindingModel.Default);
             _pipeline = factory.CreateGraphicsPipeline(ref pd);

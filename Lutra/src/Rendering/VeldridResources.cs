@@ -91,7 +91,7 @@ public static class VeldridResources
         {
             WindowResized = false;
             _graphicsDevice.MainSwapchain.Resize((uint)Window.Width, (uint)Window.Height);
-            DEBUG_ImGuiRenderer.WindowResized(Window.Width, Window.Height);
+            DEBUG_ImGuiRenderer?.WindowResized(Window.Width, Window.Height);
         }
     }
 

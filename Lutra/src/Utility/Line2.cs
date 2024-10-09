@@ -39,8 +39,8 @@ namespace Lutra.Utility
         /// </summary>
         public Vector2 PointA
         {
-            get { return new Vector2(X1, Y1); }
-            set { X1 = (float)value.X; Y1 = (float)value.Y; }
+            get => new(X1, Y1);
+            set { X1 = value.X; Y1 = value.Y; }
         }
 
         /// <summary>
@@ -48,33 +48,24 @@ namespace Lutra.Utility
         /// </summary>
         public Vector2 PointB
         {
-            get { return new Vector2(X2, Y2); }
-            set { X2 = (float)value.X; Y2 = (float)value.Y; }
+            get => new(X2, Y2);
+            set { X2 = value.X; Y2 = value.Y; }
         }
 
         /// <summary>
         /// A in the line equation Ax + By = C.
         /// </summary>
-        public float A
-        {
-            get { return Y2 - Y1; }
-        }
+        public float A => Y2 - Y1;
 
         /// <summary>
         /// B in the line equation Ax + By = C.
         /// </summary>
-        public float B
-        {
-            get { return X1 - X2; }
-        }
+        public float B => X1 - X2;
 
         /// <summary>
         /// C in the line equation Ax + By = C.
         /// </summary>
-        public float C
-        {
-            get { return A * X1 + B * Y1; }
-        }
+        public float C => A * X1 + B * Y1;
 
         #endregion
 
@@ -114,18 +105,18 @@ namespace Lutra.Utility
         public bool Intersects(Line2 other)
         {
             //A = X1, Y1; B = X2, Y2; C = other.X1, other.Y1; D = other.X2, other.Y2;
-            Vector2 A = new Vector2(X1, Y1);
-            Vector2 B = new Vector2(X2, Y2);
-            Vector2 C = new Vector2(other.X1, other.Y1);
-            Vector2 D = new Vector2(other.X2, other.Y2);
+            Vector2 A = new(X1, Y1);
+            Vector2 B = new(X2, Y2);
+            Vector2 C = new(other.X1, other.Y1);
+            Vector2 D = new(other.X2, other.Y2);
 
-            Vector2 CmP = new Vector2(C.X - A.X, C.Y - A.Y);
-            Vector2 r = new Vector2(B.X - A.X, B.Y - A.Y);
-            Vector2 s = new Vector2(D.X - C.X, D.Y - C.Y);
+            Vector2 CmP = new(C.X - A.X, C.Y - A.Y);
+            Vector2 r = new(B.X - A.X, B.Y - A.Y);
+            Vector2 s = new(D.X - C.X, D.Y - C.Y);
 
-            float CmPxr = (float)CmP.X * (float)r.Y - (float)CmP.Y * (float)r.X;
-            float CmPxs = (float)CmP.X * (float)s.Y - (float)CmP.Y * (float)s.X;
-            float rxs = (float)r.X * (float)s.Y - (float)r.Y * (float)s.X;
+            float CmPxr = CmP.X * r.Y - CmP.Y * r.X;
+            float CmPxs = CmP.X * s.Y - CmP.Y * s.X;
+            float rxs = r.X * s.Y - r.Y * s.X;
 
             if (CmPxr == 0f)
             {
@@ -148,18 +139,18 @@ namespace Lutra.Utility
         public (float, float) IntersectTU(Line2 other)
         {
             //A = X1, Y1; B = X2, Y2; C = other.X1, other.Y1; D = other.X2, other.Y2;
-            Vector2 A = new Vector2(X1, Y1);
-            Vector2 B = new Vector2(X2, Y2);
-            Vector2 C = new Vector2(other.X1, other.Y1);
-            Vector2 D = new Vector2(other.X2, other.Y2);
+            Vector2 A = new(X1, Y1);
+            Vector2 B = new(X2, Y2);
+            Vector2 C = new(other.X1, other.Y1);
+            Vector2 D = new(other.X2, other.Y2);
 
-            Vector2 CmP = new Vector2(C.X - A.X, C.Y - A.Y);
-            Vector2 r = new Vector2(B.X - A.X, B.Y - A.Y);
-            Vector2 s = new Vector2(D.X - C.X, D.Y - C.Y);
+            Vector2 CmP = new(C.X - A.X, C.Y - A.Y);
+            Vector2 r = new(B.X - A.X, B.Y - A.Y);
+            Vector2 s = new(D.X - C.X, D.Y - C.Y);
 
-            float CmPxr = (float)CmP.X * (float)r.Y - (float)CmP.Y * (float)r.X;
-            float CmPxs = (float)CmP.X * (float)s.Y - (float)CmP.Y * (float)s.X;
-            float rxs = (float)r.X * (float)s.Y - (float)r.Y * (float)s.X;
+            float CmPxr = CmP.X * r.Y - CmP.Y * r.X;
+            float CmPxs = CmP.X * s.Y - CmP.Y * s.X;
+            float rxs = r.X * s.Y - r.Y * s.X;
 
             if (rxs == 0f)
                 return (-1.0f, -1.0f);

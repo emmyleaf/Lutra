@@ -1,3 +1,12 @@
+## 0.3.2
+
+- Fix a critical bug (0.3.1 does not run in release mode)
+- Fix time-based rich text effects
+- Upgrade language level to C#12 and clean up code (automated & manual)
+- Lutra is now NativeAot compatible as a library
+- Update freetype native dependencies
+- Update Lutra.Audio.OpenAL dependencies
+
 ## 0.3.1
 
 - Framework requirement upped to the latest LTS, .NET8

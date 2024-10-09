@@ -7,9 +7,9 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <TargetFramework>net8.0</TargetFramework>
     <Platforms>x64</Platforms>
-    <LangVersion>10.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -19,12 +19,9 @@
   <ItemGroup>
     <PackageReference Include="ImGui.NET" Version="1.91.0.1" />
 
-    <!-- Regarding ImageSharp licensing:
-         Lutra is open source, therefore ImageSharp is licensed under Apache 2.0
-         For Lutra's users, it's a transitive dependency, therefore also licensed under Apache 2.0 -->
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
 
-    <!-- TODO: Ideally, replace with something, idk :) -->
+    <!-- TODO: Replace with bindings for the tiny subset of freetype's API we actually use -->
     <PackageReference Include="SpaceWizards.SharpFont" Version="1.0.2" />
 
     <!-- TODO: Make sure we use the released version of SDL3 (3.2.0?) when it is released -->
@@ -41,21 +38,18 @@
     <EmbeddedResource Include="Shaders/**/*.*" />
   </ItemGroup>
 
-  <!-- Providing patched freetype dll for Windows x64 -->
   <ItemGroup>
-    <Content Include="freetype6.dll" Condition="('$(RuntimeIdentifier)' == 'win-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('Windows')))">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+    <!-- Copy native dlls for local package reference builds -->
+    <!-- TODO: find a better way to do this for the future when we want to support arm64 platforms as well -->
+    <Content Include="runtimes/win-x64/native/freetype6.dll" TargetPath="freetype6.dll" CopyToOutputDirectory="PreserveNewest"
+      Condition="('$(RuntimeIdentifier)' == 'win-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('Windows')))" />
+    <Content Include="runtimes/osx-x64/native/freetype6.dylib" TargetPath="freetype6.dylib" CopyToOutputDirectory="PreserveNewest"
+      Condition="('$(RuntimeIdentifier)' == 'osx-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('macOS')))" />
+    <Content Include="runtimes/linux-x64/native/freetype6.so" TargetPath="freetype6.so" CopyToOutputDirectory="PreserveNewest"
+      Condition="('$(RuntimeIdentifier)' == 'linux-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('Linux')))" />
 
-  <!-- Providing patched freetype dylibs for macOS x64 -->
-  <ItemGroup>
-    <Content Include="libfreetype.6.dylib" Condition="('$(RuntimeIdentifier)' == 'osx-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('macOS')))">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libpng16.16.dylib" Condition="('$(RuntimeIdentifier)' == 'osx-x64') or ('$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('macOS')))">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <!-- Package runtimes? we can worry about this if we build a nuget package -->
+    <Content Include="runtimes/**/*.*" Pack="true" />
   </ItemGroup>
 
   <ItemGroup>

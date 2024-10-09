@@ -24,10 +24,7 @@ public class LutraTexture
     {
         get
         {
-            if (_textureView == null)
-            {
-                _textureView = VeldridResources.Factory.CreateTextureView(Texture);
-            }
+            _textureView ??= VeldridResources.Factory.CreateTextureView(Texture);
 
             return _textureView;
         }

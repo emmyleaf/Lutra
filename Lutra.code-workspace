@@ -6,9 +6,9 @@
 	],
 	"settings": {
 		"editor.formatOnSave": true,
-		"omnisharp.defaultLaunchSolution": "Lutra.sln",
-		"omnisharp.enableImportCompletion": true,
 		"omnisharp.organizeImportsOnFormat": true,
-		"omnisharp.useModernNet": true
+		"omnisharp.useModernNet": true,
+		"dotnet.defaultSolution": "Lutra.sln",
+		"dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true
 	}
 }

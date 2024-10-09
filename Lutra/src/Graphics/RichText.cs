@@ -51,7 +51,7 @@ public class RichText : SpriteGraphic
 {
     #region Static Fields
 
-    static Dictionary<string, string> styles = new Dictionary<string, string>();
+    static readonly Dictionary<string, string> styles = [];
 
     #endregion
 
@@ -97,8 +97,8 @@ public class RichText : SpriteGraphic
 
     #region Private Fields
 
-    List<RichTextCharacter> chars = new List<RichTextCharacter>();
-    HashSet<char> glyphSet = new HashSet<char>();
+    readonly List<RichTextCharacter> chars = [];
+    readonly HashSet<char> glyphSet = [];
 
     Color currentCharColor = Color.White;
     Color currentCharColor0 = Color.White;
@@ -144,7 +144,7 @@ public class RichText : SpriteGraphic
     string textString;
     string parsedString;
 
-    List<float> cachedLineWidths = new List<float>();
+    readonly List<float> cachedLineWidths = [];
 
     Font font;
 
@@ -327,7 +327,7 @@ public class RichText : SpriteGraphic
     /// <summary>
     /// The default config.
     /// </summary>
-    public static RichTextConfig Default = new RichTextConfig();
+    public static RichTextConfig Default = new();
 
     public float DefaultDelay = 0.0f;
 
@@ -338,17 +338,14 @@ public class RichText : SpriteGraphic
     /// <summary>
     /// True if the text is using MonospaceWidth.
     /// </summary>
-    public bool Monospaced
-    {
-        get { return MonospaceWidth > 0; }
-    }
+    public bool Monospaced => MonospaceWidth > 0;
 
     /// <summary>
     /// The width of the text box.  If not set it will be automatically set.
     /// </summary>
     public int TextWidth
     {
-        get { return textWidth; }
+        get => textWidth;
         set
         {
             textWidth = value;
@@ -361,7 +358,7 @@ public class RichText : SpriteGraphic
     /// </summary>
     public int TextHeight
     {
-        get { return textHeight; }
+        get => textHeight;
         set
         {
             textHeight = value;
@@ -372,17 +369,14 @@ public class RichText : SpriteGraphic
     /// <summary>
     /// The line spacing between each vertical line.
     /// </summary>
-    public float LineSpacing
-    {
-        get { return font.GetLineSpacing(charSize, currentBold); }
-    }
+    public float LineSpacing => font.GetLineSpacing(charSize, currentBold);
 
     /// <summary>
     /// Determines if the text will automatically wrap.  This will not work unless TextWidth is set.
     /// </summary>
     public bool WordWrap
     {
-        get { return wordWrap; }
+        get => wordWrap;
         set
         {
             wordWrap = value;
@@ -395,10 +389,7 @@ public class RichText : SpriteGraphic
     /// </summary>
     public int FontSize
     {
-        get
-        {
-            return charSize;
-        }
+        get => charSize;
         set
         {
             charSize = value;
@@ -412,18 +403,12 @@ public class RichText : SpriteGraphic
     /// <summary>
     /// True of the width was not manually set.
     /// </summary>
-    public bool AutoWidth
-    {
-        get { return TextWidth < 0; }
-    }
+    public bool AutoWidth => TextWidth < 0;
 
     /// <summary>
     /// True if the height was not manually set.
     /// </summary>
-    public bool AutoHeight
-    {
-        get { return TextHeight < 0; }
-    }
+    public bool AutoHeight => TextHeight < 0;
 
     /// <summary>
     /// The string to display stripped of all commands.
@@ -450,7 +435,7 @@ public class RichText : SpriteGraphic
     {
         get
         {
-            var lines = CleanString.Split('\n');
+            _ = CleanString.Split('\n');
             float longest = 0;
             for (int i = 0; i < NumLines; i++)
             {
@@ -470,20 +455,14 @@ public class RichText : SpriteGraphic
     /// <summary>
     /// The total number of lines in the displayed string.
     /// </summary>
-    public int NumLines
-    {
-        get { return Lines.Length; }
-    }
+    public int NumLines => Lines.Length;
 
     /// <summary>
     /// The string to display.  This string can contain commands to alter the text dynamically.
     /// </summary>
     public string String
     {
-        get
-        {
-            return textString;
-        }
+        get => textString;
         set
         {
             textString = value;
@@ -499,32 +478,17 @@ public class RichText : SpriteGraphic
     /// <summary>
     /// The character count of the string without formatting commands.
     /// </summary>
-    public int CharacterCount
-    {
-        get { return chars.Count; }
-    }
+    public int CharacterCount => chars.Count;
 
     /// <summary>
     /// The top bounds of the RichText.
     /// </summary>
-    public float BoundsTop
-    {
-        get
-        {
-            return boundsTop;
-        }
-    }
+    public float BoundsTop => boundsTop;
 
     /// <summary>
     /// The top bounds of the RichText.
     /// </summary>
-    public float BoundsLeft
-    {
-        get
-        {
-            return boundsLeft;
-        }
-    }
+    public float BoundsLeft => boundsLeft;
 
     #endregion
 
@@ -553,7 +517,7 @@ public class RichText : SpriteGraphic
     public RichText(string str, RichTextConfig config, int textWidth = -1, int textHeight = -1)
     {
         // I probably should've used a dictionary of values or something.
-        if (config == null) config = Default;
+        config ??= Default;
 
         DefaultSineAmpX = config.SineAmpX;
         DefaultSineAmpY = config.SineAmpY;
@@ -759,15 +723,13 @@ public class RichText : SpriteGraphic
 
         if (string.IsNullOrEmpty(textString)) textString = "";
 
-        var writingText = true;
-
         //auto word wrap string on input, before parsing?
         if (!AutoWidth && WordWrap)
         {
             textString = PreWrap(textString);
         }
 
-        writingText = true;
+        bool writingText = true;
 
         //create the set of chars with properties and parse commands
         var charIndex = 0;
@@ -792,10 +754,8 @@ public class RichText : SpriteGraphic
                     else if (command == "style")
                     {
                         var args = cmdSplit[1];
-                        if (styles.ContainsKey(args))
+                        if (styles.TryGetValue(args, out string stylestring))
                         {
-                            var stylestring = styles[args];
-
                             var styleSplit = stylestring.Split(',');
                             foreach (var str in styleSplit)
                             {
@@ -1231,7 +1191,7 @@ public class RichText : SpriteGraphic
                     }
                     if (pixels > TextWidth)
                     {
-                        StringBuilder sb = new StringBuilder(finalStr);
+                        StringBuilder sb = new(finalStr);
 
                         // Turn last space into new line if pixels exceeds allowed width
                         if (lastSpaceIndex < sb.Length)
@@ -1294,7 +1254,7 @@ public class RichText : SpriteGraphic
     /// </summary>
     public void SetConfig(RichTextConfig config)
     {
-        if (config == null) config = Default;
+        config ??= Default;
 
         DefaultSineAmpX = config.SineAmpX;
         DefaultSineAmpY = config.SineAmpY;
@@ -1330,14 +1290,8 @@ public class RichText : SpriteGraphic
     /// <returns>The RichTextCharacter at that index in the RichText string.</returns>
     internal RichTextCharacter this[int index]
     {
-        get
-        {
-            return chars[index];
-        }
-        set
-        {
-            chars[index] = value;
-        }
+        get => chars[index];
+        set => chars[index] = value;
     }
 
     public bool IsDelayComplete()

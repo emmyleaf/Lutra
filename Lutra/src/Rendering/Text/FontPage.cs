@@ -11,9 +11,9 @@ namespace Lutra.Rendering.Text
         internal int LineHeight { get; private set; }
         internal int AdvanceSpace { get; private set; }
 
-        internal readonly Dictionary<char, Glyph> Glyphs = new();
-        internal readonly Dictionary<char, RectInt> GlyphSourceRects = new Dictionary<char, RectInt>();
-        internal readonly Dictionary<char, Dictionary<char, int>> Kerning = new();
+        internal readonly Dictionary<char, Glyph> Glyphs = [];
+        internal readonly Dictionary<char, RectInt> GlyphSourceRects = [];
+        internal readonly Dictionary<char, Dictionary<char, int>> Kerning = [];
 
         internal FontPage(int size, bool bold, int lineHeight, int advanceSpace)
         {

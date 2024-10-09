@@ -126,30 +126,30 @@ public static class Draw
 
         if (VeldridResources.GraphicsDevice.IsClipSpaceYInverted)
         {
-            vertices = new[] {
+            vertices = [
                 new VertexPositionTexture(bounds.TopLeft, new Vector2(0, 0)),
                 new VertexPositionTexture(bounds.TopRight, new Vector2(1, 0)),
                 new VertexPositionTexture(bounds.BottomLeft, new Vector2(0, 1)),
                 new VertexPositionTexture(bounds.BottomRight, new Vector2(1, 1)),
-            };
+            ];
         }
         else if (flipSurfaceUVs)
         {
-            vertices = new[] {
+            vertices = [
                 new VertexPositionTexture(bounds.BottomLeft, new Vector2(0, 1)),
                 new VertexPositionTexture(bounds.BottomRight, new Vector2(1, 1)),
                 new VertexPositionTexture(bounds.TopLeft, new Vector2(0, 0)),
                 new VertexPositionTexture(bounds.TopRight, new Vector2(1, 0)),
-            };
+            ];
         }
         else
         {
-            vertices = new[] {
+            vertices = [
                 new VertexPositionTexture(bounds.BottomLeft, new Vector2(0, 0)),
                 new VertexPositionTexture(bounds.BottomRight, new Vector2(1, 0)),
                 new VertexPositionTexture(bounds.TopLeft, new Vector2(0, 1)),
                 new VertexPositionTexture(bounds.TopRight, new Vector2(1, 1)),
-            };
+            ];
         }
 
         SurfaceRenderPipeline.DrawSurface((TextureView)surface.Texture, vertices);

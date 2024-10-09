@@ -5,7 +5,7 @@ namespace Lutra.Examples.Microgames.LType;
 
 public class EnemyBullet : Entity
 {
-    private static Color Color = Color.FromString("ad2f45");
+    private static readonly Color Color = Color.FromString("ad2f45");
     public ImageSet Sprite;
 
     public EnemyBullet(Vector2 position)

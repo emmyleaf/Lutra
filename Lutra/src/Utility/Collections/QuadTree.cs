@@ -13,13 +13,13 @@ namespace Lutra.Utility.Collections;
 /// </summary>
 public class QuadTree<T>
 {
-    internal static Stack<Branch> branchPool = new Stack<Branch>();
-    internal static Stack<Leaf> leafPool = new Stack<Leaf>();
+    internal static Stack<Branch> branchPool = new();
+    internal static Stack<Leaf> leafPool = new();
 
-    Branch root;
+    readonly Branch root;
     internal int splitCount;
     internal int depthLimit;
-    internal Dictionary<T, Leaf> leafLookup = new Dictionary<T, Leaf>();
+    internal Dictionary<T, Leaf> leafLookup = [];
 
     /// <summary>
     /// Creates a new QuadTree.
@@ -87,8 +87,7 @@ public class QuadTree<T>
     /// <param name="quad">The leaf size.</param>
     public void Insert(T value, ref Quad quad)
     {
-        Leaf leaf;
-        if (!leafLookup.TryGetValue(value, out leaf))
+        if (!leafLookup.TryGetValue(value, out Leaf leaf))
         {
             leaf = CreateLeaf(value, ref quad);
             leafLookup.Add(value, leaf);
@@ -129,7 +128,7 @@ public class QuadTree<T>
         if (values != null)
             values.Clear();
         else
-            values = new List<T>();
+            values = [];
         root.SearchQuad(ref quad, values);
         return values.Count > 0;
     }
@@ -170,7 +169,7 @@ public class QuadTree<T>
         if (values != null)
             values.Clear();
         else
-            values = new List<T>();
+            values = [];
         root.SearchPoint(x, y, values);
         return values.Count > 0;
     }
@@ -188,8 +187,7 @@ public class QuadTree<T>
         else
             values = new List<T>(leafLookup.Count);
 
-        Leaf leaf;
-        if (leafLookup.TryGetValue(value, out leaf))
+        if (leafLookup.TryGetValue(value, out Leaf leaf))
         {
             var branch = leaf.Branch;
 
@@ -202,8 +200,7 @@ public class QuadTree<T>
             //Add the branch's children
             if (branch.Split)
                 for (int i = 0; i < 4; ++i)
-                    if (branch.Branches[i] != null)
-                        branch.Branches[i].SearchQuad(ref leaf.Quad, values);
+                    branch.Branches[i]?.SearchQuad(ref leaf.Quad, values);
 
             //Add all leaves back to the root
             branch = branch.Parent;
@@ -221,8 +218,7 @@ public class QuadTree<T>
 
     public bool HasValue(T value)
     {
-        Leaf leaf;
-        return leafLookup.TryGetValue(value, out leaf);
+        return leafLookup.TryGetValue(value, out _);
     }
 
     /// <summary>
@@ -235,7 +231,7 @@ public class QuadTree<T>
         return count;
     }
 
-    void CountBranches(Branch branch, ref int count)
+    static void CountBranches(Branch branch, ref int count)
     {
         ++count;
         if (branch.Split)
@@ -289,7 +285,7 @@ public class QuadTree<T>
         }
     }
 
-    private void DebugDrawBranchIMGUI(Branch branch, Color color)
+    private static void DebugDrawBranchIMGUI(Branch branch, Color color)
     {
         foreach (var quad in branch.Quads)
         {
@@ -319,7 +315,7 @@ public class QuadTree<T>
         public Branch Parent;
         public Quad[] Quads = new Quad[4];
         public Branch[] Branches = new Branch[4];
-        public List<Leaf> Leaves = new List<Leaf>();
+        public List<Leaf> Leaves = [];
         public bool Split;
         public int Depth;
 
@@ -343,7 +339,7 @@ public class QuadTree<T>
             {
                 leafPool.Push(Leaves[i]);
                 Leaves[i].Branch = null;
-                Leaves[i].Value = default(T);
+                Leaves[i].Value = default;
             }
 
             Leaves.Clear();
@@ -389,8 +385,7 @@ public class QuadTree<T>
                     if (quad.Intersects(ref Leaves[i].Quad))
                         values.Add(Leaves[i].Value);
             for (int i = 0; i < 4; ++i)
-                if (Branches[i] != null)
-                    Branches[i].SearchQuad(ref quad, values);
+                Branches[i]?.SearchQuad(ref quad, values);
         }
 
         internal void SearchPoint(float x, float y, List<T> values)
@@ -400,8 +395,7 @@ public class QuadTree<T>
                     if (Leaves[i].Quad.Contains(x, y))
                         values.Add(Leaves[i].Value);
             for (int i = 0; i < 4; ++i)
-                if (Branches[i] != null)
-                    Branches[i].SearchPoint(x, y, values);
+                Branches[i]?.SearchPoint(x, y, values);
         }
     }
 
@@ -416,27 +410,19 @@ public class QuadTree<T>
 /// <summary>
 /// Used by the QuadTree to represent a rectangular area.
 /// </summary>
-public struct Quad
+/// <remarks>
+/// Construct a new Quad.
+/// </remarks>
+/// <param name="minX">Minimum x.</param>
+/// <param name="minY">Minimum y.</param>
+/// <param name="maxX">Max x.</param>
+/// <param name="maxY">Max y.</param>
+public struct Quad(float minX, float minY, float maxX, float maxY)
 {
-    public float MinX;
-    public float MinY;
-    public float MaxX;
-    public float MaxY;
-
-    /// <summary>
-    /// Construct a new Quad.
-    /// </summary>
-    /// <param name="minX">Minimum x.</param>
-    /// <param name="minY">Minimum y.</param>
-    /// <param name="maxX">Max x.</param>
-    /// <param name="maxY">Max y.</param>
-    public Quad(float minX, float minY, float maxX, float maxY)
-    {
-        MinX = minX;
-        MinY = minY;
-        MaxX = maxX;
-        MaxY = maxY;
-    }
+    public float MinX = minX;
+    public float MinY = minY;
+    public float MaxX = maxX;
+    public float MaxY = maxY;
 
     /// <summary>
     /// Set the Quad's position.
@@ -456,7 +442,7 @@ public struct Quad
     /// <summary>
     /// Check if this Quad intersects with another.
     /// </summary>
-    public bool Intersects(ref Quad other)
+    public readonly bool Intersects(ref Quad other)
     {
         return MinX <= other.MaxX && MinY <= other.MaxY && MaxX >= other.MinX && MaxY >= other.MinY;
     }
@@ -464,7 +450,7 @@ public struct Quad
     /// <summary>
     /// Check if this Quad can completely contain another.
     /// </summary>
-    public bool Contains(ref Quad other)
+    public readonly bool Contains(ref Quad other)
     {
         return other.MinX >= MinX && other.MinY >= MinY && other.MaxX <= MaxX && other.MaxY <= MaxY;
     }
@@ -472,7 +458,7 @@ public struct Quad
     /// <summary>
     /// Check if this Quad contains the point.
     /// </summary>
-    public bool Contains(float x, float y)
+    public readonly bool Contains(float x, float y)
     {
         return x > MinX && y > MinY && x < MaxX && y < MaxY;
     }

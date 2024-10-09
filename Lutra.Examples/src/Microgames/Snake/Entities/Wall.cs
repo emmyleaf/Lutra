@@ -10,7 +10,7 @@ namespace Lutra.Examples.Microgames.Snake.Entities
             AddGraphic(new Image("Snake/Wall.png"));
             Graphic.Color = Color.Grey;
             Graphic.CenterOrigin();
-            
+
             AddCollider(new BoxCollider(SnakeScene.GridSize, SnakeScene.GridSize, 1));
             Collider.CenterOrigin();
         }

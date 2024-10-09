@@ -9,7 +9,6 @@ using Lutra.Input;
 using Lutra.Rendering;
 using Lutra.Utility;
 using Lutra.Utility.Debugging;
-using Lutra.Utility.Profiling;
 
 namespace Lutra;
 
@@ -31,7 +30,7 @@ public class Game
     private readonly GameOptions initialOptions;
 
     private string gameFolder = "lutragame";
-    private Dictionary<string, Session> Sessions = new();
+    private readonly Dictionary<string, Session> Sessions = [];
 
     // Internal Systems
     internal GameLoop GameLoop;
@@ -121,10 +120,7 @@ public class Game
     /// </summary>
     public string GameFolder
     {
-        get
-        {
-            return gameFolder;
-        }
+        get => gameFolder;
         set
         {
             gameFolder = value;
@@ -371,7 +367,7 @@ public class Game
         if (fpsCounterElapsed >= 1f)
         {
             var memoryInMegabytes = (GC.GetTotalMemory(false) / 1048576f).ToString("F");
-            Window.Title = $"{Window.Title} ~ {fpsCounter.ToString()} fps ~ {GameLoop.ElapsedGameTime.TotalSeconds} delta ~ {memoryInMegabytes} MB";
+            Window.Title = $"{Window.Title} ~ {fpsCounter} fps ~ {GameLoop.ElapsedGameTime.TotalSeconds} delta ~ {memoryInMegabytes} MB";
             fpsCounter = 0;
             fpsCounterElapsed -= 1f;
         }

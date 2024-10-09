@@ -24,11 +24,11 @@ public class SpriteRenderPipeline
 
     private readonly ResourceLayout PerSpriteResourceLayout;
 
-    private readonly Dictionary<int, ResourceSet> PerTextureResourceSets = new();
-    private readonly Dictionary<int, ResourceSet> PerShaderResourceSets = new();
-    private readonly Dictionary<string, ResourceLayout> ShaderLayouts = new();
+    private readonly Dictionary<int, ResourceSet> PerTextureResourceSets = [];
+    private readonly Dictionary<int, ResourceSet> PerShaderResourceSets = [];
+    private readonly Dictionary<string, ResourceLayout> ShaderLayouts = [];
 
-    private readonly Dictionary<int, Pipeline> Pipelines = new();
+    private readonly Dictionary<int, Pipeline> Pipelines = [];
 
     internal SpriteRenderPipeline(PipelineCommon common)
     {
@@ -51,13 +51,13 @@ public class SpriteRenderPipeline
         ));
 
         var shaderSet = new ShaderSetDescription(
-            new[] { VertexPositionColorTexture.LayoutDescription },
+            [VertexPositionColorTexture.LayoutDescription],
             VeldridResources.CreateShaders(BuiltinShader.SpriteVertexBytes, BuiltinShader.SpriteFragmentBytes)
         );
 
         var alphaBlendDesc = PipelineDescTemplate;
         alphaBlendDesc.BlendState = BlendStateDescription.SINGLE_ALPHA_BLEND;
-        alphaBlendDesc.ResourceLayouts = new[] { PipelineCommon.PerFrameResourceLayout, PerSpriteResourceLayout };
+        alphaBlendDesc.ResourceLayouts = [PipelineCommon.PerFrameResourceLayout, PerSpriteResourceLayout];
         alphaBlendDesc.ShaderSet = shaderSet;
 
         var addBlendDesc = alphaBlendDesc;
@@ -76,7 +76,7 @@ public class SpriteRenderPipeline
         if (ShaderLayouts.ContainsKey(shaderName)) return;
 
         var shaderSet = new ShaderSetDescription(
-            new[] { VertexPositionColorTexture.LayoutDescription },
+            [VertexPositionColorTexture.LayoutDescription],
             VeldridResources.CreateShaders(BuiltinShader.SpriteVertexBytes, fragShaderBytes)
         );
 
@@ -84,7 +84,7 @@ public class SpriteRenderPipeline
 
         var alphaBlendDesc = PipelineDescTemplate;
         alphaBlendDesc.BlendState = BlendStateDescription.SINGLE_ALPHA_BLEND;
-        alphaBlendDesc.ResourceLayouts = new[] { PipelineCommon.PerFrameResourceLayout, PerSpriteResourceLayout, shaderResourceLayout };
+        alphaBlendDesc.ResourceLayouts = [PipelineCommon.PerFrameResourceLayout, PerSpriteResourceLayout, shaderResourceLayout];
         alphaBlendDesc.ShaderSet = shaderSet;
 
         var addBlendDesc = alphaBlendDesc;
@@ -132,9 +132,8 @@ public class SpriteRenderPipeline
     private ResourceSet GetPerTextureResourceSet(SpriteParams quadInfo, bool smooth)
     {
         int key = HashCode.Combine(quadInfo.Texture.TextureView, smooth);
-        ResourceSet resourceSet;
 
-        if (!PerTextureResourceSets.TryGetValue(key, out resourceSet))
+        if (!PerTextureResourceSets.TryGetValue(key, out ResourceSet resourceSet))
         {
             var sampler = smooth ? VeldridResources.GraphicsDevice.LinearSampler : VeldridResources.GraphicsDevice.PointSampler;
             resourceSet = VeldridResources.Factory.CreateResourceSet(new ResourceSetDescription(
@@ -149,9 +148,8 @@ public class SpriteRenderPipeline
     private ResourceSet GetShaderResourceSet(ShaderData shaderData)
     {
         int key = HashCode.Combine(shaderData);
-        ResourceSet resourceSet;
 
-        if (!PerShaderResourceSets.TryGetValue(key, out resourceSet))
+        if (!PerShaderResourceSets.TryGetValue(key, out ResourceSet resourceSet))
         {
             var desc = new ResourceSetDescription(ShaderLayouts[shaderData.ShaderName], shaderData.Resources);
             resourceSet = VeldridResources.Factory.CreateResourceSet(ref desc);

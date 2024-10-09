@@ -22,11 +22,11 @@ public class Controller
     {
         SdlGamepad = gamepad;
         SdlJoystickID = joystickID;
-        PrevButtonsDown = new();
-        ButtonsDown = new();
-        Axes = new();
+        PrevButtonsDown = [];
+        ButtonsDown = [];
+        Axes = [];
 
-        foreach (ControllerAxis axis in Enum.GetValues(typeof(ControllerAxis)))
+        foreach (var axis in Enum.GetValues<ControllerAxis>())
         {
             Axes.Add(axis, 0.0f);
         }

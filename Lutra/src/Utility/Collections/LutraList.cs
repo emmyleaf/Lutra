@@ -8,22 +8,17 @@ namespace Lutra.Utility.Collections;
 /// The internal array can be accessed using the Items member. Be careful!
 /// Also implements the stable sorting algorithms from Lutra.Utility.Sorting.
 /// </summary>
-public class LutraList<T> : IList<T>, IReadOnlyList<T>
+/// <remarks>
+/// Construct a new LutraList. The default initial size is 64.
+/// </remarks>
+public class LutraList<T>(int initialSize = LutraList<T>.INITIAL_SIZE) : IList<T>, IReadOnlyList<T>
 {
     private const int INITIAL_SIZE = 64;
     private const int GROW_SIZE = 16;
 
-    public T[] Items;
+    public T[] Items = new T[initialSize];
     private T[] workArray;
     private int count;
-
-    /// <summary>
-    /// Construct a new LutraList. The default initial size is 64.
-    /// </summary>
-    public LutraList(int initialSize = INITIAL_SIZE)
-    {
-        Items = new T[initialSize];
-    }
 
     /// <summary>
     /// Remove the last item from this list and return it.
@@ -57,10 +52,7 @@ public class LutraList<T> : IList<T>, IReadOnlyList<T>
     {
         if (count > 1)
         {
-            if (workArray == null)
-            {
-                workArray = new T[Items.Length];
-            }
+            workArray ??= new T[Items.Length];
             Sorting.MergeSort(Items, workArray, count, comparison);
         }
     }
@@ -74,10 +66,7 @@ public class LutraList<T> : IList<T>, IReadOnlyList<T>
     {
         if (count > 1)
         {
-            if (workArray == null)
-            {
-                workArray = new T[Items.Length];
-            }
+            workArray ??= new T[Items.Length];
             Sorting.StableSort(Items, workArray, count, comparison);
         }
     }
@@ -181,7 +170,7 @@ public class LutraList<T> : IList<T>, IReadOnlyList<T>
     {
         if (index < 0 || index >= count)
         {
-            throw new ArgumentOutOfRangeException("index", index, null);
+            throw new ArgumentOutOfRangeException(nameof(index), index, null);
         }
 
         int nextIndex = index + 1;
@@ -215,11 +204,11 @@ public class LutraList<T> : IList<T>, IReadOnlyList<T>
             current = default;
         }
 
-        public T Current => current;
+        public readonly T Current => current;
 
-        object IEnumerator.Current => current;
+        readonly object IEnumerator.Current => current;
 
-        public void Dispose() { }
+        public readonly void Dispose() { }
 
         public bool MoveNext()
         {

@@ -60,7 +60,7 @@ namespace Lutra
         /// <summary>
         /// The tween manager that controls tweens on this entity.
         /// </summary>
-        private Tweener Tweener = new Tweener();
+        private readonly Tweener Tweener = new();
 
         /// <summary>
         /// The pause group this entity is a part of.
@@ -120,7 +120,7 @@ namespace Lutra
 
         public Vector2 Position
         {
-            get { return new Vector2(Transform.X, Transform.Y); }
+            get => new(Transform.X, Transform.Y);
             set { Transform.X = value.X; Transform.Y = value.Y; }
         }
 
@@ -154,8 +154,8 @@ namespace Lutra
         {
             Transform = new();
             components = new(this);
-            colliders = new();
-            graphics = new();
+            colliders = [];
+            graphics = [];
             X = x;
             Y = y;
         }
@@ -278,7 +278,7 @@ namespace Lutra
         {
             foreach (var component in components)
             {
-                if (component is TComponent) return (TComponent)component;
+                if (component is TComponent tComponent) return tComponent;
             }
 
             return null;
@@ -294,7 +294,7 @@ namespace Lutra
 
             foreach (var component in components)
             {
-                if (component is TComponent) list.Add((TComponent)component);
+                if (component is TComponent tComponent) list.Add(tComponent);
             }
 
             return list;

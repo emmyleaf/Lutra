@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Numerics;
 
 namespace Lutra.Utility
@@ -55,9 +54,7 @@ namespace Lutra.Utility
         /// <param name="points">The Vector2 points composing the Polygon.</param>
         public Polygon(Vector2 firstPoint, params Vector2[] points)
         {
-            Points = new List<Vector2>();
-            Points.Add(firstPoint);
-            Points.AddRange(points);
+            Points = [firstPoint, .. points];
         }
 
         /// <summary>
@@ -66,7 +63,7 @@ namespace Lutra.Utility
         /// <param name="copy">The source Polygon to copy.</param>
         public Polygon(Polygon copy)
         {
-            Points = new List<Vector2>();
+            Points = [];
             Points.AddRange(copy.Points);
         }
 
@@ -76,7 +73,7 @@ namespace Lutra.Utility
         /// <param name="points">A series of points to create the Polygon from (x1, y1, x2, y2, x3, y3...)</param>
         public Polygon(params float[] points)
         {
-            Points = new List<Vector2>();
+            Points = [];
             int i = 0;
             float x = 0;
             foreach (var p in points)
@@ -110,13 +107,7 @@ namespace Lutra.Utility
         /// <summary>
         /// The number of points in the Polygon.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return Points.Count;
-            }
-        }
+        public int Count => Points.Count;
 
         /// <summary>
         /// The Width of the polygon determined by the right most point minus the left most point.
@@ -157,18 +148,12 @@ namespace Lutra.Utility
         /// <summary>
         /// Half of the Width.
         /// </summary>
-        public float HalfWidth
-        {
-            get { return Width / 2f; }
-        }
+        public float HalfWidth => Width / 2f;
 
         /// <summary>
         /// Half of the Height.
         /// </summary>
-        public float HalfHeight
-        {
-            get { return Height / 2f; }
-        }
+        public float HalfHeight => Height / 2f;
 
         public float Left
         {
@@ -237,14 +222,8 @@ namespace Lutra.Utility
         /// <returns>The point at the specified index.</returns>
         public Vector2 this[int index]
         {
-            get
-            {
-                return Points[index];
-            }
-            set
-            {
-                Points[index] = value;
-            }
+            get => Points[index];
+            set => Points[index] = value;
         }
 
         #endregion Public Indexers
@@ -443,7 +422,7 @@ namespace Lutra.Utility
                 Vector2 p1 = Points[i];
                 Vector2 p2 = Points[i + 1 == Points.Count ? 0 : i + 1]; // Clever!
                 Vector2 edge = p1 - p2;
-                Vector2 normal = new Vector2(-edge.Y, edge.X);
+                Vector2 normal = new(-edge.Y, edge.X);
                 axes.Add(normal);
             }
             return axes;

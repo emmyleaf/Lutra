@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Lutra.Utility;
 
@@ -7,7 +8,7 @@ namespace Lutra.Graphics;
 /// <summary>
 /// Class used for animations in Spritemap.
 /// </summary>
-public class Anim
+public partial class Anim
 {
     #region Static Methods
 
@@ -36,15 +37,15 @@ public class Anim
     public static int[] ParseFrames(string input)
     {
         // Make sure the pattern matches, and alert the user if it doesn't
-        var parse = SyntaxCheck.Match(input);
+        var parse = SyntaxCheck().Match(input);
         if (!parse.Success)
             throw new Exception(string.Format("Invalid format: {0}", input));
 
         // Get all numbers/ranges in the input string.
         var frames = new List<int>();
-        foreach (Match match in GetMatches.Matches(input))
+        foreach (Match match in GetMatches().Matches(input).Cast<Match>())
         {
-            var range = GetRange.Match(match.Value);
+            var range = GetRange().Match(match.Value);
             if (range.Success)
             {
                 int from = int.Parse(range.Groups[1].Value);
@@ -68,7 +69,7 @@ public class Anim
             }
         }
 
-        return frames.ToArray();
+        return [.. frames];
     }
 
     public static List<float> FrameDelaysForAnimAndEase(Anim anim, Easer easingFunc, int overTime, float holdFinalFrames)
@@ -80,7 +81,7 @@ public class Anim
 
         for (int i = 0; i < numFrames; i++)
         {
-            float percentile = (float)i / (float)(numFrames - 1);
+            float percentile = i / (float)(numFrames - 1);
             float timeSlice = overTime * easingFunc(percentile);
             timeSlices.Add(timeSlice);
         }
@@ -106,13 +107,16 @@ public class Anim
     #region Private Static Fields
 
     // Matches strings containing only numbers and number ranges, separated by single commas and/or whitespace
-    static readonly Regex SyntaxCheck = new Regex(@"^(?:\d+\s*-\s*\d+|\d\s*,?\s*)*$");
+    [GeneratedRegex(@"^(?:\d+\s*-\s*\d+|\d\s*,?\s*)*$")]
+    private static partial Regex SyntaxCheck();
 
     // Extracts a number or number range from a string
-    static readonly Regex GetMatches = new Regex(@"((?:\d+\s*-\s*\d+)|(?:\d+))");
+    [GeneratedRegex(@"((?:\d+\s*-\s*\d+)|(?:\d+))")]
+    private static partial Regex GetMatches();
 
     // Extracts two numbers from a string containing a range
-    static readonly Regex GetRange = new Regex(@"(\d+)-(\d+)");
+    [GeneratedRegex(@"(\d+)-(\d+)")]
+    private static partial Regex GetRange();
 
     #endregion
 
@@ -172,26 +176,20 @@ public class Anim
     /// <summary>
     /// The total number of frames in this animation.
     /// </summary>
-    public int FrameCount
-    {
-        get { return Frames.Count; }
-    }
+    public int FrameCount => Frames.Count;
 
     /// <summary>
     /// The current frame of the animation.
     /// </summary>
-    public int CurrentFrame
-    {
-        get { return Frames[currentFrame]; }
-    }
+    public int CurrentFrame => Frames[currentFrame];
 
     /// <summary>
     /// The current frame index of the animation.
     /// </summary>
     public int CurrentFrameIndex
     {
-        get { return currentFrame; }
-        set { currentFrame = value; }
+        get => currentFrame;
+        set => currentFrame = value;
     }
 
     /// <summary>
@@ -210,21 +208,9 @@ public class Anim
         }
     }
 
-    public int RepeatsCounted
-    {
-        get
-        {
-            return repeatsCounted;
-        }
-    }
+    public int RepeatsCounted => repeatsCounted;
 
-    public bool IsComplete
-    {
-        get
-        {
-            return isComplete;
-        }
-    }
+    public bool IsComplete => isComplete;
 
     #endregion
 
@@ -248,7 +234,7 @@ public class Anim
     /// <param name="delim">The string of characters to parse the string by.  Default is ","</param>
     public Anim(string frames, string frameDelays)
     {
-        string[] frameDelaysParts = Regex.Split(frameDelays.Replace(" ", ""), ",");
+        string[] frameDelaysParts = frameDelays.Replace(" ", "").Split(",");
         float[] framedelaysfloat = new float[frameDelaysParts.Length];
 
         for (int i = 0; i < frameDelaysParts.Length; i++)
@@ -364,8 +350,8 @@ public class Anim
 
     private void Initialize(int[] frames, float[] frameDelays = null)
     {
-        Frames = new List<int>();
-        FrameDelays = new List<float>();
+        Frames = [];
+        FrameDelays = [];
 
         for (int i = 0; i < frames.Length; i++)
         {

@@ -62,76 +62,52 @@ namespace Lutra.Collision
         /// <summary>
         /// The X position of the center of the Collider.
         /// </summary>
-        public virtual float CenterX
-        {
-            get { return X + Entity.X - OriginX + HalfWidth; }
-        }
+        public virtual float CenterX => X + Entity.X - OriginX + HalfWidth;
 
         /// <summary>
         /// The Y position of the center of the Collider.
         /// </summary>
-        public virtual float CenterY
-        {
-            get { return Y + Entity.Y - OriginY + HalfHeight; }
-        }
+        public virtual float CenterY => Y + Entity.Y - OriginY + HalfHeight;
 
         /// <summary>
         /// The X position of the left side of the Collider.
         /// </summary>
-        public virtual float Left
-        {
-            get { return X + Entity.X - OriginX; }
-        }
+        public virtual float Left => X + Entity.X - OriginX;
 
         /// <summary>
         /// The X position of the right side of the Collider.
         /// </summary>
-        public virtual float Right
-        {
-            get { return X + Entity.X + Width - OriginX; }
-        }
+        public virtual float Right => X + Entity.X + Width - OriginX;
 
         /// <summary>
         /// The Y position of the top of the Collider.
         /// </summary>
-        public virtual float Top
-        {
-            get { return Y + Entity.Y - OriginY; }
-        }
+        public virtual float Top => Y + Entity.Y - OriginY;
 
         /// <summary>
         /// The Y position of the bottom of the Collider.
         /// </summary>
-        public virtual float Bottom
-        {
-            get { return Y + Entity.Y + Height - OriginY; }
-        }
+        public virtual float Bottom => Y + Entity.Y + Height - OriginY;
 
         /// <summary>
         /// Half of the Collider's height.
         /// </summary>
-        public float HalfHeight
-        {
-            get { return Height / 2f; }
-        }
+        public float HalfHeight => Height / 2f;
 
         /// <summary>
         /// Half of the Collider's width.
         /// </summary>
-        public float HalfWidth
-        {
-            get { return Width / 2f; }
-        }
+        public float HalfWidth => Width / 2f;
 
         #endregion
 
-        private CollisionSystem CollisionSystem => CollisionSystem.Instance;
+        private static CollisionSystem CollisionSystem => CollisionSystem.Instance;
 
         #region Constructors
 
         internal Collider()
         {
-            Tags = new List<int>();
+            Tags = [];
             Width = 0;
             Height = 0;
         }
@@ -277,7 +253,7 @@ namespace Lutra.Collision
 
             if (tags.Length == 0)
             {
-                tags = CollisionSystem.KnownColliderTags.ToArray();
+                tags = [.. CollisionSystem.KnownColliderTags];
             }
 
             var values = new List<Collider>();
@@ -587,7 +563,7 @@ namespace Lutra.Collision
         /// <returns>A list of colliders.</returns>
         public List<Collider> CollideList(float x, float y, params int[] tags)
         {
-            List<Collider> collided = new List<Collider>();
+            List<Collider> collided = [];
             if (Entity == null) return null;
             if (Entity.Scene == null) return null;
 
@@ -597,7 +573,7 @@ namespace Lutra.Collision
 
             if (tags.Length == 0)
             {
-                tags = CollisionSystem.KnownColliderTags.ToArray();
+                tags = [.. CollisionSystem.KnownColliderTags];
             }
 
             var values = new List<Collider>();
@@ -668,7 +644,7 @@ namespace Lutra.Collision
         /// <returns>A list of colliders.</returns>
         public List<Collider> CollideList(float x, float y, List<int> tags)
         {
-            List<Collider> collided = new List<Collider>();
+            List<Collider> collided = [];
             List<Collider> c;
 
             foreach (int tag in tags)
@@ -692,7 +668,7 @@ namespace Lutra.Collision
         /// <returns>A list of entities.</returns>
         public List<Entity> CollideEntities(float x, float y, params int[] tags)
         {
-            List<Entity> collided = new List<Entity>();
+            List<Entity> collided = [];
 
             List<Collider> clist = CollideList(x, y, tags);
             foreach (Collider c in clist)
@@ -808,7 +784,7 @@ namespace Lutra.Collision
         /// <returns>A list of entities.</returns>
         public List<Entity> CollideEntities(float x, float y, List<int> tags)
         {
-            List<Entity> collided = new List<Entity>();
+            List<Entity> collided = [];
             List<Collider> c;
 
             foreach (int tag in tags)

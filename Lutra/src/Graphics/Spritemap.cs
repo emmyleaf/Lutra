@@ -22,7 +22,7 @@ public class Spritemap<TAnimType> : Image
     /// </summary>
     public bool PackedTexture = false;
 
-    public List<RectInt> PackedRegions = new List<RectInt>();
+    public List<RectInt> PackedRegions = [];
 
     #endregion
 
@@ -115,7 +115,7 @@ public class Spritemap<TAnimType> : Image
     {
         if (resetAnims)
         {
-            Anims = new();
+            Anims = [];
         }
 
         Width = width;
@@ -133,7 +133,7 @@ public class Spritemap<TAnimType> : Image
 
     private void UpdateSprite()
     {
-        UpdateTextureRegion((int)Util.Clamp(Anims[CurrentAnim].CurrentFrame, 0, Frames));
+        UpdateTextureRegion(Util.Clamp(Anims[CurrentAnim].CurrentFrame, 0, Frames));
     }
 
     private void UpdateTextureRegion(int frame)
@@ -229,7 +229,7 @@ public class Spritemap<TAnimType> : Image
     /// <returns>The added animation.</returns>
     public Anim Add(TAnimType a, int[] frames, float framedelays)
     {
-        var anim = new Anim(frames, new float[] { framedelays });
+        var anim = new Anim(frames, [framedelays]);
         Add(a, anim);
         return anim;
     }
@@ -241,10 +241,9 @@ public class Spritemap<TAnimType> : Image
     public void UpdateBeforeRender()
     {
         if (!Active) return;
-        if (!Anims.ContainsKey(CurrentAnim)) return;
+        if (!Anims.TryGetValue(CurrentAnim, out Anim anim)) return;
         if (Paused) return;
-
-        Anims[CurrentAnim].Update(Speed);
+        anim.Update(Speed);
 
         UpdateSprite();
     }
@@ -274,8 +273,8 @@ public class Spritemap<TAnimType> : Image
     /// <returns>The animation found.</returns>
     public Anim GetAnimation(TAnimType a)
     {
-        if (!Anims.ContainsKey(a)) return null;
-        return Anims[a];
+        Anims.TryGetValue(a, out Anim anim);
+        return anim;
     }
 
     /// <summary>

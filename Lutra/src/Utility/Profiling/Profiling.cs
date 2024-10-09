@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Lutra.Utility.Debugging;
-using System.Linq;
 
 namespace Lutra.Utility.Profiling;
 
@@ -13,8 +12,8 @@ public struct ProfileRecord
 public static class Profiler
 {
     public static bool Enabled = false;
-    private static Dictionary<string, ProfileRecord> ProfilerMarkerTimingsMilliseconds = new();
-    private static Dictionary<string, DateTime> ProfilerMarkerStartTimes = new();
+    private static readonly Dictionary<string, ProfileRecord> ProfilerMarkerTimingsMilliseconds = [];
+    private static readonly Dictionary<string, DateTime> ProfilerMarkerStartTimes = [];
     private static DateTime FrameStart;
 
     public static void StartProfilingMarker(string marker)
@@ -25,35 +24,33 @@ public static class Profiler
             Util.LogWarning($"WARNING! StartProfilingMarker() called for marker '{marker}', but marker has already been started! Ignoring...");
             return;
         }
-        ProfilerMarkerStartTimes[marker] = System.DateTime.UtcNow;
+        ProfilerMarkerStartTimes[marker] = DateTime.UtcNow;
     }
 
     public static void EndProfilingMarker(string marker)
     {
         if (!Enabled) return;
-        if (!ProfilerMarkerStartTimes.ContainsKey(marker))
+        if (!ProfilerMarkerStartTimes.TryGetValue(marker, out DateTime startTime))
         {
             Util.LogWarning($"WARNING! EndProfiling() called for marker '{marker}', but marker has not been started yet!");
             return;
         }
-        if (!ProfilerMarkerTimingsMilliseconds.ContainsKey(marker))
+        if (!ProfilerMarkerTimingsMilliseconds.TryGetValue(marker, out ProfileRecord record))
         {
             ProfilerMarkerTimingsMilliseconds[marker] = new ProfileRecord
             {
-                TotalMilliseconds = (System.DateTime.UtcNow - ProfilerMarkerStartTimes[marker]).TotalMilliseconds,
+                TotalMilliseconds = (DateTime.UtcNow - startTime).TotalMilliseconds,
                 CallCountThisFrame = 1
             };
         }
         else
         {
-            var record = ProfilerMarkerTimingsMilliseconds[marker];
-            record.TotalMilliseconds += (System.DateTime.UtcNow - ProfilerMarkerStartTimes[marker]).TotalMilliseconds;
+            record.TotalMilliseconds += (DateTime.UtcNow - startTime).TotalMilliseconds;
             record.CallCountThisFrame++;
             ProfilerMarkerTimingsMilliseconds[marker] = record;
         }
         ProfilerMarkerStartTimes.Remove(marker);
     }
-
 
     [DebugCommand(alias: "tools.profiler", help: "Toggles recording and display of profiler markers.", group: "tools")]
     public static void ToggleProfiler()
@@ -64,13 +61,13 @@ public static class Profiler
     public static void StartFrame()
     {
         if (!Enabled) return;
-        FrameStart = System.DateTime.UtcNow;
+        FrameStart = DateTime.UtcNow;
     }
 
     public static void EndFrame()
     {
         if (!Enabled) return;
-        var frameTimeMs = (System.DateTime.UtcNow - FrameStart).TotalMilliseconds;
+        var frameTimeMs = (DateTime.UtcNow - FrameStart).TotalMilliseconds;
 
         // Clean up any dangling markers.
         foreach (var marker in ProfilerMarkerStartTimes.Keys)
@@ -107,7 +104,5 @@ public static class Profiler
 
         ProfilerMarkerStartTimes.Clear();
         ProfilerMarkerTimingsMilliseconds.Clear();
-
     }
-
 }

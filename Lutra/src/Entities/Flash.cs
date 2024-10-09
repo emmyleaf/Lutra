@@ -6,7 +6,11 @@ namespace Lutra.Entities
     /// <summary>
     /// Entity that acts as a screen flash.
     /// </summary>
-    public class Flash : Entity
+    /// <remarks>
+    /// Create a new Flash.
+    /// </remarks>
+    /// <param name="color">The Color of the Flash.</param>
+    public class Flash(Color color) : Entity(0, 0)
     {
 
         #region Static Fields
@@ -29,7 +33,7 @@ namespace Lutra.Entities
         /// <summary>
         /// The Color for the Flash.
         /// </summary>
-        public Color Color;
+        public Color Color = color;
 
         /// <summary>
         /// The initial alpha for the Flash.
@@ -42,17 +46,7 @@ namespace Lutra.Entities
         public float FinalAlpha = 0;
 
         #endregion
-
         #region Constructors
-
-        /// <summary>
-        /// Create a new Flash.
-        /// </summary>
-        /// <param name="color">The Color of the Flash.</param>
-        public Flash(Color color) : base(0, 0)
-        {
-            Color = color;
-        }
 
         #endregion
 

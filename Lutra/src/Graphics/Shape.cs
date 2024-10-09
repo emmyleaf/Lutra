@@ -56,7 +56,7 @@ public class Shape : SpriteGraphic
     /// <returns>A new shape containing the rectangle.</returns>
     static public Shape CreateRectangle(int width, int height, Color color)
     {
-        Shape shape = new Shape(width, height);
+        Shape shape = new(width, height);
         shape.rectWidth = width;
         shape.rectHeight = height;
         shape.Color = color;
@@ -125,7 +125,7 @@ public class Shape : SpriteGraphic
     /// <returns>A new shape containing the circle.</returns>
     static public Shape CreateCircle(int radius, Color color)
     {
-        Shape shape = new Shape(radius * 2, radius * 2);
+        Shape shape = new(radius * 2, radius * 2);
         shape.radius = radius;
         shape.Color = color;
 

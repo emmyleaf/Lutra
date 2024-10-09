@@ -12,7 +12,7 @@ public class SurfaceRenderPipeline : IDisposable
     private readonly ResourceLayout SurfaceLayout;
     private readonly Pipeline Pipeline;
 
-    private readonly Dictionary<int, ResourceSet> SurfaceSets = new();
+    private readonly Dictionary<int, ResourceSet> SurfaceSets = [];
 
     public SurfaceRenderPipeline()
     {
@@ -24,14 +24,14 @@ public class SurfaceRenderPipeline : IDisposable
         ));
 
         var shaderSet = new ShaderSetDescription(
-            new[] { VertexPositionTexture.LayoutDescription },
+            [VertexPositionTexture.LayoutDescription],
             VeldridResources.CreateShaders(BuiltinShader.SurfaceVertexBytes, BuiltinShader.SurfaceFragmentBytes)
         );
 
         var description = new GraphicsPipelineDescription();
         description.BlendState = BlendStateDescription.SINGLE_DISABLED;
         description.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
-        description.ResourceLayouts = new[] { SurfaceLayout };
+        description.ResourceLayouts = [SurfaceLayout];
         description.ResourceBindingModel = ResourceBindingModel.Improved;
         description.ShaderSet = shaderSet;
         description.Outputs = VeldridResources.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
@@ -44,9 +44,8 @@ public class SurfaceRenderPipeline : IDisposable
     private ResourceSet GetSurfaceSet(TextureView textureView)
     {
         int key = HashCode.Combine(textureView);
-        ResourceSet resourceSet;
 
-        if (!SurfaceSets.TryGetValue(key, out resourceSet))
+        if (!SurfaceSets.TryGetValue(key, out ResourceSet resourceSet))
         {
             resourceSet = VeldridResources.Factory.CreateResourceSet(
                 new ResourceSetDescription(SurfaceLayout, textureView, VeldridResources.GraphicsDevice.PointSampler)

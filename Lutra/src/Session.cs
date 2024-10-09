@@ -21,7 +21,7 @@ namespace Lutra
         /// <summary>
         /// The Controller to use for this Session.
         /// </summary>
-        public VirtualController Controller = new VirtualController();
+        public VirtualController Controller = new();
 
         /// <summary>
         /// Gets the Controller as a specific type of Controller.

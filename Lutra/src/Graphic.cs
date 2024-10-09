@@ -32,10 +32,7 @@ namespace Lutra
         /// </summary>
         public RectInt TextureRegion
         {
-            get
-            {
-                return _textureRegion;
-            }
+            get => _textureRegion;
             set
             {
                 _textureRegion = value;
@@ -45,10 +42,7 @@ namespace Lutra
 
         public Color Color
         {
-            get
-            {
-                return color;
-            }
+            get => color;
             set
             {
                 color = value;
@@ -86,7 +80,7 @@ namespace Lutra
                 NeedsUpdate = true;
             }
         }
-        
+
         /// <summary>
         /// Determines if the Graphic, when inheriting transforms, should snap to the integer grid.
         /// </summary>
@@ -120,7 +114,7 @@ namespace Lutra
         /// If this list is empty, this falls back to the Surface property of the Entity for Otter compatibility.
         /// If there is not Enitity Surface, the default behaviour is to render to the main game Surface.
         /// </summary>
-        public List<Surface> Surfaces { get; } = new();
+        public List<Surface> Surfaces { get; } = [];
 
         /// <summary>
         /// The width of the Graphic.
@@ -165,7 +159,7 @@ namespace Lutra
         /// </summary>
         public Vector2 Position
         {
-            get { return new Vector2(Transform.X, Transform.Y); }
+            get => new(Transform.X, Transform.Y);
             set { Transform.X = value.X; Transform.Y = value.Y; }
         }
 
@@ -257,7 +251,7 @@ namespace Lutra
         /// </summary>
         public Vector2 Origin
         {
-            get => new Vector2(Transform.OriginX, Transform.OriginY);
+            get => new(Transform.OriginX, Transform.OriginY);
             set { Transform.OriginX = value.X; Transform.OriginY = value.Y; }
         }
 

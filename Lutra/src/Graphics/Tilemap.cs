@@ -54,9 +54,9 @@ public class Tilemap : SpriteGraphic
 
     #region Private Fields
 
-    Dictionary<string, int> layerNames = new Dictionary<string, int>();
+    readonly Dictionary<string, int> layerNames = [];
 
-    Dictionary<int, Dictionary<int, Dictionary<int, TileInfo>>> tileTable = new Dictionary<int, Dictionary<int, Dictionary<int, TileInfo>>>();
+    readonly Dictionary<int, Dictionary<int, Dictionary<int, TileInfo>>> tileTable = [];
 
     int
         sourceColumns,
@@ -135,8 +135,8 @@ public class Tilemap : SpriteGraphic
 
     void Initialize(int width, int height, int tileWidth, int tileHeight)
     {
-        if (width < 0) throw new ArgumentOutOfRangeException("Width must be greater than 0.");
-        if (height < 0) throw new ArgumentOutOfRangeException("Height must be greater than 0.");
+        ArgumentOutOfRangeException.ThrowIfNegative(width);
+        ArgumentOutOfRangeException.ThrowIfNegative(height);
 
         TileLayers = new(Comparer<int>.Create((a, b) => b - a));
 
@@ -148,8 +148,8 @@ public class Tilemap : SpriteGraphic
         TileColumns = (int)Util.Ceil((float)width / tileWidth);
         TileRows = (int)Util.Ceil((float)height / tileHeight);
 
-        sourceColumns = (int)(TextureRegion.Width / tileWidth);
-        sourceRows = (int)(TextureRegion.Height / tileHeight);
+        sourceColumns = TextureRegion.Width / tileWidth;
+        sourceRows = TextureRegion.Height / tileHeight;
 
         Width = width;
         Height = height;
@@ -169,29 +169,27 @@ public class Tilemap : SpriteGraphic
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1854")]
     void RegisterTile(int x, int y, int layer, TileInfo tile)
     {
         if (!tileTable.ContainsKey(layer))
         {
-            tileTable.Add(layer, new Dictionary<int, Dictionary<int, TileInfo>>());
+            tileTable.Add(layer, []);
         }
         if (!tileTable[layer].ContainsKey(x))
         {
-            tileTable[layer].Add(x, new Dictionary<int, TileInfo>());
+            tileTable[layer].Add(x, []);
         }
         tileTable[layer][x].Add(y, tile);
     }
 
     void RemoveTile(int x, int y, int layer)
     {
-        if (tileTable.ContainsKey(layer))
+        if (tileTable.TryGetValue(layer, out var layerInfo))
         {
-            if (tileTable[layer].ContainsKey(x))
+            if (layerInfo.TryGetValue(x, out var columnInfo))
             {
-                if (tileTable[layer][x].ContainsKey(y))
-                {
-                    tileTable[layer][x].Remove(y);
-                }
+                columnInfo.Remove(y);
             }
         }
     }
@@ -223,8 +221,8 @@ public class Tilemap : SpriteGraphic
         }
 
         // Clamp tile inside tilemap.
-        tileX = (int)Util.Clamp(tileX, 0, Width - TileWidth);
-        tileY = (int)Util.Clamp(tileY, 0, Height - TileHeight);
+        tileX = Util.Clamp(tileX, 0, Width - TileWidth);
+        tileY = Util.Clamp(tileY, 0, Height - TileHeight);
 
         var t = new TileInfo(tileX, tileY, -1, -1, TileWidth, TileHeight, color);
         TileLayers[layerNames[layer]].Add(t);
@@ -276,8 +274,8 @@ public class Tilemap : SpriteGraphic
             tileY *= TileHeight;
         }
 
-        tileX = (int)Util.Clamp(tileX, 0, Width - TileWidth);
-        tileY = (int)Util.Clamp(tileY, 0, Height - TileHeight);
+        tileX = Util.Clamp(tileX, 0, Width - TileWidth);
+        tileY = Util.Clamp(tileY, 0, Height - TileHeight);
 
         var t = new TileInfo(tileX, tileY, sourceX, sourceY, TileWidth, TileHeight, Color.White);
         TileLayers[layerNames[layer]].Add(t);
@@ -313,8 +311,8 @@ public class Tilemap : SpriteGraphic
     /// <returns>The TileInfo from the altered tile.</returns>
     public TileInfo SetTile(int tileX, int tileY, int tileIndex, string layer = "")
     {
-        int sourceX = (int)(Util.TwoDeeX((int)tileIndex, (int)sourceColumns) * TileWidth);
-        int sourceY = (int)(Util.TwoDeeY((int)tileIndex, (int)sourceColumns) * TileHeight);
+        int sourceX = Util.TwoDeeX(tileIndex, sourceColumns) * TileWidth;
+        int sourceY = Util.TwoDeeY(tileIndex, sourceColumns) * TileHeight;
         return SetTile(tileX, tileY, sourceX, sourceY, layer);
     }
 
@@ -549,26 +547,20 @@ public class Tilemap : SpriteGraphic
             tileY *= TileHeight;
         }
 
-        tileX = (int)Util.Clamp(tileX, 0, Width - TileWidth);
-        tileY = (int)Util.Clamp(tileY, 0, Height - TileHeight);
+        tileX = Util.Clamp(tileX, 0, Width - TileWidth);
+        tileY = Util.Clamp(tileY, 0, Height - TileHeight);
 
-        var layerDepth = layerNames[layer];
-        if (!tileTable.ContainsKey(layerDepth))
+        if (
+            layerNames.TryGetValue(layer, out var layerDepth) &&
+            tileTable.TryGetValue(layerDepth, out var layerInfo) &&
+            layerInfo.TryGetValue(tileX, out var columnInfo) &&
+            columnInfo.TryGetValue(tileY, out var tileInfo)
+        )
         {
-            return null;
+            return tileInfo;
         }
 
-        if (!tileTable[layerDepth].ContainsKey(tileX))
-        {
-            return null;
-        }
-
-        if (!tileTable[layerDepth][tileX].ContainsKey(tileY))
-        {
-            return null;
-        }
-
-        return tileTable[layerDepth][tileX][tileY];
+        return null;
     }
 
     /// <summary>
@@ -737,8 +729,8 @@ public class Tilemap : SpriteGraphic
             tileY *= TileHeight;
         }
 
-        tileX = (int)Util.Clamp(tileX, 0, Width - TileWidth);
-        tileY = (int)Util.Clamp(tileY, 0, Height - TileHeight);
+        tileX = Util.Clamp(tileX, 0, Width - TileWidth);
+        tileY = Util.Clamp(tileY, 0, Height - TileHeight);
 
         RemoveTile(tileX, tileY, layerNames[layer]);
 
@@ -827,7 +819,7 @@ public class Tilemap : SpriteGraphic
     public int AddLayer(string name, int depth = 0)
     {
         layerNames.Add(name, depth);
-        TileLayers.Add(depth, new List<TileInfo>());
+        TileLayers.Add(depth, []);
 
         return TileLayers.Count - 1;
     }

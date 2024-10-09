@@ -8,12 +8,12 @@ namespace Lutra.Examples.Microgames.LType;
 
 public class PlayerShip : Entity
 {
-    private static readonly Vector2 weaponPosition = new Vector2(20, 5);
-    private Image shipSprite;
-    private Weapon currentWeapon = Weapon.Gauss;
+    private static readonly Vector2 weaponPosition = new(20, 5);
+    private readonly Image shipSprite;
+    private readonly Weapon currentWeapon = Weapon.Gauss;
     private float lastShotTimer = float.MaxValue;
 
-    public readonly List<Bullet> ActiveBullets = new();
+    public readonly List<Bullet> ActiveBullets = [];
     public bool PlayerDead;
     public Action OnDeath;
 

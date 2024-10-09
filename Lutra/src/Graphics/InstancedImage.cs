@@ -22,10 +22,7 @@ public class InstancedImage : Graphic
     /// </summary>
     public Color DropshadowColor
     {
-        get
-        {
-            return dropshadowColor;
-        }
+        get => dropshadowColor;
 
         set
         {
@@ -39,10 +36,7 @@ public class InstancedImage : Graphic
     /// </summary>
     public int DropshadowDistanceX
     {
-        get
-        {
-            return dropshadowDistanceX;
-        }
+        get => dropshadowDistanceX;
         set
         {
             dropshadowDistanceX = value;
@@ -55,10 +49,7 @@ public class InstancedImage : Graphic
     /// </summary>
     public int DropshadowDistanceY
     {
-        get
-        {
-            return dropshadowDistanceY;
-        }
+        get => dropshadowDistanceY;
         set
         {
             dropshadowDistanceY = value;

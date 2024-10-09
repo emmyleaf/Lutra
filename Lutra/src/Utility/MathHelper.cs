@@ -1,8 +1,6 @@
 // Based on code released under the MIT License
 // Copyright (C) The Mono.Xna Team
 
-using System;
-
 namespace Lutra.Utility
 {
     /// <summary>

@@ -62,11 +62,4 @@ See the [OTTER article](./OTTER.md) for more information.
 
 Lutra is licensed under the [MIT License](./LICENSE).
 
-Lutra makes use of the following open source dependencies:
-
-- [ImGui.NET](https://github.com/ImGuiNET/ImGui.NET) (MIT License) & [Dear ImGui](https://github.com/ocornut/imgui) (MIT License)
-- [SixLabors.ImageSharp](https://github.com/SixLabors/ImageSharp) (Apache 2.0 License)
-- [SpaceWizards.SharpFont](https://github.com/space-wizards/SharpFont) (MIT License) & [FreeType](https://freetype.org) (FreeType License)
-- [ppy.SDL3-CS](https://github.com/ppy/SDL3-CS) (MIT License) & [SDL3](https://github.com/libsdl-org/SDL) (Zlib License)
-- [ppy.Veldrid](https://github.com/ppy/veldrid) (MIT License)
-- [ZstdSharp.Port](https://github.com/oleg-st/ZstdSharp) (MIT License)
+Please also see the list of [third party dependency licenses](./THIRDPARTY.md)

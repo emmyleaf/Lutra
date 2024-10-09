@@ -4,7 +4,7 @@ namespace Lutra;
 
 public class SceneSystem
 {
-    private Game _game;
+    private readonly Game _game;
 
     public Stack<Scene> Stack = new();
     public Scene SwitchToScene;

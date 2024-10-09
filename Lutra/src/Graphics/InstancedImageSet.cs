@@ -36,7 +36,7 @@ public class InstancedImageSet : InstancedImage
     /// </summary>
     public int Frame
     {
-        get { return frame; }
+        get => frame;
         set
         {
             frame = Util.Clamp(value, 0, Frames - 1);

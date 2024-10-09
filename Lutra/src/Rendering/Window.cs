@@ -1,5 +1,6 @@
 using Lutra.Utility;
 using SDL;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Lutra.Rendering;
 
@@ -11,7 +12,7 @@ public class Window
     private const SDL_WindowFlags DEFAULT_FLAGS =
         SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_RESIZABLE;
 
-    private readonly static RectFloat FullWindowBounds = new RectFloat(-1, -1, 2, 2);
+    private readonly static RectFloat FullWindowBounds = new(-1, -1, 2, 2);
 
     private readonly Game _game;
 
@@ -80,6 +81,7 @@ public class Window
     /// <summary>
     /// The visibilty of the mouse.
     /// </summary>
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Consistent API design")]
     public bool MouseVisible
     {
         get => SDL3.SDL_CursorVisible().Bool();
@@ -272,16 +274,16 @@ public class Window
     {
         if (LockAspectRatio)
         {
-            float gameAspectRatio = (float)_game.Width / (float)_game.Height;
-            float windowAspectRatio = (float)Width / (float)Height;
+            float gameAspectRatio = _game.Width / (float)_game.Height;
+            float windowAspectRatio = Width / (float)Height;
 
             if (gameAspectRatio < windowAspectRatio)
             {
-                SurfaceScale = (float)Height / (float)_game.Height;
+                SurfaceScale = Height / (float)_game.Height;
             }
             else
             {
-                SurfaceScale = (float)Width / (float)_game.Width;
+                SurfaceScale = Width / (float)_game.Width;
             }
 
             if (LockIntegerScale)
@@ -307,7 +309,7 @@ public class Window
         else
         {
             SurfaceBounds = FullWindowBounds;
-            SurfaceScale = (float)Width / (float)_game.Width;
+            SurfaceScale = Width / (float)_game.Width;
         }
     }
 

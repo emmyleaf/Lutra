@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using ImGuiNET;
 using Lutra.MIDI;
 using Lutra.Utility;
@@ -6,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Commons.Music.Midi;
 using Lutra.Graphics;
-using System;
 
 namespace Lutra.Examples
 {
@@ -18,7 +16,7 @@ namespace Lutra.Examples
 
         private List<string> MidiInputDetails;
         private List<string> MidiOutputDetails;
-        private Dictionary<int, int> DetectedValues = new();
+        private readonly Dictionary<int, int> DetectedValues = [];
         private Shape FunShape;
         private string LastEventPlayed = "";
 
@@ -35,10 +33,7 @@ namespace Lutra.Examples
 
             OnEnd += () =>
             {
-                if (MIDIInput != null)
-                {
-                    MIDIInput.Dispose();
-                }
+                MIDIInput?.Dispose();
             };
         }
 
@@ -48,7 +43,7 @@ namespace Lutra.Examples
 
             if (ImGui.Button("Get Available MIDI Inputs"))
             {
-                MidiInputDetails = new List<string>();
+                MidiInputDetails = [];
                 foreach (var midiInput in MIDI.Util.GetMIDIInputDetails())
                 {
                     MidiInputDetails.Add(midiInput.Id + ":" + midiInput.Name);
@@ -97,7 +92,7 @@ namespace Lutra.Examples
 
             if (ImGui.Button("Get Available MIDI Outputs"))
             {
-                MidiOutputDetails = new List<string>();
+                MidiOutputDetails = [];
                 foreach (var midiOutput in MIDI.Util.GetMIDIOutputDetails())
                 {
                     MidiOutputDetails.Add(midiOutput.Id + ":" + midiOutput.Name);
@@ -198,14 +193,8 @@ namespace Lutra.Examples
         {
             base.Update();
 
-            if (MIDIInput != null)
-            {
-                MIDIInput.Update();
-            }
-            if (MIDIOutput != null)
-            {
-                MIDIOutput.Update();
-            }
+            MIDIInput?.Update();
+            MIDIOutput?.Update();
 
             FunShape.ScaleY = MathHelper.Lerp(FunShape.ScaleY, 1.0f, 0.25f);
             FunShape.ScaleX = MathHelper.Lerp(FunShape.ScaleX, 1.0f, 0.25f);
@@ -216,14 +205,7 @@ namespace Lutra.Examples
             Utility.Util.Log($"MIDI Event: Type: {midiEvent.EventType}, Channel: {midiEvent.Channel}, Controller: {midiEvent.Controller}, Value: {midiEvent.Value}");
             if (midiEvent.EventType == MIDICommandEventType.ControllerValueChanged)
             {
-                if (!DetectedValues.ContainsKey(midiEvent.Controller))
-                {
-                    DetectedValues.Add(midiEvent.Controller, midiEvent.Value);
-                }
-                else
-                {
-                    DetectedValues[midiEvent.Controller] = midiEvent.Value;
-                }
+                DetectedValues[midiEvent.Controller] = midiEvent.Value;
 
                 if (midiEvent.Controller == 3)
                 {

@@ -67,7 +67,7 @@ namespace Lutra.Utility.Veldrid
             bool colorSrgb)
         {
             SwapchainSource source = GetSwapchainSource(window);
-            SwapchainDescription swapchainDesc = new SwapchainDescription(
+            SwapchainDescription swapchainDesc = new(
                 source,
                 (uint)window.Width, (uint)window.Height,
                 options.SwapchainDepthFormat,
@@ -87,7 +87,7 @@ namespace Lutra.Utility.Veldrid
             bool colorSrgb)
         {
             SwapchainSource source = GetSwapchainSource(window);
-            SwapchainDescription scDesc = new SwapchainDescription(
+            SwapchainDescription scDesc = new(
                 source,
                 (uint)window.Width,
                 (uint)window.Height,
@@ -198,7 +198,7 @@ namespace Lutra.Utility.Veldrid
             Window window)
         {
             SwapchainSource source = GetSwapchainSource(window);
-            SwapchainDescription swapchainDesc = new SwapchainDescription(
+            SwapchainDescription swapchainDesc = new(
                 source,
                 (uint)window.Width, (uint)window.Height,
                 options.SwapchainDepthFormat,
@@ -210,7 +210,7 @@ namespace Lutra.Utility.Veldrid
 #endif
 
 #if !EXCLUDE_OPENGL_BACKEND
-        private static readonly object s_glVersionLock = new object();
+        private static readonly object s_glVersionLock = new();
         private static (int Major, int Minor)? s_maxSupportedGLVersion;
         private static (int Major, int Minor)? s_maxSupportedGLESVersion;
 
@@ -233,8 +233,8 @@ namespace Lutra.Utility.Veldrid
         private static (int Major, int Minor) TestMaxVersion(bool gles)
         {
             (int, int)[] testVersions = gles
-                ? new[] { (3, 2), (3, 0) }
-                : new[] { (4, 6), (4, 3), (4, 0), (3, 3), (3, 0) };
+                ? [(3, 2), (3, 0)]
+                : [(4, 6), (4, 3), (4, 0), (3, 3), (3, 0)];
 
             foreach ((int major, int minor) in testVersions)
             {

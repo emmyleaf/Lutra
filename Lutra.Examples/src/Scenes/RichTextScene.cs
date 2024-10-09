@@ -7,7 +7,7 @@ namespace Lutra.Examples
     public class RichTextScene : Scene
     {
         RichText richText;
-        string textContent = "Waltz, bad nymph, for quick jigs vex.";
+        readonly string textContent = "Waltz, bad nymph, for quick jigs vex.";
 
         public override void Begin()
         {

@@ -19,7 +19,7 @@ namespace Lutra.Utility.Glide
         #region Timing
         public bool Paused { get; private set; }
         private float Delay, repeatDelay;
-        private float Duration;
+        private readonly float Duration;
 
         private float time;
         #endregion
@@ -28,26 +28,30 @@ namespace Lutra.Utility.Glide
         private int repeatCount, timesRepeated;
         private GlideLerper.Behavior behavior;
 
-        private List<GlideInfo> vars;
-        private List<GlideLerper> lerpers;
-        private List<object> start, end;
-        private Dictionary<string, int> varHash;
-        private Tweener Tweener;
+        private readonly List<GlideInfo> vars;
+        private readonly List<GlideLerper> lerpers;
+        private readonly List<object> start, end;
+        private readonly Dictionary<string, int> varHash;
+        private readonly Tweener Tweener;
 
         /// <summary>
         /// The time remaining before the tween ends or repeats.
         /// </summary>
-        public float TimeRemaining { get { return Duration - time; } }
+        public float TimeRemaining => Duration - time;
 
         /// <summary>
         /// A value between 0 and 1, where 0 means the tween has not been started and 1 means that it has completed.
         /// </summary>
-        public float Completion { get { var c = time / Duration; return c < 0 ? 0 : (c > 1 ? 1 : c); } set { time = value * (Duration); } }
+        public float Completion
+        {
+            get { var c = time / Duration; return c < 0 ? 0 : (c > 1 ? 1 : c); }
+            set => time = value * Duration;
+        }
 
         /// <summary>
         /// Whether the tween is currently looping.
         /// </summary>
-        public bool Looping { get { return repeatCount != 0; } }
+        public bool Looping => repeatCount != 0;
 
         /// <summary>
         /// The object this tween targets. Will be null if the tween represents a timer.
@@ -63,11 +67,11 @@ namespace Lutra.Utility.Glide
 
             firstUpdate = true;
 
-            varHash = new Dictionary<string, int>();
-            vars = new List<GlideInfo>();
-            lerpers = new List<GlideLerper>();
-            start = new List<object>();
-            end = new List<object>();
+            varHash = [];
+            vars = [];
+            lerpers = [];
+            start = [];
+            end = [];
             behavior = GlideLerper.Behavior.None;
         }
 
@@ -91,8 +95,7 @@ namespace Lutra.Utility.Glide
                 var i = vars.Count;
                 while (i-- > 0)
                 {
-                    if (lerpers[i] != null)
-                        lerpers[i].Initialize(start[i], end[i], behavior);
+                    lerpers[i]?.Initialize(start[i], end[i], behavior);
                 }
             }
             else
@@ -155,8 +158,7 @@ namespace Lutra.Utility.Glide
                 if (time == 0 && behavior.HasFlag(GlideLerper.Behavior.Reflect))
                     Reverse();
 
-                if (update != null)
-                    update();
+                update?.Invoke();
 
                 if (doComplete && complete != null)
                     complete();
@@ -177,8 +179,7 @@ namespace Lutra.Utility.Glide
                 var property = props[i];
                 var propValue = property.GetValue(values, null);
 
-                int index = -1;
-                if (varHash.TryGetValue(property.Name, out index))
+                if (varHash.TryGetValue(property.Name, out int index))
                 {
                     //	if we're already tweening this value, adjust the range
                     start[index] = propValue;
@@ -327,8 +328,7 @@ namespace Lutra.Utility.Glide
             var canceled = 0;
             for (int i = 0; i < properties.Length; ++i)
             {
-                var index = 0;
-                if (!varHash.TryGetValue(properties[i], out index))
+                if (!varHash.TryGetValue(properties[i], out int index))
                     continue;
 
                 varHash.Remove(properties[i]);

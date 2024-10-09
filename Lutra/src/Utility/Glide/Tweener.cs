@@ -7,7 +7,7 @@ namespace Lutra.Utility.Glide
     {
         static Tweener()
         {
-            registeredLerpers = new Dictionary<Type, ConstructorInfo>();
+            registeredLerpers = [];
             var numericTypes = new Type[] {
                     typeof(Int16),
                     typeof(Int32),
@@ -35,15 +35,15 @@ namespace Lutra.Utility.Glide
 
         internal Tweener()
         {
-            tweens = new Dictionary<object, List<Tween>>();
-            toRemove = new List<Tween>();
-            toAdd = new List<Tween>();
-            allTweens = new List<Tween>();
+            tweens = [];
+            toRemove = [];
+            toAdd = [];
+            allTweens = [];
         }
 
-        private static Dictionary<Type, ConstructorInfo> registeredLerpers;
-        private Dictionary<object, List<Tween>> tweens;
-        private List<Tween> toRemove, toAdd, allTweens;
+        private static readonly Dictionary<Type, ConstructorInfo> registeredLerpers;
+        private readonly Dictionary<object, List<Tween>> tweens;
+        private readonly List<Tween> toRemove, toAdd, allTweens;
 
         /// <summary>
         /// <para>Tweens a set of properties on an object.</para>
@@ -58,8 +58,7 @@ namespace Lutra.Utility.Glide
         /// <returns>The tween created, for setting properties on.</returns>
         public Tween Tween<T>(T target, object values, float duration, float delay = 0, bool overwrite = false) where T : class
         {
-            if (target == null)
-                throw new ArgumentNullException("target");
+            ArgumentNullException.ThrowIfNull(target);
 
             //	Prevent tweening on structs if you cheat by casting target as Object
             var targetType = target.GetType();
@@ -76,8 +75,7 @@ namespace Lutra.Utility.Glide
             var props = values.GetType().GetProperties();
             for (int i = 0; i < props.Length; ++i)
             {
-                List<Tween> library = null;
-                if (overwrite && tweens.TryGetValue(target, out library))
+                if (overwrite && tweens.TryGetValue(target, out List<Tween> library))
                 {
                     for (int j = 0; j < library.Count; j++)
                         library[j].Cancel(props[i].Name);
@@ -173,10 +171,9 @@ namespace Lutra.Utility.Glide
             AddAndRemove();
         }
 
-        private GlideLerper CreateLerper(Type propertyType)
+        private static GlideLerper CreateLerper(Type propertyType)
         {
-            ConstructorInfo lerper = null;
-            if (!registeredLerpers.TryGetValue(propertyType, out lerper))
+            if (!registeredLerpers.TryGetValue(propertyType, out ConstructorInfo lerper))
                 throw new Exception(string.Format("No Lerper found for type {0}.", propertyType.FullName));
 
             return (GlideLerper)lerper.Invoke(null);
@@ -195,9 +192,8 @@ namespace Lutra.Utility.Glide
                 allTweens.Add(tween);
                 if (tween.Target == null) continue; //	don't sort timers by target
 
-                List<Tween> list = null;
-                if (!tweens.TryGetValue(tween.Target, out list))
-                    tweens[tween.Target] = list = new List<Tween>();
+                if (!tweens.TryGetValue(tween.Target, out List<Tween> list))
+                    tweens[tween.Target] = list = [];
 
                 list.Add(tween);
             }
@@ -208,8 +204,7 @@ namespace Lutra.Utility.Glide
                 allTweens.Remove(tween);
                 if (tween.Target == null) continue; // see above
 
-                List<Tween> list = null;
-                if (tweens.TryGetValue(tween.Target, out list))
+                if (tweens.TryGetValue(tween.Target, out List<Tween> list))
                 {
                     list.Remove(tween);
                     if (list.Count == 0)
@@ -232,8 +227,7 @@ namespace Lutra.Utility.Glide
         /// <param name="target">The object being tweened that you want to cancel.</param>
         public void TargetCancel(object target)
         {
-            List<Tween> list;
-            if (tweens.TryGetValue(target, out list))
+            if (tweens.TryGetValue(target, out List<Tween> list))
             {
                 for (int i = 0; i < list.Count; ++i)
                     list[i].Cancel();
@@ -247,8 +241,7 @@ namespace Lutra.Utility.Glide
         /// <param name="properties">The properties to cancel.</param>
         public void TargetCancel(object target, params string[] properties)
         {
-            List<Tween> list;
-            if (tweens.TryGetValue(target, out list))
+            if (tweens.TryGetValue(target, out List<Tween> list))
             {
                 for (int i = 0; i < list.Count; ++i)
                     list[i].Cancel(properties);
@@ -261,8 +254,7 @@ namespace Lutra.Utility.Glide
         /// <param name="target">The object being tweened that you want to cancel and complete.</param>
         public void TargetCancelAndComplete(object target)
         {
-            List<Tween> list;
-            if (tweens.TryGetValue(target, out list))
+            if (tweens.TryGetValue(target, out List<Tween> list))
             {
                 for (int i = 0; i < list.Count; ++i)
                     list[i].CancelAndComplete();
@@ -276,8 +268,7 @@ namespace Lutra.Utility.Glide
         /// <param name="target">The object being tweened that you want to pause.</param>
         public void TargetPause(object target)
         {
-            List<Tween> list;
-            if (tweens.TryGetValue(target, out list))
+            if (tweens.TryGetValue(target, out List<Tween> list))
             {
                 for (int i = 0; i < list.Count; ++i)
                     list[i].Pause();
@@ -290,8 +281,7 @@ namespace Lutra.Utility.Glide
         /// <param name="target">The object being tweened that you want to toggle pause.</param>
         public void TargetPauseToggle(object target)
         {
-            List<Tween> list;
-            if (tweens.TryGetValue(target, out list))
+            if (tweens.TryGetValue(target, out List<Tween> list))
             {
                 for (int i = 0; i < list.Count; ++i)
                     list[i].PauseToggle();
@@ -304,8 +294,7 @@ namespace Lutra.Utility.Glide
         /// <param name="target">The object being tweened that you want to resume.</param>
         public void TargetResume(object target)
         {
-            List<Tween> list;
-            if (tweens.TryGetValue(target, out list))
+            if (tweens.TryGetValue(target, out List<Tween> list))
             {
                 for (int i = 0; i < list.Count; ++i)
                     list[i].Resume();

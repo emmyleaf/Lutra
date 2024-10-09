@@ -7,9 +7,9 @@ namespace Lutra.Examples.Microgames.Snake.Entities
     {
         public Fish(int tileX, int tileY) : base(tileX * SnakeScene.GridSize, tileY * SnakeScene.GridSize)
         {
-            AddGraphic(new Image("Snake/Fish.png")); 
+            AddGraphic(new Image("Snake/Fish.png"));
             Graphic.CenterOrigin();
-            
+
             AddCollider(new BoxCollider(SnakeScene.GridSize, SnakeScene.GridSize, 2));
             Collider.CenterOrigin();
         }

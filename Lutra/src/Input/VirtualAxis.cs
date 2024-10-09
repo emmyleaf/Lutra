@@ -38,22 +38,22 @@ public class VirtualAxis
     /// <summary>
     /// The Keys to use.
     /// </summary>
-    private Dictionary<Direction, List<Key>> Keys = new();
+    private readonly Dictionary<Direction, List<Key>> Keys = [];
 
     /// <summary>
     /// The controller Buttons registered to the Button.
     /// </summary>
-    private Dictionary<Direction, List<(Controller, ControllerButton)>> ControllerButtons = new();
+    private readonly Dictionary<Direction, List<(Controller, ControllerButton)>> ControllerButtons = [];
 
     /// <summary>
     /// The X axes to use.
     /// </summary>
-    private List<(Controller, ControllerAxis)> AxesX = new();
+    private readonly List<(Controller, ControllerAxis)> AxesX = [];
 
     /// <summary>
     /// The Y axes to use.
     /// </summary>
-    private List<(Controller, ControllerAxis)> AxesY = new();
+    private readonly List<(Controller, ControllerAxis)> AxesY = [];
 
     #endregion
 
@@ -93,7 +93,7 @@ public class VirtualAxis
     /// <summary>
     /// The current Vector2 position of the axis.
     /// </summary>
-    public Vector2 Position => new Vector2(X, Y);
+    public Vector2 Position => new(X, Y);
 
     /// <summary>
     /// The X position of the axis from -1 to 1.
@@ -166,8 +166,8 @@ public class VirtualAxis
     {
         foreach (Direction dir in InputHelper.CardinalDirections)
         {
-            Keys[dir] = new();
-            ControllerButtons.Add(dir, new());
+            Keys[dir] = [];
+            ControllerButtons.Add(dir, []);
         }
 
         // Create buttons for Axis.

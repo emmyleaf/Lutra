@@ -1,4 +1,3 @@
-using System;
 using System.Numerics;
 using Lutra.Rendering;
 using Lutra.Utility;
@@ -23,7 +22,7 @@ public enum TileRotationAndFlips
 
 public static class TileRotationAndFlipsExt
 {
-    public static void SetFlag(this TileRotationAndFlips enumRef, TileRotationAndFlips flag, bool value)
+    public static void SetFlag(this ref TileRotationAndFlips enumRef, TileRotationAndFlips flag, bool value)
     {
         if (value)
         {
@@ -39,39 +38,39 @@ public static class TileRotationAndFlipsExt
 /// <summary>
 /// Class containing all the info to describe a tile in a Tilemap.
 /// </summary>
-public class TileInfo
+public class TileInfo(int x, int y, int tx, int ty, int width, int height, Color color)
 {
     #region Public Fields
 
     /// <summary>
     /// The X position of the tile.
     /// </summary>
-    public int X;
+    public int X = x;
 
     /// <summary>
     /// The Y position of the tile.
     /// </summary>
-    public int Y;
+    public int Y = y;
 
     /// <summary>
     /// The X position of the source texture to render the tile from.
     /// </summary>
-    public int TX;
+    public int TX = tx;
 
     /// <summary>
     /// The Y position of the source texture to render the tile from.
     /// </summary>
-    public int TY;
+    public int TY = ty;
 
     /// <summary>
     /// The width of the tile.
     /// </summary>
-    public int Width;
+    public int Width = width;
 
     /// <summary>
     /// The height of the tile.
     /// </summary>
-    public int Height;
+    public int Height = height;
 
     /// <summary>
     /// The rotation and flips of the tile encoded as bitflags for each of the 3 flip directions.
@@ -81,15 +80,15 @@ public class TileInfo
     /// <summary>
     /// The color of the tile, or the color to tint the texture.
     /// </summary>
-    public Color Color;
+    public Color Color = color;
 
     /// <summary>
     /// The alpha of the tile.
     /// </summary>
     public float Alpha
     {
-        get { return Color.A; }
-        set { Color = Color.WithAlpha(value); }
+        get => Color.A;
+        set => Color = Color.WithAlpha(value);
     }
 
     #endregion
@@ -122,20 +121,9 @@ public class TileInfo
         get => RotationAndFlips.HasFlag(TileRotationAndFlips.FlipYAxis);
         set => RotationAndFlips.SetFlag(TileRotationAndFlips.FlipYAxis, value);
     }
+
     #endregion
-
     #region Constructors
-
-    public TileInfo(int x, int y, int tx, int ty, int width, int height, Color color)
-    {
-        X = x;
-        Y = y;
-        TX = tx;
-        TY = ty;
-        Width = width;
-        Height = height;
-        Color = color;
-    }
 
     #endregion
 

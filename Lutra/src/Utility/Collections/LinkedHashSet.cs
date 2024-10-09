@@ -8,18 +8,12 @@ namespace Lutra.Utility.Collections;
 /// A simple LinkedHashSet. A collection with uniqueness and order.
 /// Internally uses a Dictionary and a LinkedList.
 /// </summary>
-public class LinkedHashSet<T> : ICollection<T>, IReadOnlyList<T>
+public class LinkedHashSet<T>(IEqualityComparer<T> comparer) : ICollection<T>, IReadOnlyList<T>
 {
-    private readonly Dictionary<T, LinkedListNode<T>> dictionary;
-    private readonly LinkedList<T> linkedList;
+    private readonly Dictionary<T, LinkedListNode<T>> dictionary = new(comparer);
+    private readonly LinkedList<T> linkedList = new();
 
     public LinkedHashSet() : this(EqualityComparer<T>.Default) { }
-
-    public LinkedHashSet(IEqualityComparer<T> comparer)
-    {
-        dictionary = new Dictionary<T, LinkedListNode<T>>(comparer);
-        linkedList = new LinkedList<T>();
-    }
 
     public bool Add(T item)
     {
@@ -32,18 +26,18 @@ public class LinkedHashSet<T> : ICollection<T>, IReadOnlyList<T>
     public T First()
     {
         var node = linkedList.First;
-        return (node != null) ? node.Value : default(T);
+        return (node != null) ? node.Value : default;
     }
 
     public T Last()
     {
         var node = linkedList.Last;
-        return (node != null) ? node.Value : default(T);
+        return (node != null) ? node.Value : default;
     }
 
     #region Interface Implementations
 
-    public T this[int index] => (index >= 0 && index < dictionary.Count) ? linkedList.ElementAt(index) : default(T);
+    public T this[int index] => (index >= 0 && index < dictionary.Count) ? linkedList.ElementAt(index) : default;
 
     public int Count => dictionary.Count;
 

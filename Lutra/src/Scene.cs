@@ -10,8 +10,8 @@ namespace Lutra
 {
     public class Scene
     {
-        private EntityList _entityList;
-        private GraphicList _graphicList;
+        private readonly EntityList _entityList;
+        private readonly GraphicList _graphicList;
 
         #region Public
 
@@ -41,12 +41,12 @@ namespace Lutra
         /// <summary>
         /// The tween manager that controls tweens in this scene.
         /// </summary>
-        public Tweener Tweener = new Tweener();
+        public Tweener Tweener = new();
 
         public Scene()
         {
             _entityList = new(this);
-            _graphicList = new();
+            _graphicList = [];
         }
 
         /// <summary>
@@ -60,9 +60,9 @@ namespace Lutra
             var list = new List<TEntity>();
             foreach (var entity in _entityList)
             {
-                if (entity is TEntity)
+                if (entity is TEntity tEntity)
                 {
-                    list.Add((TEntity)entity);
+                    list.Add(tEntity);
                 }
             }
             return list;
@@ -75,11 +75,11 @@ namespace Lutra
         /// <returns>The first entity of type TEntity in the scene, or null.</returns>
         public TEntity GetEntity<TEntity>() where TEntity : Entity
         {
-            foreach (var e in _entityList)
+            foreach (var entity in _entityList)
             {
-                if (e is TEntity)
+                if (entity is TEntity tEntity)
                 {
-                    return (e as TEntity);
+                    return tEntity;
                 }
             }
             return null;
@@ -111,7 +111,7 @@ namespace Lutra
         /// Get all entities that have a collider with the given collision tag.
         /// WARNING: This could be very slow!
         /// </summary>
-        public IEnumerable<Entity> GetEntitiesWithCollider(int colliderTag)
+        public static IEnumerable<Entity> GetEntitiesWithCollider(int colliderTag)
         {
             return CollisionSystem.Instance.RegisteredColliders
                 .Where(c => c.Tags.Contains(colliderTag))
@@ -122,7 +122,7 @@ namespace Lutra
         /// Get all entities that have a collider with the given collision tag.
         /// WARNING: This could be very slow!
         /// </summary>
-        public IEnumerable<Entity> GetEntitiesWithCollider(Enum colliderTag)
+        public static IEnumerable<Entity> GetEntitiesWithCollider(Enum colliderTag)
         {
             return GetEntitiesWithCollider(Convert.ToInt32(colliderTag));
         }
@@ -185,7 +185,7 @@ namespace Lutra
         {
             while (_graphicList.Count > 0)
             {
-                RemoveGraphic(_graphicList.Last());
+                RemoveGraphic(_graphicList[^1]);
             }
         }
 
@@ -209,6 +209,7 @@ namespace Lutra
         // TODO: Implement this!
         public void PauseGroup(int group)
         {
+            throw new NotImplementedException();
             // if (groupsToUnpause.Contains(group))
             // {
             //     groupsToUnpause.Remove(group);
@@ -225,6 +226,7 @@ namespace Lutra
         /// <param name="group">The group to resume.</param>
         public void ResumeGroup(int group)
         {
+            throw new NotImplementedException();
             // if (!IsGroupPaused(group)) return;
 
             // if (groupsToPause.Contains(group))

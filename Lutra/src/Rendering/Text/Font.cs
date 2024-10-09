@@ -4,25 +4,19 @@ using SharpFont;
 
 namespace Lutra.Rendering.Text
 {
-    public class Font
+    public class Font(byte[] fontBytes, bool antialiased = true)
     {
-        private static Library Library;
+        private static readonly Library Library;
 
-        private readonly Face Face;
-        private readonly LoadTarget loadTarget;
-        private readonly Dictionary<int, FontPage> FontPages = new();
+        private readonly Face Face = new(Library, fontBytes, 0);
+        private readonly LoadTarget loadTarget = antialiased ? LoadTarget.Normal : LoadTarget.Mono;
+        private readonly Dictionary<int, FontPage> FontPages = [];
         private int CurrentSize;
-        private List<int> preloadedKeys = new();
+        private readonly List<int> preloadedKeys = [];
 
         static Font()
         {
             Library = new Library();
-        }
-
-        public Font(byte[] fontBytes, bool antialiased = true)
-        {
-            Face = new Face(Library, fontBytes, 0);
-            loadTarget = antialiased ? LoadTarget.Normal : LoadTarget.Mono;
         }
 
         public void PreloadASCII(int size, bool bold = false)
@@ -123,7 +117,7 @@ namespace Lutra.Rendering.Text
 
             if (!fontPage.Kerning.TryGetValue(first, out var charKerning))
             {
-                fontPage.Kerning[first] = charKerning = new();
+                fontPage.Kerning[first] = charKerning = [];
             }
 
             if (!charKerning.TryGetValue(second, out var kerning))
@@ -178,7 +172,7 @@ namespace Lutra.Rendering.Text
 
             if (Face.Glyph.Metrics.Width == 0)
             {
-                bufferData = new byte[0];
+                bufferData = [];
             }
             else
             {

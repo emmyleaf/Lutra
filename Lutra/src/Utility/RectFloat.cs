@@ -9,12 +9,20 @@ namespace Lutra.Utility
     /// <summary>
     /// Describes a 2D-rectangle with float coordinates. 
     /// </summary>
+    /// <remarks>
+    /// Creates a new instance of <see cref="RectFloat"/> struct, with the specified
+    /// position, width, and height.
+    /// </remarks>
+    /// <param name="x">The x coordinate of the top-left corner of the created <see cref="RectFloat"/>.</param>
+    /// <param name="y">The y coordinate of the top-left corner of the created <see cref="RectFloat"/>.</param>
+    /// <param name="width">The width of the created <see cref="RectFloat"/>.</param>
+    /// <param name="height">The height of the created <see cref="RectFloat"/>.</param>
     [DataContract]
-    public struct RectFloat : IEquatable<RectFloat>
+    public struct RectFloat(float x, float y, float width, float height) : IEquatable<RectFloat>
     {
         #region Private Fields
 
-        private static RectFloat emptyRectangle = new RectFloat();
+        private static RectFloat emptyRectangle = new();
 
         #endregion
 
@@ -24,25 +32,25 @@ namespace Lutra.Utility
         /// The x coordinate of the top-left corner of this <see cref="RectFloat"/>.
         /// </summary>
         [DataMember]
-        public float X;
+        public float X = x;
 
         /// <summary>
         /// The y coordinate of the top-left corner of this <see cref="RectFloat"/>.
         /// </summary>
         [DataMember]
-        public float Y;
+        public float Y = y;
 
         /// <summary>
         /// The width of this <see cref="RectFloat"/>.
         /// </summary>
         [DataMember]
-        public float Width;
+        public float Width = width;
 
         /// <summary>
         /// The height of this <see cref="RectFloat"/>.
         /// </summary>
         [DataMember]
-        public float Height;
+        public float Height = height;
 
         #endregion
 
@@ -51,64 +59,43 @@ namespace Lutra.Utility
         /// <summary>
         /// Returns a <see cref="RectFloat"/> with X=0, Y=0, Width=0, Height=0.
         /// </summary>
-        public static RectFloat Empty
-        {
-            get { return emptyRectangle; }
-        }
+        public static RectFloat Empty => emptyRectangle;
 
         /// <summary>
         /// Returns the x coordinate of the left edge of this <see cref="RectFloat"/>.
         /// </summary>
-        public float Left
-        {
-            get { return this.X; }
-        }
+        public readonly float Left => X;
 
         /// <summary>
         /// Returns the x coordinate of the right edge of this <see cref="RectFloat"/>.
         /// </summary>
-        public float Right
-        {
-            get { return (this.X + this.Width); }
-        }
+        public readonly float Right => X + Width;
 
         /// <summary>
         /// Returns the y coordinate of the top edge of this <see cref="RectFloat"/>.
         /// </summary>
-        public float Top
-        {
-            get { return this.Y; }
-        }
+        public readonly float Top => Y;
 
         /// <summary>
         /// Returns the y coordinate of the bottom edge of this <see cref="RectFloat"/>.
         /// </summary>
-        public float Bottom
-        {
-            get { return (this.Y + this.Height); }
-        }
+        public readonly float Bottom => Y + Height;
 
         /// <summary>
         /// Whether or not this <see cref="RectFloat"/> has a <see cref="Width"/> and
         /// <see cref="Height"/> of 0, and a <see cref="Location"/> of (0, 0).
         /// </summary>
-        public bool IsEmpty
-        {
-            get
-            {
-                return ((((this.Width == 0) && (this.Height == 0)) && (this.X == 0)) && (this.Y == 0));
-            }
-        }
+        public readonly bool IsEmpty => (Width == 0) && (Height == 0) && (X == 0) && (Y == 0);
 
         /// <summary>
         /// The top-left coordinates of this <see cref="RectFloat"/>.
         /// </summary>
-        public Vector2 Location => new Vector2(this.X, this.Y);
+        public readonly Vector2 Location => new(X, Y);
 
         /// <summary>
         /// The width-height coordinates of this <see cref="RectFloat"/>.
         /// </summary>
-        public Vector2 Size => new Vector2(this.Width, this.Height);
+        public readonly Vector2 Size => new(Width, Height);
 
         /// <summary>
         /// A <see cref="Vector2"/> located in the center of this <see cref="RectFloat"/>.
@@ -117,47 +104,30 @@ namespace Lutra.Utility
         /// If <see cref="Width"/> or <see cref="Height"/> is an odd number,
         /// the center point will be rounded down.
         /// </remarks>
-        public Vector2 Center => new Vector2(this.X + (this.Width / 2), this.Y + (this.Height / 2));
+        public readonly Vector2 Center => new(X + (Width / 2), Y + (Height / 2));
 
         /// <summary>
         /// The top-left coordinates of this <see cref="RectFloat"/>.
         /// </summary>
-        public Vector2 TopLeft => new Vector2(this.X, this.Y);
+        public readonly Vector2 TopLeft => new(X, Y);
 
         /// <summary>
         /// The top-right coordinates of this <see cref="RectFloat"/>.
         /// </summary>
-        public Vector2 TopRight => new Vector2(this.X + this.Width, this.Y);
+        public readonly Vector2 TopRight => new(X + Width, Y);
 
         /// <summary>
         /// The bottom-left coordinates of this <see cref="RectFloat"/>.
         /// </summary>
-        public Vector2 BottomLeft => new Vector2(this.X, this.Y + this.Height);
+        public readonly Vector2 BottomLeft => new(X, Y + Height);
 
         /// <summary>
         /// The bottom-right coordinates of this <see cref="RectFloat"/>.
         /// </summary>
-        public Vector2 BottomRight => new Vector2(this.X + this.Width, this.Y + this.Height);
+        public readonly Vector2 BottomRight => new(X + Width, Y + Height);
 
         #endregion
-
         #region Constructors
-
-        /// <summary>
-        /// Creates a new instance of <see cref="RectFloat"/> struct, with the specified
-        /// position, width, and height.
-        /// </summary>
-        /// <param name="x">The x coordinate of the top-left corner of the created <see cref="RectFloat"/>.</param>
-        /// <param name="y">The y coordinate of the top-left corner of the created <see cref="RectFloat"/>.</param>
-        /// <param name="width">The width of the created <see cref="RectFloat"/>.</param>
-        /// <param name="height">The height of the created <see cref="RectFloat"/>.</param>
-        public RectFloat(float x, float y, float width, float height)
-        {
-            this.X = x;
-            this.Y = y;
-            this.Width = width;
-            this.Height = height;
-        }
 
         #endregion
 
@@ -171,7 +141,7 @@ namespace Lutra.Utility
         /// <returns><c>true</c> if the instances are equal; <c>false</c> otherwise.</returns>
         public static bool operator ==(RectFloat a, RectFloat b)
         {
-            return ((a.X == b.X) && (a.Y == b.Y) && (a.Width == b.Width) && (a.Height == b.Height));
+            return (a.X == b.X) && (a.Y == b.Y) && (a.Width == b.Width) && (a.Height == b.Height);
         }
 
         /// <summary>
@@ -195,9 +165,9 @@ namespace Lutra.Utility
         /// <param name="x">The x coordinate of the point to check for containment.</param>
         /// <param name="y">The y coordinate of the point to check for containment.</param>
         /// <returns><c>true</c> if the provided coordinates lie inside this <see cref="RectFloat"/>; <c>false</c> otherwise.</returns>
-        public bool Contains(float x, float y)
+        public readonly bool Contains(float x, float y)
         {
-            return ((((this.X <= x) && (x < (this.X + this.Width))) && (this.Y <= y)) && (y < (this.Y + this.Height)));
+            return (X <= x) && (x < (X + Width)) && (Y <= y) && (y < (Y + Height));
         }
 
         /// <summary>
@@ -205,9 +175,9 @@ namespace Lutra.Utility
         /// </summary>
         /// <param name="value">The coordinates to check for inclusion in this <see cref="RectFloat"/>.</param>
         /// <returns><c>true</c> if the provided <see cref="Vector2"/> lies inside this <see cref="RectFloat"/>; <c>false</c> otherwise.</returns>
-        public bool Contains(Vector2 value)
+        public readonly bool Contains(Vector2 value)
         {
-            return ((((this.X <= value.X) && (value.X < (this.X + this.Width))) && (this.Y <= value.Y)) && (value.Y < (this.Y + this.Height)));
+            return (X <= value.X) && (value.X < (X + Width)) && (Y <= value.Y) && (value.Y < (Y + Height));
         }
 
         /// <summary>
@@ -215,9 +185,9 @@ namespace Lutra.Utility
         /// </summary>
         /// <param name="value">The coordinates to check for inclusion in this <see cref="RectFloat"/>.</param>
         /// <param name="result"><c>true</c> if the provided <see cref="Vector2"/> lies inside this <see cref="RectFloat"/>; <c>false</c> otherwise. As an output parameter.</param>
-        public void Contains(ref Vector2 value, out bool result)
+        public readonly void Contains(ref Vector2 value, out bool result)
         {
-            result = ((((this.X <= value.X) && (value.X < (this.X + this.Width))) && (this.Y <= value.Y)) && (value.Y < (this.Y + this.Height)));
+            result = (X <= value.X) && (value.X < (X + Width)) && (Y <= value.Y) && (value.Y < (Y + Height));
         }
 
         /// <summary>
@@ -225,9 +195,9 @@ namespace Lutra.Utility
         /// </summary>
         /// <param name="value">The <see cref="RectFloat"/> to check for inclusion in this <see cref="RectFloat"/>.</param>
         /// <returns><c>true</c> if the provided <see cref="RectFloat"/>'s bounds lie entirely inside this <see cref="RectFloat"/>; <c>false</c> otherwise.</returns>
-        public bool Contains(RectFloat value)
+        public readonly bool Contains(RectFloat value)
         {
-            return ((((this.X <= value.X) && ((value.X + value.Width) <= (this.X + this.Width))) && (this.Y <= value.Y)) && ((value.Y + value.Height) <= (this.Y + this.Height)));
+            return (X <= value.X) && ((value.X + value.Width) <= (X + Width)) && (Y <= value.Y) && ((value.Y + value.Height) <= (Y + Height));
         }
 
         /// <summary>
@@ -235,9 +205,9 @@ namespace Lutra.Utility
         /// </summary>
         /// <param name="value">The <see cref="RectFloat"/> to check for inclusion in this <see cref="RectFloat"/>.</param>
         /// <param name="result"><c>true</c> if the provided <see cref="RectFloat"/>'s bounds lie entirely inside this <see cref="RectFloat"/>; <c>false</c> otherwise. As an output parameter.</param>
-        public void Contains(ref RectFloat value, out bool result)
+        public readonly void Contains(ref RectFloat value, out bool result)
         {
-            result = ((((this.X <= value.X) && ((value.X + value.Width) <= (this.X + this.Width))) && (this.Y <= value.Y)) && ((value.Y + value.Height) <= (this.Y + this.Height)));
+            result = (X <= value.X) && ((value.X + value.Width) <= (X + Width)) && (Y <= value.Y) && ((value.Y + value.Height) <= (Y + Height));
         }
 
         /// <summary>
@@ -245,9 +215,9 @@ namespace Lutra.Utility
         /// </summary>
         /// <param name="obj">The <see cref="Object"/> to compare.</param>
         /// <returns><c>true</c> if the instances are equal; <c>false</c> otherwise.</returns>
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
-            return (obj is RectFloat) && this == ((RectFloat)obj);
+            return (obj is RectFloat other) && this == other;
         }
 
         /// <summary>
@@ -255,7 +225,7 @@ namespace Lutra.Utility
         /// </summary>
         /// <param name="other">The <see cref="RectFloat"/> to compare.</param>
         /// <returns><c>true</c> if the instances are equal; <c>false</c> otherwise.</returns>
-        public bool Equals(RectFloat other)
+        public readonly bool Equals(RectFloat other)
         {
             return this == other;
         }
@@ -264,7 +234,7 @@ namespace Lutra.Utility
         /// Gets the hash code of this <see cref="RectFloat"/>.
         /// </summary>
         /// <returns>Hash code of this <see cref="RectFloat"/>.</returns>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             unchecked
             {
@@ -295,7 +265,7 @@ namespace Lutra.Utility
         /// </summary>
         /// <param name="value">The other rectangle for testing.</param>
         /// <returns><c>true</c> if other <see cref="RectFloat"/> intersects with this rectangle; <c>false</c> otherwise.</returns>
-        public bool Intersects(RectFloat value)
+        public readonly bool Intersects(RectFloat value)
         {
             return value.Left < Right &&
                    Left < value.Right &&
@@ -309,7 +279,7 @@ namespace Lutra.Utility
         /// </summary>
         /// <param name="value">The other rectangle for testing.</param>
         /// <param name="result"><c>true</c> if other <see cref="RectFloat"/> intersects with this rectangle; <c>false</c> otherwise. As an output parameter.</param>
-        public void Intersects(ref RectFloat value, out bool result)
+        public readonly void Intersects(ref RectFloat value, out bool result)
         {
             result = value.Left < Right &&
                      Left < value.Right &&
@@ -325,8 +295,7 @@ namespace Lutra.Utility
         /// <returns>Overlapping region of the two rectangles.</returns>
         public static RectFloat Intersect(RectFloat value1, RectFloat value2)
         {
-            RectFloat rectangle;
-            Intersect(ref value1, ref value2, out rectangle);
+            Intersect(ref value1, ref value2, out RectFloat rectangle);
             return rectangle;
         }
 
@@ -378,7 +347,7 @@ namespace Lutra.Utility
         /// {X:[<see cref="X"/>] Y:[<see cref="Y"/>] Width:[<see cref="Width"/>] Height:[<see cref="Height"/>]}
         /// </summary>
         /// <returns><see cref="String"/> representation of this <see cref="RectFloat"/>.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return "{X:" + X + " Y:" + Y + " Width:" + Width + " Height:" + Height + "}";
         }
@@ -419,7 +388,7 @@ namespace Lutra.Utility
         /// <param name="y"></param>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public void Deconstruct(out float x, out float y, out float width, out float height)
+        public readonly void Deconstruct(out float x, out float y, out float width, out float height)
         {
             x = X;
             y = Y;

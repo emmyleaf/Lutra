@@ -21,7 +21,7 @@ namespace Lutra
 
         #region Private Variables
 
-        private Game game;
+        private readonly Game game;
         private bool initialized = false;
         private bool suppressRender = false;
 
@@ -30,7 +30,7 @@ namespace Lutra
         private long previousTicks = 0;
 
         private static readonly TimeSpan MaxElapsedTime = TimeSpan.FromMilliseconds(500);
-        private const double TicksPerSecond = (double)TimeSpan.TicksPerSecond;
+        private const double TicksPerSecond = TimeSpan.TicksPerSecond;
 
         #endregion
 

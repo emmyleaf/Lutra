@@ -26,45 +26,45 @@ public class ShaderData
 
         Elements = new ResourceLayoutElementDescription[count];
         Resources = new IBindableResource[count];
-        BufferDictionary = new();
+        BufferDictionary = [];
 
         for (int i = 0; i < count; i++)
         {
-            var param = parameters[i];
-            var value = param.Value;
+            var (Name, Value) = parameters[i];
+            var value = Value;
 
-            if (value is LutraTexture)
+            if (value is LutraTexture texture)
             {
-                Elements[i] = new ResourceLayoutElementDescription(param.Name, ResourceKind.TextureReadOnly, ShaderStages.Fragment);
-                Resources[i] = (value as LutraTexture).TextureView;
+                Elements[i] = new ResourceLayoutElementDescription(Name, ResourceKind.TextureReadOnly, ShaderStages.Fragment);
+                Resources[i] = texture.TextureView;
             }
-            else if (value is Color)
+            else if (value is Color color)
             {
-                CreateSmallUniformBuffer(i, param.Name, (Color)value);
+                CreateSmallUniformBuffer(i, Name, color);
             }
-            else if (value is Vector4)
+            else if (value is Vector4 vector4)
             {
-                CreateSmallUniformBuffer(i, param.Name, (Vector4)value);
+                CreateSmallUniformBuffer(i, Name, vector4);
             }
-            else if (value is Vector2)
+            else if (value is Vector2 vector2)
             {
-                CreateSmallUniformBuffer(i, param.Name, (Vector2)value);
+                CreateSmallUniformBuffer(i, Name, vector2);
             }
-            else if (value is float)
+            else if (value is float @float)
             {
-                CreateSmallUniformBuffer(i, param.Name, (float)value);
+                CreateSmallUniformBuffer(i, Name, @float);
             }
-            else if (value is int)
+            else if (value is int @int)
             {
-                CreateSmallUniformBuffer(i, param.Name, (int)value);
+                CreateSmallUniformBuffer(i, Name, @int);
             }
             else if (value is IBindableResource)
             {
-                throw new NotImplementedException($"Parameter {param.Name} type is not implemented for SpriteShader");
+                throw new NotImplementedException($"Parameter {Name} type is not implemented for SpriteShader");
             }
             else
             {
-                throw new ArgumentException($"Parameter {param.Name} does not map to a Veldrid.BindableResource");
+                throw new ArgumentException($"Parameter {Name} does not map to a Veldrid.BindableResource");
             }
         }
 
@@ -86,7 +86,7 @@ public class ShaderData
     {
         if (BufferDictionary.TryGetValue(name, out var uniformBuffer))
         {
-            VeldridResources.GraphicsDevice.UpdateBuffer(uniformBuffer, 0, (T)value);
+            VeldridResources.GraphicsDevice.UpdateBuffer(uniformBuffer, 0, value);
         }
         else
         {

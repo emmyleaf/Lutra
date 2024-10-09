@@ -7,13 +7,13 @@ public readonly record struct WeaponData
     int Range
 )
 {
-    public static readonly WeaponData Plasma = new WeaponData(0.4f, 15, 20);
-    public static readonly WeaponData DarkMatter = new WeaponData(0.3f, 30, 30);
-    public static readonly WeaponData Missile = new WeaponData(0.5f, 50, 50);
-    public static readonly WeaponData Gauss = new WeaponData(0.2f, 15, 10);
-    public static readonly WeaponData Disruptor = new WeaponData(0.35f, 40, 40);
-    public static readonly WeaponData DUCK = new WeaponData(0.5f, 1, 100);
-    public static readonly WeaponData Mine = new WeaponData(1f, 100, 200);
+    public static readonly WeaponData Plasma = new(0.4f, 15, 20);
+    public static readonly WeaponData DarkMatter = new(0.3f, 30, 30);
+    public static readonly WeaponData Missile = new(0.5f, 50, 50);
+    public static readonly WeaponData Gauss = new(0.2f, 15, 10);
+    public static readonly WeaponData Disruptor = new(0.35f, 40, 40);
+    public static readonly WeaponData DUCK = new(0.5f, 1, 100);
+    public static readonly WeaponData Mine = new(1f, 100, 200);
 
     public static WeaponData Get(Weapon weapon) => weapon switch
     {

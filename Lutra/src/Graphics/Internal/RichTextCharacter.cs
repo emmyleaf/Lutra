@@ -5,7 +5,12 @@ namespace Lutra.Graphics;
 /// <summary>
 /// Internal class for managing characters in RichText.
 /// </summary>
-internal class RichTextCharacter
+/// <remarks>
+/// Creates a new RichTextCharacter.
+/// </remarks>
+/// <param name="character">The character.</param>
+/// <param name="charOffset">The character offset for animation.</param>
+internal class RichTextCharacter(char character, int charOffset = 0)
 {
     #region Private Fields
 
@@ -37,7 +42,7 @@ internal class RichTextCharacter
     Color activeColor2 = Color.White;
     Color activeColor3 = Color.White;
     Color activeShadowColor = Color.White;
-    Color activeOutlineColor = Color.White;
+    readonly Color activeOutlineColor = Color.White;
 
     #endregion
 
@@ -46,7 +51,7 @@ internal class RichTextCharacter
     /// <summary>
     /// The character.
     /// </summary>
-    public char Character;
+    public char Character = character;
 
     /// <summary>
     /// Timer used for animation.
@@ -56,7 +61,7 @@ internal class RichTextCharacter
     /// <summary>
     /// The sine wave offset for this specific character.
     /// </summary>
-    public float CharOffset;
+    public float CharOffset = charOffset;
 
     /// <summary>
     /// Determines if the character is bold.  Not supported yet.
@@ -72,8 +77,8 @@ internal class RichTextCharacter
     /// </summary>
     public Color Color
     {
-        get { return (color * activeColor).AlphaMultiply(FadeAmount); }
-        set { activeColor = value; }
+        get => (color * activeColor).AlphaMultiply(FadeAmount);
+        set => activeColor = value;
     }
 
     public float FadeAmount
@@ -107,8 +112,8 @@ internal class RichTextCharacter
     /// </summary>
     public Color Color0
     {
-        get { return (color0 * activeColor0).AlphaMultiply(FadeAmount); }
-        set { activeColor0 = value; }
+        get => (color0 * activeColor0).AlphaMultiply(FadeAmount);
+        set => activeColor0 = value;
     }
 
     /// <summary>
@@ -116,8 +121,8 @@ internal class RichTextCharacter
     /// </summary>
     public Color Color1
     {
-        get { return (color1 * activeColor1).AlphaMultiply(FadeAmount); }
-        set { activeColor1 = value; }
+        get => (color1 * activeColor1).AlphaMultiply(FadeAmount);
+        set => activeColor1 = value;
     }
 
     /// <summary>
@@ -125,8 +130,8 @@ internal class RichTextCharacter
     /// </summary>
     public Color Color2
     {
-        get { return (color2 * activeColor2).AlphaMultiply(FadeAmount); }
-        set { activeColor2 = value; }
+        get => (color2 * activeColor2).AlphaMultiply(FadeAmount);
+        set => activeColor2 = value;
     }
 
     /// <summary>
@@ -134,8 +139,8 @@ internal class RichTextCharacter
     /// </summary>
     public Color Color3
     {
-        get { return (color3 * activeColor3).AlphaMultiply(FadeAmount); }
-        set { activeColor3 = value; }
+        get => (color3 * activeColor3).AlphaMultiply(FadeAmount);
+        set => activeColor3 = value;
     }
 
     /// <summary>
@@ -143,8 +148,8 @@ internal class RichTextCharacter
     /// </summary>
     public Color ShadowColor
     {
-        get { return (shadowColor * activeShadowColor).AlphaMultiply(FadeAmount); }
-        set { activeShadowColor = value; }
+        get => (shadowColor * activeShadowColor).AlphaMultiply(FadeAmount);
+        set => activeShadowColor = value;
     }
 
     /// <summary>
@@ -152,8 +157,8 @@ internal class RichTextCharacter
     /// </summary>
     public Color OutlineColor
     {
-        get { return (outlineColor * activeShadowColor).AlphaMultiply(FadeAmount); }
-        set { activeShadowColor = value; }
+        get => (outlineColor * activeShadowColor).AlphaMultiply(FadeAmount);
+        set => activeShadowColor = value;
     }
 
     /// <summary>
@@ -161,8 +166,8 @@ internal class RichTextCharacter
     /// </summary>
     public float OffsetAmount
     {
-        get { return offsetAmount + activeOffsetAmount; }
-        set { activeOffsetAmount = value; }
+        get => offsetAmount + activeOffsetAmount;
+        set => activeOffsetAmount = value;
     }
 
     /// <summary>
@@ -170,8 +175,8 @@ internal class RichTextCharacter
     /// </summary>
     public float OutlineThickness
     {
-        get { return outlineThickness + activeOutlineThickness; }
-        set { activeOutlineThickness = value; }
+        get => outlineThickness + activeOutlineThickness;
+        set => activeOutlineThickness = value;
     }
 
     /// <summary>
@@ -179,8 +184,8 @@ internal class RichTextCharacter
     /// </summary>
     public float SineOffsetX
     {
-        get { return sineOffsetX + activeSineOffsetX; }
-        set { activeSineOffsetX = value; }
+        get => sineOffsetX + activeSineOffsetX;
+        set => activeSineOffsetX = value;
     }
 
     /// <summary>
@@ -188,8 +193,8 @@ internal class RichTextCharacter
     /// </summary>
     public float SineOffsetY
     {
-        get { return sineOffsetY + activeSineOffsetY; }
-        set { activeSineOffsetY = value; }
+        get => sineOffsetY + activeSineOffsetY;
+        set => activeSineOffsetY = value;
     }
 
     /// <summary>
@@ -197,8 +202,8 @@ internal class RichTextCharacter
     /// </summary>
     public float ShadowX
     {
-        get { return shadowX + activeShadowX; }
-        set { activeShadowX = value; }
+        get => shadowX + activeShadowX;
+        set => activeShadowX = value;
     }
 
     /// <summary>
@@ -206,8 +211,8 @@ internal class RichTextCharacter
     /// </summary>
     public float ShadowY
     {
-        get { return shadowY + activeShadowY; }
-        set { activeShadowY = value; }
+        get => shadowY + activeShadowY;
+        set => activeShadowY = value;
     }
 
     /// <summary>
@@ -215,8 +220,8 @@ internal class RichTextCharacter
     /// </summary>
     public float SineRateX
     {
-        get { return sineRateX + activeSineRateX; }
-        set { activeSineRateX = value; }
+        get => sineRateX + activeSineRateX;
+        set => activeSineRateX = value;
     }
 
     /// <summary>
@@ -224,8 +229,8 @@ internal class RichTextCharacter
     /// </summary>
     public float SineRateY
     {
-        get { return sineRateY + activeSineRateY; }
-        set { activeSineRateY = value; }
+        get => sineRateY + activeSineRateY;
+        set => activeSineRateY = value;
     }
 
     /// <summary>
@@ -233,8 +238,8 @@ internal class RichTextCharacter
     /// </summary>
     public float ShakeX
     {
-        get { return shakeX + activeShakeX; }
-        set { activeShakeX = value; }
+        get => shakeX + activeShakeX;
+        set => activeShakeX = value;
     }
 
     /// <summary>
@@ -242,8 +247,8 @@ internal class RichTextCharacter
     /// </summary>
     public float ShakeY
     {
-        get { return shakeY + activeShakeY; }
-        set { activeShakeY = value; }
+        get => shakeY + activeShakeY;
+        set => activeShakeY = value;
     }
 
     /// <summary>
@@ -251,8 +256,8 @@ internal class RichTextCharacter
     /// </summary>
     public float SineAmpX
     {
-        get { return sineAmpX + activeSineAmpX; }
-        set { activeSineAmpX = value; }
+        get => sineAmpX + activeSineAmpX;
+        set => activeSineAmpX = value;
     }
 
     /// <summary>
@@ -260,8 +265,8 @@ internal class RichTextCharacter
     /// </summary>
     public float SineAmpY
     {
-        get { return sineAmpY + activeSineAmpY; }
-        set { activeSineAmpY = value; }
+        get => sineAmpY + activeSineAmpY;
+        set => activeSineAmpY = value;
     }
 
     /// <summary>
@@ -269,8 +274,8 @@ internal class RichTextCharacter
     /// </summary>
     public float ScaleX
     {
-        get { return scaleX * activeScaleX; }
-        set { activeScaleX = value; }
+        get => scaleX * activeScaleX;
+        set => activeScaleX = value;
     }
 
     /// <summary>
@@ -278,8 +283,8 @@ internal class RichTextCharacter
     /// </summary>
     public float ScaleY
     {
-        get { return scaleY * activeScaleY; }
-        set { activeScaleY = value; }
+        get => scaleY * activeScaleY;
+        set => activeScaleY = value;
     }
 
     /// <summary>
@@ -287,8 +292,8 @@ internal class RichTextCharacter
     /// </summary>
     public float Angle
     {
-        get { return angle + activeAngle; }
-        set { activeAngle = value; }
+        get => angle + activeAngle;
+        set => activeAngle = value;
     }
 
     /// <summary>
@@ -296,8 +301,8 @@ internal class RichTextCharacter
     /// </summary>
     public float X
     {
-        get { return activeX; }
-        set { activeX = value; }
+        get => activeX;
+        set => activeX = value;
     }
 
     /// <summary>
@@ -305,48 +310,24 @@ internal class RichTextCharacter
     /// </summary>
     public float Y
     {
-        get { return activeY; }
-        set { activeY = value; }
+        get => activeY;
+        set => activeY = value;
     }
 
     /// <summary>
     /// The final horizontal offset position of the character when rendered.
     /// </summary>
-    public float OffsetX
-    {
-        get
-        {
-            return finalShakeX + finalSinX + X;
-        }
-    }
+    public float OffsetX => finalShakeX + finalSinX + X;
 
     /// <summary>
     /// The final vertical offset position of the character when rendered.
     /// </summary>
-    public float OffsetY
-    {
-        get
-        {
-            return finalShakeY + finalSinY + ((1.0f - FadeAmount) * -8.0f) + Y;
-        }
-    }
+    public float OffsetY => finalShakeY + finalSinY + ((1.0f - FadeAmount) * -8.0f) + Y;
 
     public Action<char> OnSpeak;
 
     #endregion
-
     #region Constructors
-
-    /// <summary>
-    /// Creates a new RichTextCharacter.
-    /// </summary>
-    /// <param name="character">The character.</param>
-    /// <param name="charOffset">The character offset for animation.</param>
-    public RichTextCharacter(char character, int charOffset = 0)
-    {
-        Character = character;
-        CharOffset = charOffset;
-    }
 
     #endregion
 
@@ -357,8 +338,9 @@ internal class RichTextCharacter
     /// </summary>
     public void Update()
     {
-        Timer += Game.Instance.DeltaTime;
-        DelayTimer += Game.Instance.DeltaTime;
+        // Always measure time in sixtieth seconds for text effects!
+        Timer += Game.Instance.DeltaTime * (Game.Instance.MeasureTimeInSixtiethSeconds ? 1 : 60);
+        DelayTimer += Game.Instance.DeltaTime * (Game.Instance.MeasureTimeInSixtiethSeconds ? 1 : 60);
 
         if (!Spoken && delay > 0f && DelayTimer > delay * (index))
         {

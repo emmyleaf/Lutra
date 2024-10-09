@@ -6,7 +6,7 @@ namespace Lutra.Rendering.Text
     internal class FontPageTexture : LutraTexture
     {
         public static ushort NewTextureSize = 512;
-        private readonly List<RectInt> nodes = new List<RectInt>();
+        private readonly List<RectInt> nodes = [];
 
         public FontPageTexture() : base(NewTextureSize)
         {

@@ -22,27 +22,27 @@ public class VirtualButton
     /// <summary>
     /// The keys registered to the Button.
     /// </summary>
-    public List<Key> Keys = new List<Key>();
+    public List<Key> Keys = [];
 
     /// <summary>
     /// The controller Buttons registered to the Button.
     /// </summary>
-    public List<(Controller, ControllerButton)> ControllerButtons = new();
+    public List<(Controller, ControllerButton)> ControllerButtons = [];
 
     /// <summary>
     /// The controller Axes and thresholds registered to the Button.
     /// </summary>
-    public List<(Controller, ControllerAxis, bool)> ControllerAxisButtons = new();
+    public List<(Controller, ControllerAxis, bool)> ControllerAxisButtons = [];
 
     /// <summary>
     /// The mouse buttons registered to the Button.
     /// </summary>
-    public List<MouseButton> MouseButtons = new List<MouseButton>();
+    public List<MouseButton> MouseButtons = [];
 
     /// <summary>
     /// The mouse wheel registered to the Button.
     /// </summary>
-    public List<MouseWheelDirection> MouseWheel = new List<MouseWheelDirection>();
+    public List<MouseWheelDirection> MouseWheel = [];
 
     /// <summary>
     /// Determines if the Button is enabled.  If not enabled all tests return false.

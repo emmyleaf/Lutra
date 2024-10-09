@@ -8,7 +8,7 @@ AssetManager.PreloadAssets += () =>
 };
 
 // GameOptions allows us to set some of the initial state of the Game.
-Game game = new Game(new GameOptions()
+var game = new Game(new GameOptions()
 {
     Title = "Lutra Examples",
     Width = 640,

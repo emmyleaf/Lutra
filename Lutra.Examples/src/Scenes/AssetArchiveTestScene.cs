@@ -18,22 +18,22 @@ namespace Lutra.Examples
 
             using (var memoryStream = loadedArchive.GetStreamForFile("Assets/LType/BG.png"))
             {
-                Lutra.Rendering.LutraTexture tex = new Rendering.LutraTexture(memoryStream);
-                Lutra.Graphics.Image img = new Graphics.Image(tex);
+                Lutra.Rendering.LutraTexture tex = new(memoryStream);
+                Lutra.Graphics.Image img = new(tex);
                 AddGraphic(img);
             }
 
             using (var memoryStream = loadedCompressedArchive.GetStreamForFile("Assets/lutra.png"))
             {
-                Lutra.Rendering.LutraTexture tex = new Rendering.LutraTexture(memoryStream);
-                Lutra.Graphics.Image img = new Graphics.Image(tex);
+                Lutra.Rendering.LutraTexture tex = new(memoryStream);
+                Lutra.Graphics.Image img = new(tex);
                 AddGraphic(img);
             }
 
             using (var memoryStream = loadedCompressedArchive.GetStreamForFile("Assets/TransparentTester.png"))
             {
-                Lutra.Rendering.LutraTexture tex = new Rendering.LutraTexture(memoryStream);
-                Lutra.Graphics.Image img = new Graphics.Image(tex);
+                Lutra.Rendering.LutraTexture tex = new(memoryStream);
+                Lutra.Graphics.Image img = new(tex);
                 AddGraphic(img);
             }
         }

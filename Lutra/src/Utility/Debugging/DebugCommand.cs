@@ -1,20 +1,12 @@
 namespace Lutra.Utility.Debugging
 {
-    public class DebugCommand : Attribute
+    [AttributeUsage(AttributeTargets.Method)]
+    public class DebugCommand(string alias = "", string usage = "", string help = "", string group = "", bool buffered = false) : Attribute
     {
-        public string Alias;
-        public string Usage;
-        public string Help;
-        public string Group;
-        public bool IsBuffered;
-
-        public DebugCommand(string alias = "", string usage = "", string help = "", string group = "", bool buffered = false)
-        {
-            Alias = alias;
-            Usage = usage;
-            Help = help;
-            Group = group;
-            IsBuffered = buffered;
-        }
+        public string Alias = alias;
+        public string Usage = usage;
+        public string Help = help;
+        public string Group = group;
+        public bool IsBuffered = buffered;
     }
 }

@@ -12,8 +12,8 @@ public class VirtualController
     // TODO: Just have InputManager create these, so we don't have to add them manually?
     #region Private Fields
 
-    private Dictionary<string, VirtualButton> buttons = new Dictionary<string, VirtualButton>();
-    private Dictionary<string, VirtualAxis> axes = new Dictionary<string, VirtualAxis>();
+    private readonly Dictionary<string, VirtualButton> buttons = [];
+    private readonly Dictionary<string, VirtualAxis> axes = [];
 
     #endregion
 

@@ -6,12 +6,12 @@ using Veldrid;
 
 namespace Lutra.Rendering;
 
-public class ImageSharpTexture
+public class ImageSharpTexture(Image<Rgba32> image, bool srgb)
 {
     /// <summary>
     /// The ImageSharp Image.
     /// </summary>
-    public Image<Rgba32> ISImage { get; }
+    public Image<Rgba32> ISImage { get; } = image;
 
     /// <summary>
     /// The width of the largest image in the chain.
@@ -26,7 +26,7 @@ public class ImageSharpTexture
     /// <summary>
     /// The pixel format of all images.
     /// </summary>
-    public PixelFormat Format { get; }
+    public PixelFormat Format { get; } = srgb ? PixelFormat.R8G8B8A8UNormSRgb : PixelFormat.R8G8B8A8UNorm;
 
     /// <summary>
     /// The size of each pixel, in bytes.
@@ -38,11 +38,6 @@ public class ImageSharpTexture
     public ImageSharpTexture(Stream stream) : this(Image.Load<Rgba32>(stream), false) { }
     public ImageSharpTexture(Stream stream, bool srgb) : this(Image.Load<Rgba32>(stream), srgb) { }
     public ImageSharpTexture(Image<Rgba32> image) : this(image, false) { }
-    public ImageSharpTexture(Image<Rgba32> image, bool srgb)
-    {
-        Format = srgb ? PixelFormat.R8G8B8A8UNormSRgb : PixelFormat.R8G8B8A8UNorm;
-        ISImage = image;
-    }
 
     public unsafe Texture CreateDeviceTexture(GraphicsDevice gd, ResourceFactory factory)
     {

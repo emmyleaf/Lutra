@@ -20,7 +20,7 @@ namespace Lutra.Examples
 
         bool AIControlled = true;
         bool DrawColliders = false;
-        Vector2 BallVelocity = new Vector2(3.0f, 3.0f);
+        Vector2 BallVelocity = new(3.0f, 3.0f);
         int ScoreLeft = 0;
         int ScoreRight = 0;
 

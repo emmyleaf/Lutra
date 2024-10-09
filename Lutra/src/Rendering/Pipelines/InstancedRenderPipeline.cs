@@ -19,9 +19,9 @@ public class InstancedRenderPipeline
     private readonly ResourceLayout PerBatchResourceLayout;
     private readonly Pipeline Pipeline;
 
-    private readonly Dictionary<int, ResourceSet> ResourceDict = new();
-    private readonly Dictionary<int, InstanceBatch> BatchesDict = new();
-    private readonly List<InstanceBatch> BatchesList = new();
+    private readonly Dictionary<int, ResourceSet> ResourceDict = [];
+    private readonly Dictionary<int, InstanceBatch> BatchesDict = [];
+    private readonly List<InstanceBatch> BatchesList = [];
 
     internal InstancedRenderPipeline(PipelineCommon common)
     {
@@ -37,14 +37,14 @@ public class InstancedRenderPipeline
         ));
 
         var shaderSet = new ShaderSetDescription(
-            new[] { VertexPosition.LayoutDescription },
+            [VertexPosition.LayoutDescription],
             VeldridResources.CreateShaders(BuiltinShader.InstancedVertexBytes, BuiltinShader.SpriteFragmentBytes)
         );
 
         var description = new GraphicsPipelineDescription();
         description.BlendState = BlendStateDescription.SINGLE_ALPHA_BLEND;
         description.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
-        description.ResourceLayouts = new[] { PipelineCommon.PerFrameResourceLayout, PerBatchResourceLayout };
+        description.ResourceLayouts = [PipelineCommon.PerFrameResourceLayout, PerBatchResourceLayout];
         description.ResourceBindingModel = ResourceBindingModel.Improved;
         description.ShaderSet = shaderSet;
         description.Outputs = VeldridResources.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
@@ -61,9 +61,8 @@ public class InstancedRenderPipeline
     public void Add(LutraTexture texture, int layer, Vector4 color, Matrix4x4 source, Matrix4x4 world, CommandList commandList)
     {
         var hashCode = HashCode.Combine(texture.TextureView, layer);
-        InstanceBatch batch;
 
-        if (!BatchesDict.TryGetValue(hashCode, out batch))
+        if (!BatchesDict.TryGetValue(hashCode, out InstanceBatch batch))
         {
             batch = new InstanceBatch() { ResourceSet = GetBatchResourceSet(hashCode, texture.TextureView) };
 
@@ -103,9 +102,8 @@ public class InstancedRenderPipeline
 
     private ResourceSet GetBatchResourceSet(int hashCode, TextureView textureView)
     {
-        ResourceSet batchResourceSet;
 
-        if (!ResourceDict.TryGetValue(hashCode, out batchResourceSet))
+        if (!ResourceDict.TryGetValue(hashCode, out ResourceSet batchResourceSet))
         {
             batchResourceSet = VeldridResources.Factory.CreateResourceSet(new ResourceSetDescription(
                 PerBatchResourceLayout, InstanceBuffer, textureView, VeldridResources.GraphicsDevice.PointSampler

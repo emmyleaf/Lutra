@@ -28,9 +28,9 @@ namespace Lutra.Utility
         public static string AssetPath = DEFAULT_ASSET_PATH;
         public static bool DisableCache = false;
 
-        internal static Dictionary<string, byte[]> BuiltinShaderBytesCache = new();
-        private static Dictionary<string, Font> FontCache = new();
-        private static Dictionary<string, LutraTexture> TextureCache = new();
+        internal static Dictionary<string, byte[]> BuiltinShaderBytesCache = [];
+        private static readonly Dictionary<string, Font> FontCache = [];
+        private static readonly Dictionary<string, LutraTexture> TextureCache = [];
 
         public static Action PreloadAssets = delegate { };
 
@@ -53,8 +53,7 @@ namespace Lutra.Utility
 
         public static Font GetFont(string filename, bool antialiased = true)
         {
-            Font font;
-            if (DisableCache || !FontCache.TryGetValue(filename, out font))
+            if (DisableCache || !FontCache.TryGetValue(filename, out Font font))
             {
                 font = LoadFont(filename, antialiased);
                 if (!DisableCache) { FontCache.Add(filename, font); }
@@ -64,8 +63,7 @@ namespace Lutra.Utility
 
         public static LutraTexture GetTexture(string filename)
         {
-            LutraTexture texture;
-            if (DisableCache || !TextureCache.TryGetValue(filename, out texture))
+            if (DisableCache || !TextureCache.TryGetValue(filename, out LutraTexture texture))
             {
                 texture = LoadTexture(filename);
                 if (!DisableCache) { TextureCache.Add(filename, texture); }
@@ -103,10 +101,8 @@ namespace Lutra.Utility
 
         private static LutraTexture LoadTexture(string filename)
         {
-            using (var fileStream = LoadStream(filename))
-            {
-                return new LutraTexture(fileStream);
-            }
+            using var fileStream = LoadStream(filename);
+            return new LutraTexture(fileStream);
         }
     }
 }

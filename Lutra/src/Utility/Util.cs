@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -83,7 +84,7 @@ namespace Lutra.Utility
         public static float LerpSet(float amount, params float[] numbers)
         {
             if (amount <= 0) return numbers[0];
-            if (amount >= 1) return numbers[numbers.Length - 1];
+            if (amount >= 1) return numbers[^1];
 
             int fromIndex = (int)Util.ScaleClamp(amount, 0, 1, 0, numbers.Length - 1);
             int toIndex = fromIndex + 1;
@@ -111,9 +112,11 @@ namespace Lutra.Utility
         {
             //convert numbers to looping set
 
-            List<float> set = new List<float>();
-            List<float> numberSet = new List<float>(numbers);
-            numberSet.Add(numbers[0]);
+            List<float> set = [];
+            List<float> numberSet = new(numbers)
+            {
+                numbers[0]
+            };
 
             for (var i = 0; i < numberSet.Count; i++)
             {
@@ -128,7 +131,7 @@ namespace Lutra.Utility
                 }
             }
 
-            return LerpSet(amount, set.ToArray());
+            return LerpSet(amount, [.. set]);
         }
 
         /// <summary>
@@ -160,7 +163,7 @@ namespace Lutra.Utility
         public static Color LerpColor(float amount, params Color[] colors)
         {
             if (amount <= 0) return colors[0];
-            if (amount >= 1) return colors[colors.Length - 1];
+            if (amount >= 1) return colors[^1];
 
             int fromIndex = (int)ScaleClamp(amount, 0, 1, 0, colors.Length - 1);
             int toIndex = fromIndex + 1;
@@ -480,7 +483,7 @@ namespace Lutra.Utility
         /// <returns>An angle between 0 - 360 degrees.</returns>
         public static float Angle(Vector2 vector)
         {
-            return Angle((float)vector.X, (float)vector.Y);
+            return Angle(vector.X, vector.Y);
         }
 
         /// <summary>
@@ -533,7 +536,7 @@ namespace Lutra.Utility
         {
             if (a == b) return 0;
             var dif = AngleDifference(a, b);
-            return (int)Math.Sign(dif);
+            return Math.Sign(dif);
         }
 
         /// <summary>
@@ -740,7 +743,7 @@ namespace Lutra.Utility
         /// <returns>True if the point is in the rectangle.</returns>
         public static bool InRect(Vector2 xy, RectInt rect)
         {
-            return InRect((float)xy.X, (float)xy.Y, rect);
+            return InRect(xy.X, xy.Y, rect);
         }
 
         /// <summary>
@@ -752,7 +755,7 @@ namespace Lutra.Utility
         /// <returns>True if the point is inside the circle.</returns>
         public static bool InCircle(Vector2 p, Vector2 circleP, float radius)
         {
-            return Distance((float)p.X, (float)p.Y, (float)circleP.X, (float)circleP.Y) <= radius;
+            return Distance(p.X, p.Y, circleP.X, circleP.Y) <= radius;
         }
 
         /// <summary>
@@ -955,6 +958,7 @@ namespace Lutra.Utility
         /// <param name="type">The type to look for the field in.</param>
         /// <param name="fieldName">The name of the static field.</param>
         /// <returns>The value of the static field.</returns>
+        [RequiresUnreferencedCode("Uses Reflection.")]
         public static object GetFieldValue(Type type, string fieldName)
         {
             return type.GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
@@ -1093,6 +1097,7 @@ namespace Lutra.Utility
         /// </summary>
         /// <param name="type">The type to search for.</param>
         /// <returns>The type found.  Null if no match.</returns>
+        [RequiresUnreferencedCode("Uses Reflection.")]
         public static Type GetTypeFromAllAssemblies(string type, bool ignoreCase = false)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -1107,7 +1112,7 @@ namespace Lutra.Utility
                     }
                     if (ignoreCase)
                     {
-                        if (t.Name.ToLower() == type)
+                        if (t.Name.Equals(type, StringComparison.CurrentCultureIgnoreCase))
                         {
                             return t;
                         }
@@ -1121,6 +1126,7 @@ namespace Lutra.Utility
         /// Get the list of all types in all known assemblies.
         /// </summary>
         /// <returns>The list of all types in all known assemblies.</returns>
+        [RequiresUnreferencedCode("Uses Reflection.")]
         public static List<Type> GetTypesFromAllAssemblies()
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -1144,7 +1150,7 @@ namespace Lutra.Utility
         public static string GetBasicTypeName(object obj)
         {
             var strarr = obj.GetType().ToString().Split('.');
-            return strarr[strarr.Length - 1];
+            return strarr[^1];
         }
 
         /// <summary>
@@ -1156,16 +1162,14 @@ namespace Lutra.Utility
         {
             var bytes = Encoding.UTF8.GetBytes(str);
 
-            using (var msi = new MemoryStream(bytes))
-            using (var mso = new MemoryStream())
+            using var msi = new MemoryStream(bytes);
+            using var mso = new MemoryStream();
+            using (var gs = new GZipStream(mso, CompressionMode.Compress))
             {
-                using (var gs = new GZipStream(mso, CompressionMode.Compress))
-                {
-                    CopyStream(msi, gs);
-                }
-
-                return Convert.ToBase64String(mso.ToArray());
+                CopyStream(msi, gs);
             }
+
+            return Convert.ToBase64String(mso.ToArray());
         }
 
         /// <summary>
@@ -1202,16 +1206,14 @@ namespace Lutra.Utility
                 return null;
             }
 
-            using (var msi = new MemoryStream(bytes))
-            using (var mso = new MemoryStream())
+            using var msi = new MemoryStream(bytes);
+            using var mso = new MemoryStream();
+            using (var gs = new GZipStream(msi, CompressionMode.Decompress))
             {
-                using (var gs = new GZipStream(msi, CompressionMode.Decompress))
-                {
-                    CopyStream(gs, mso);
-                }
-
-                return Encoding.UTF8.GetString(mso.ToArray());
+                CopyStream(gs, mso);
             }
+
+            return Encoding.UTF8.GetString(mso.ToArray());
         }
 
         /// <summary>
@@ -1230,7 +1232,7 @@ namespace Lutra.Utility
                 str += s.Key + keydelim + s.Value + valuedelim;
             }
 
-            str = str.Substring(0, str.Length - valuedelim.Length);
+            str = str[..^valuedelim.Length];
 
             return str;
         }
@@ -1265,12 +1267,11 @@ namespace Lutra.Utility
         public static string MD5Hash(string input)
         {
             // step 1, calculate MD5 hash from input
-            MD5 md5 = System.Security.Cryptography.MD5.Create();
-            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
-            byte[] hash = md5.ComputeHash(inputBytes);
+            byte[] inputBytes = Encoding.ASCII.GetBytes(input);
+            byte[] hash = MD5.HashData(inputBytes);
 
             // step 2, convert byte array to hex string
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             for (int i = 0; i < hash.Length; i++)
             {
                 sb.Append(hash[i].ToString("X2"));
@@ -1283,9 +1284,11 @@ namespace Lutra.Utility
         /// </summary>
         /// <typeparam name="T">The type of the Enum.</typeparam>
         /// <returns>An enumerable containing all the enum values.</returns>
+        [Obsolete("Deprecated. Please use the generic `Enum.GetValues<T>()` instead.", false)]
         public static IEnumerable<T> EnumValues<T>()
+        where T : struct, Enum
         {
-            return Enum.GetValues(typeof(T)).Cast<T>();
+            return Enum.GetValues<T>();
         }
 
         /// <summary>
@@ -1322,12 +1325,12 @@ namespace Lutra.Utility
         /// <returns>The string of the enum value.</returns>
         public static string EnumValueToString(Enum value)
         {
-            if (enumStringCache.ContainsKey(value)) return enumStringCache[value];
-            var str = string.Format("{0}.{1}", value.GetType(), value);
+            if (enumStringCache.TryGetValue(value, out string str)) return str;
+            str = string.Format("{0}.{1}", value.GetType(), value);
             enumStringCache.Add(value, str);
             return enumStringCache[value];
         }
-        static Dictionary<Enum, string> enumStringCache = new Dictionary<Enum, string>();
+        static readonly Dictionary<Enum, string> enumStringCache = [];
 
         /// <summary>
         /// Convert a generic enum's value into a string of just its value. (No type included!)
@@ -1336,8 +1339,8 @@ namespace Lutra.Utility
         /// <returns>The value of the enum following the final period.</returns>
         public static string EnumValueToBasicString(Enum e)
         {
-            var split = Util.EnumValueToString(e).Split('.');
-            return split[split.Length - 1];
+            var split = EnumValueToString(e).Split('.');
+            return split[^1];
         }
 
         /// <summary>
@@ -1509,10 +1512,10 @@ namespace Lutra.Utility
             int a = b - 1;
             int c = b + 1;
             int d = c + 1;
-            a = (int)Util.Clamp(a, 0, path.Length - 1);
-            b = (int)Util.Clamp(b, 0, path.Length - 1);
-            c = (int)Util.Clamp(c, 0, path.Length - 1);
-            d = (int)Util.Clamp(d, 0, path.Length - 1);
+            a = Util.Clamp(a, 0, path.Length - 1);
+            b = Util.Clamp(b, 0, path.Length - 1);
+            c = Util.Clamp(c, 0, path.Length - 1);
+            d = Util.Clamp(d, 0, path.Length - 1);
             float i = 1f / (path.Length - 1);
             t = (t - b * i) / i;
             return new Vector2(
@@ -1546,6 +1549,7 @@ namespace Lutra.Utility
         /// <typeparam name="T">The type of Attribute.</typeparam>
         /// <param name="inherit">Check inherited classes.</param>
         /// <returns>All types with the Attribute T.</returns>
+        [RequiresUnreferencedCode("Uses Reflection.")]
         public static IEnumerable<Type> GetTypesWithAttribute<T>(bool inherit = true) where T : Attribute
         {
             return from a in AppDomain.CurrentDomain.GetAssemblies()

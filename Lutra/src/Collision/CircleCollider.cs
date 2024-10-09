@@ -19,15 +19,9 @@ namespace Lutra.Collision
 
         #region Public Properties
 
-        public override float Width
-        {
-            get { return (float)Radius * 2; }
-        }
+        public override float Width => Radius * 2;
 
-        public override float Height
-        {
-            get { return (float)Radius * 2; }
-        }
+        public override float Height => Radius * 2;
 
         #endregion
 

@@ -21,18 +21,13 @@ namespace Lutra.Assets
         public string Name;
     }
 
-    public class Archive
+    public class Archive(BinaryReader reader)
     {
         private const string MAGIC_NUMBER = "LUTARC";
         private const int CURRENT_VERSION = 1;
 
         public ArchiveManifest Manifest;
-        private BinaryReader ArchiveFileReader;
-
-        public Archive(BinaryReader reader)
-        {
-            ArchiveFileReader = reader;
-        }
+        private readonly BinaryReader ArchiveFileReader = reader;
 
         public bool ContainsFile(string filePath)
         {
@@ -119,9 +114,9 @@ namespace Lutra.Assets
             }
 
             // Now, read manifest data.
-            ArchiveManifest newManifest = new ArchiveManifest();
+            ArchiveManifest newManifest = new();
             newManifest.Name = archivePath;
-            newManifest.FileIndex = new Dictionary<string, ArchiveFileIndex>();
+            newManifest.FileIndex = [];
 
             // First, the version.
             newManifest.Version = reader.ReadInt32();
@@ -152,7 +147,7 @@ namespace Lutra.Assets
 
             newManifest.DataBeginOffset = reader.BaseStream.Position;
 
-            Archive newArchive = new Archive(reader);
+            Archive newArchive = new(reader);
             newArchive.Manifest = newManifest;
 
             Util.LogInfo("Archive loaded!");
@@ -186,71 +181,69 @@ namespace Lutra.Assets
 
             using (var archiveFileStream = File.Open(archivePath, FileMode.Create))
             {
-                using (var writer = new BinaryWriter(archiveFileStream))
+                using var writer = new BinaryWriter(archiveFileStream);
+                Util.LogInfo($"Archiving {directoryPath} to {archivePath}...");
+                Util.LogInfo($"* Writing manifest...");
+                // First, write manifest. 
+                writer.Write(MAGIC_NUMBER.ToCharArray());
+                writer.Write(CURRENT_VERSION);
+                writer.Write(loadPriority);
+                writer.Write(compressed);
+
+                // Now, collate all information about files.
+                Dictionary<string, ArchiveFileIndex> fileIndex = [];
+                DirectoryInfo directoryInfo = new(directoryPath);
+                FileInfo[] fileListing = directoryInfo.GetFiles("*.*", SearchOption.AllDirectories);
+                long currentOffset = 0;
+
+                Dictionary<string, byte[]> compressedFiles = [];
+                Compressor compressor = new(11);
+
+                foreach (FileInfo file in fileListing)
                 {
-                    Util.LogInfo($"Archiving {directoryPath} to {archivePath}...");
-                    Util.LogInfo($"* Writing manifest...");
-                    // First, write manifest. 
-                    writer.Write(MAGIC_NUMBER.ToCharArray());
-                    writer.Write(CURRENT_VERSION);
-                    writer.Write(loadPriority);
-                    writer.Write(compressed);
+                    var relativeFilePath = file.FullName[(System.Environment.CurrentDirectory.Length + 1)..];
+                    var fileLength = file.Length;
 
-                    // Now, collate all information about files.
-                    Dictionary<string, ArchiveFileIndex> fileIndex = new();
-                    DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
-                    FileInfo[] fileListing = directoryInfo.GetFiles("*.*", SearchOption.AllDirectories);
-                    long currentOffset = 0;
-
-                    Dictionary<string, byte[]> compressedFiles = new Dictionary<string, byte[]>();
-                    Compressor compressor = new Compressor(11);
-
-                    foreach (FileInfo file in fileListing)
+                    if (compressed)
                     {
-                        var relativeFilePath = file.FullName.Substring(System.Environment.CurrentDirectory.Length + 1);
-                        var fileLength = file.Length;
-
-                        if (compressed)
-                        {
-                            Util.LogInfo($"* Compressing file {file.Name}...");
-                            var fileBytes = File.ReadAllBytes(file.FullName);
-                            var compressedBytes = compressor.Wrap(fileBytes).ToArray();
-                            compressedFiles.Add(file.FullName, compressedBytes);
-                            fileLength = compressedBytes.Length;
-                            Util.LogInfo($"* Compressed. Orig:{file.Length} After:{fileLength}");
-                        }
-
-                        fileIndex.Add(relativeFilePath, new ArchiveFileIndex
-                        {
-                            Offset = currentOffset,
-                            LengthBytes = fileLength
-                        });
-
-                        currentOffset += fileLength;
+                        Util.LogInfo($"* Compressing file {file.Name}...");
+                        var fileBytes = File.ReadAllBytes(file.FullName);
+                        var compressedBytes = compressor.Wrap(fileBytes).ToArray();
+                        compressedFiles.Add(file.FullName, compressedBytes);
+                        fileLength = compressedBytes.Length;
+                        Util.LogInfo($"* Compressed. Orig:{file.Length} After:{fileLength}");
                     }
 
-                    Util.LogInfo($"* Writing file index...");
-                    writer.Write(fileIndex.Count);
-                    foreach (var fileEntry in fileIndex)
+                    fileIndex.Add(relativeFilePath, new ArchiveFileIndex
                     {
-                        writer.Write(fileEntry.Key);
-                        writer.Write(fileEntry.Value.Offset);
-                        writer.Write(fileEntry.Value.LengthBytes);
-                    }
+                        Offset = currentOffset,
+                        LengthBytes = fileLength
+                    });
 
-                    // Now that the manifest is written, write the actual file data for each file.
-                    Util.LogInfo($"* Archiving...");
-                    foreach (FileInfo file in fileListing)
+                    currentOffset += fileLength;
+                }
+
+                Util.LogInfo($"* Writing file index...");
+                writer.Write(fileIndex.Count);
+                foreach (var fileEntry in fileIndex)
+                {
+                    writer.Write(fileEntry.Key);
+                    writer.Write(fileEntry.Value.Offset);
+                    writer.Write(fileEntry.Value.LengthBytes);
+                }
+
+                // Now that the manifest is written, write the actual file data for each file.
+                Util.LogInfo($"* Archiving...");
+                foreach (FileInfo file in fileListing)
+                {
+                    Util.LogInfo($"* * -> {file.FullName}");
+                    if (compressed)
                     {
-                        Util.LogInfo($"* * -> {file.FullName}");
-                        if (compressed)
-                        {
-                            writer.Write(compressedFiles[file.FullName]);
-                        }
-                        else
-                        {
-                            writer.Write(File.ReadAllBytes(file.FullName));
-                        }
+                        writer.Write(compressedFiles[file.FullName]);
+                    }
+                    else
+                    {
+                        writer.Write(File.ReadAllBytes(file.FullName));
                     }
                 }
             }

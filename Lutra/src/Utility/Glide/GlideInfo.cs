@@ -4,27 +4,22 @@ namespace Lutra.Utility.Glide
 {
     internal class GlideInfo
     {
-        private static BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+        private static readonly BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
         public string PropertyName { get; private set; }
         public Type PropertyType { get; private set; }
 
-        private FieldInfo field;
-        private PropertyInfo prop;
-        private object Target;
+        private readonly FieldInfo fieldInfo;
+        private readonly PropertyInfo prop;
+        private readonly object Target;
 
         public object Value
         {
-            get
-            {
-                return field != null ?
-                    field.GetValue(Target) :
-                    prop.GetValue(Target, null);
-            }
+            get => fieldInfo != null ? fieldInfo.GetValue(Target) : prop.GetValue(Target, null);
 
             set
             {
-                if (field != null) field.SetValue(Target, value);
+                if (fieldInfo != null) fieldInfo.SetValue(Target, value);
                 else prop.SetValue(Target, value, null);
             }
         }
@@ -40,7 +35,7 @@ namespace Lutra.Utility.Glide
         public GlideInfo(object target, FieldInfo info)
         {
             Target = target;
-            field = info;
+            fieldInfo = info;
             PropertyName = info.Name;
             PropertyType = info.FieldType;
         }
@@ -52,9 +47,9 @@ namespace Lutra.Utility.Glide
 
             var targetType = target as Type ?? target.GetType();
 
-            if ((field = targetType.GetField(property, flags)) != null)
+            if ((fieldInfo = targetType.GetField(property, flags)) != null)
             {
-                PropertyType = field.FieldType;
+                PropertyType = fieldInfo.FieldType;
             }
             else if ((prop = targetType.GetProperty(property, flags)) != null)
             {

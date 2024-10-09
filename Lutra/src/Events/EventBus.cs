@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Lutra.Utility;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Lutra.Events;
 
@@ -14,8 +14,8 @@ namespace Lutra.Events;
 /// </summary>
 public static class EventBus
 {
-    private static Dictionary<Type, Dictionary<object, Action<object>>> Subscribers = new();
-    private static List<(Type, dynamic)> QueuedMessages = new();
+    private static readonly Dictionary<Type, Dictionary<object, Action<object>>> Subscribers = [];
+    private static readonly List<(Type, dynamic)> QueuedMessages = [];
 
     public static void Dispatch<T>(T message) where T : EventMessage
     {
@@ -28,11 +28,14 @@ public static class EventBus
         }
     }
 
+    [RequiresUnreferencedCode("Deferred messages use `dynamic` types.")]
     public static void Queue<T>(T message) where T : EventMessage
     {
         QueuedMessages.Add((typeof(T), message));
     }
 
+    // TODO: perhaps we can rewrite this not to use dynamic types at some point!
+    [RequiresUnreferencedCode("Deferred messages use `dynamic` types.")]
     public static void Flush()
     {
         foreach (var msg in QueuedMessages)
@@ -47,20 +50,16 @@ public static class EventBus
     {
         if (!Subscribers.ContainsKey(typeof(T)))
         {
-            Subscribers.Add(typeof(T), new Dictionary<object, Action<object>>());
+            Subscribers.Add(typeof(T), []);
         }
-        
+
         Subscribers[typeof(T)][subscriber] = callback;
     }
 
     public static void Unsubscribe<T>(object subscriber) where T : EventMessage
     {
-        if (!Subscribers.ContainsKey(typeof(T)))
-            return;
+        if (!Subscribers.ContainsKey(typeof(T))) return;
 
-        if (Subscribers[typeof(T)].ContainsKey(subscriber))
-        {
-            Subscribers[typeof(T)].Remove(subscriber);
-        }
+        Subscribers[typeof(T)].Remove(subscriber);
     }
 }

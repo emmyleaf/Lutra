@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ImGuiNET;
 using Lutra.Input;
@@ -16,11 +18,11 @@ public class DebugConsole : IDisposable, IAsyncDisposable
     public static Key PopSceneKey = Key.Escape;
 
     public bool IsOpen = false;
-    private List<ConsoleLogEntry> Entries = new();
-    private Dictionary<string, MethodInfo> Commands = new();
-    private Dictionary<Type, object> TypeInstances = new();
-    private HashSet<string> EnabledGroups = new();
-    private List<string> CommandBuffer = new();
+    private readonly List<ConsoleLogEntry> Entries = [];
+    private readonly Dictionary<string, MethodInfo> Commands = [];
+    private readonly Dictionary<Type, object> TypeInstances = [];
+    private readonly HashSet<string> EnabledGroups = [];
+    private readonly List<string> CommandBuffer = [];
 
     private string CurrentInput = "";
     private bool ScrollToBottom = false;
@@ -28,7 +30,7 @@ public class DebugConsole : IDisposable, IAsyncDisposable
     private FileStream LogFileHandle;
 
     private const BindingFlags BINDING_FLAGS = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
-    private static readonly List<string> _whitelist = new() { "lutra" };
+    private static readonly List<string> _whitelist = ["lutra"];
 
     private DebugConsole()
     {
@@ -39,11 +41,17 @@ public class DebugConsole : IDisposable, IAsyncDisposable
         _whitelist.Add(contains.ToLower());
     }
 
+    // TODO: Document the fact that NativeAot will disable auto-registration of `DebugCommand`s!
     [Conditional("DEBUG")]
+    [UnconditionalSuppressMessage("Aot", "IL2026", Justification = "The dynamic code is not reachable with AOT")]
     public static void Initialize()
     {
         Instance = new();
-        Instance.RegisterCommands();
+
+        if (RuntimeFeature.IsDynamicCodeSupported)
+        {
+            Instance.RegisterCommands();
+        }
     }
 
     [Conditional("DEBUG")]
@@ -96,7 +104,7 @@ public class DebugConsole : IDisposable, IAsyncDisposable
                 foreach (var entry in Instance.Entries)
                 {
                     var sanitisedString = entry.LogText.Replace("%", "%%"); // TODO: Perform other sanitisation checks here for printf() format.
-                    ImGui.TextColored(ImGuiHelper.ImColorFromColor(entry.Color).Value, $"[{entry.Timestamp.ToString("G")}] {sanitisedString}");
+                    ImGui.TextColored(ImGuiHelper.ImColorFromColor(entry.Color).Value, $"[{entry.Timestamp:G}] {sanitisedString}");
                 }
 
                 if (Instance.ScrollToBottom)
@@ -112,10 +120,10 @@ public class DebugConsole : IDisposable, IAsyncDisposable
             ImGui.Separator();
 
             var inputFlags = ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.CallbackCompletion | ImGuiInputTextFlags.CallbackHistory;
-            ImGuiInputTextCallback callback = (data) =>
+            static int callback(ImGuiInputTextCallbackData* data)
             {
                 return ImguiConsoleTextCallback(new ImGuiInputTextCallbackDataPtr(data), *data);
-            };
+            }
 
             bool reclaimFocus = false;
             if (ImGui.InputText("", ref Instance.CurrentInput, 256, inputFlags, callback))
@@ -246,7 +254,7 @@ public class DebugConsole : IDisposable, IAsyncDisposable
     [DebugCommand(alias: "savelog", help: "Saves log to disk.")]
     void CmdSave(string filePath)
     {
-        System.IO.File.WriteAllLines(filePath, Entries.Select((entry) => $"[{entry.Timestamp.ToString("G")}] {entry.LogText}"));
+        System.IO.File.WriteAllLines(filePath, Entries.Select((entry) => $"[{entry.Timestamp:G}] {entry.LogText}"));
         LogQuiet($"Saved to {filePath}");
     }
 
@@ -312,13 +320,14 @@ public class DebugConsole : IDisposable, IAsyncDisposable
     }
 
     [Conditional("DEBUG")]
-    public void LogToStdOutput(string logText)
+    public static void LogToStdOutput(string logText)
     {
         Console.WriteLine(logText);
     }
 
     // Looks through whitelisted assemblies to find DebugCommand tagged methods.
     [Conditional("DEBUG")]
+    [RequiresUnreferencedCode("Uses Reflection.")]
     public void RegisterCommands()
     {
         Commands.Clear();
@@ -343,6 +352,7 @@ public class DebugConsole : IDisposable, IAsyncDisposable
         }
     }
 
+    [RequiresUnreferencedCode("Uses Reflection.")]
     private void RegisterCommandsForAssembly(Assembly assembly)
     {
         foreach (var type in assembly.GetTypes())
@@ -383,7 +393,7 @@ public class DebugConsole : IDisposable, IAsyncDisposable
         }
     }
 
-    DebugCommand GetDebugCommand(MethodInfo methodInfo)
+    static DebugCommand GetDebugCommand(MethodInfo methodInfo)
     {
         return (DebugCommand)methodInfo.GetCustomAttributes(typeof(DebugCommand), false)[0];
     }
@@ -434,7 +444,7 @@ public class DebugConsole : IDisposable, IAsyncDisposable
         }
     }
 
-    private string ParseCommandName(string str)
+    private static string ParseCommandName(string str)
     {
         if (str.Contains(' '))
         {
@@ -507,13 +517,13 @@ public class DebugConsole : IDisposable, IAsyncDisposable
 
         if (parameters.Length == 0)
         {
-            if (Commands[methodName].GetParameters().Count() > 0)
+            if (Commands[methodName].GetParameters().Length > 0)
             {
                 usageMode = true;
             }
         }
 
-        if (Commands[methodName].GetParameters().Count() != parameters.Length)
+        if (Commands[methodName].GetParameters().Length != parameters.Length)
         {
             if (!usageMode)
             {
@@ -521,13 +531,13 @@ public class DebugConsole : IDisposable, IAsyncDisposable
             }
         }
 
-        if (Commands.ContainsKey(methodName))
+        if (Commands.TryGetValue(methodName, out MethodInfo methodInfo))
         {
             if (usageMode)
             {
                 ShowUsage(methodName);
             }
-            else if (Commands[methodName].GetParameters().Count() == parameters.Length)
+            else if (methodInfo.GetParameters().Length == parameters.Length)
             {
                 try
                 {
@@ -570,7 +580,7 @@ public class DebugConsole : IDisposable, IAsyncDisposable
 
     }
 
-    object[] ParseParameters(MethodInfo methodInfo, string[] paramStrings)
+    static object[] ParseParameters(MethodInfo methodInfo, string[] paramStrings)
     {
         var parsedParams = new object[paramStrings.Length];
         var paramsInfo = methodInfo.GetParameters();
@@ -586,8 +596,7 @@ public class DebugConsole : IDisposable, IAsyncDisposable
             var ptype = param.ParameterType;
             if (ptype == typeof(float))
             {
-                float value;
-                if (!float.TryParse(paramStrings[i].TrimEnd('f'), out value))
+                if (!float.TryParse(paramStrings[i].TrimEnd('f'), out float value))
                 {
                     throw new ArgumentException(string.Format("Error parsing float for parameter {0}", i));
                 }
@@ -599,8 +608,7 @@ public class DebugConsole : IDisposable, IAsyncDisposable
 
             if (ptype == typeof(int))
             {
-                int value;
-                if (!int.TryParse(paramStrings[i], out value))
+                if (!int.TryParse(paramStrings[i], out int value))
                 {
                     throw new ArgumentException(string.Format("Error parsing int for parameter {0}", i));
                 }
@@ -612,8 +620,7 @@ public class DebugConsole : IDisposable, IAsyncDisposable
 
             if (ptype == typeof(bool))
             {
-                bool value;
-                if (!bool.TryParse(paramStrings[i], out value))
+                if (!bool.TryParse(paramStrings[i], out bool value))
                 {
                     throw new ArgumentException(string.Format("Error parsing bool for parameter {0}", i));
                 }
@@ -659,7 +666,7 @@ public class DebugConsole : IDisposable, IAsyncDisposable
         LogInfo(string.Format("== End of Usage Details", methodName));
     }
 
-    private string ParameterTypeToString(ParameterInfo param)
+    private static string ParameterTypeToString(ParameterInfo param)
     {
         if (param.ParameterType == typeof(int))
         {

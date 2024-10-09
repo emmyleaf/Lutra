@@ -58,7 +58,7 @@ namespace Lutra.Utility
             Config
         }
 
-        Dictionary<string, string> data = new Dictionary<string, string>();
+        Dictionary<string, string> data = [];
 
         /// <summary>
         /// Initializes a new instance of the DataSaver class.
@@ -81,7 +81,7 @@ namespace Lutra.Utility
         /// <returns>True if the data is successfully verified.</returns>
         public bool Verify(string stringData)
         {
-            string[] split = Regex.Split(stringData, ":");
+            var split = stringData.Split(":");
 
             if (split.Length != 2) return false;
 
@@ -115,7 +115,7 @@ namespace Lutra.Utility
         /// </summary>
         public void Clear()
         {
-            data = new Dictionary<string, string>();
+            data = [];
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace Lutra.Utility
             {
                 if (Verify(loaded) || !verify)
                 {
-                    string[] split = Regex.Split(loaded, ":");
+                    var split = loaded.Split(":");
                     loaded = Util.DecompressString(split[1]);
 
                     var splitData = Regex.Split(loaded, ValueDelim);
@@ -173,10 +173,7 @@ namespace Lutra.Utility
                         var entry = Regex.Split(s, KeyDelim);
                         var key = entry[0];
                         var value = entry[1];
-                        if (data.ContainsKey(key))
-                            data[key] = value;
-                        else
-                            data.Add(key, value);
+                        data[key] = value;
                     }
                 }
                 else
@@ -239,30 +236,14 @@ namespace Lutra.Utility
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>The string data or null.</returns>
-        public string this[string key]
-        {
-            get
-            {
-                if (data.ContainsKey(key))
-                {
-                    return data[key];
-                }
-                return null;
-            }
-        }
+        public string this[string key] => data.TryGetValue(key, out string value) ? value : null;
 
         /// <summary>
         /// Gets the string with the specified key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>The string data or null.</returns>
-        public string this[Enum key]
-        {
-            get
-            {
-                return this[Util.EnumValueToString(key)];
-            }
-        }
+        public string this[Enum key] => this[Util.EnumValueToString(key)];
 
         /// <summary>
         /// Gets a float from the data.
@@ -290,23 +271,13 @@ namespace Lutra.Utility
         /// <param name="key">The key.</param>
         /// <param name="defaultIfNotFound">The default if not found.</param>
         /// <returns>The value or the default if a value is not found.</returns>
-        public float GetFloatOrDefault(string key, float defaultIfNotFound = default(float))
+        public float GetFloatOrDefault(string key, float defaultIfNotFound = default)
         {
-            if (data.ContainsKey(key))
+            if (data.TryGetValue(key, out string str) && !string.IsNullOrEmpty(str) && float.TryParse(str, out _))
             {
-                if (string.IsNullOrEmpty(data[key]))
-                {
-                    SetData(key, defaultIfNotFound);
-                    return defaultIfNotFound;
-                }
-                float test = 0;
-                if (!float.TryParse(data[key], out test))
-                {
-                    SetData(key, defaultIfNotFound);
-                    return defaultIfNotFound;
-                }
                 return GetFloat(key);
             }
+
             SetData(key, defaultIfNotFound);
             return defaultIfNotFound;
         }
@@ -317,7 +288,7 @@ namespace Lutra.Utility
         /// <param name="key">The key.</param>
         /// <param name="defaultIfNotFound">The default if not found.</param>
         /// <returns>The value or the default if the key is not found.</returns>
-        public float GetFloatOrDefault(Enum key, float defaultIfNotFound = default(float))
+        public float GetFloatOrDefault(Enum key, float defaultIfNotFound = default)
         {
             return GetFloatOrDefault(Util.EnumValueToString(key), defaultIfNotFound);
         }
@@ -348,23 +319,13 @@ namespace Lutra.Utility
         /// <param name="key">The key.</param>
         /// <param name="defaultIfNotFound">The default if not found.</param>
         /// <returns>The value or the default if the key is not found.</returns>
-        public int GetIntOrDefault(string key, int defaultIfNotFound = default(int))
+        public int GetIntOrDefault(string key, int defaultIfNotFound = default)
         {
-            if (data.ContainsKey(key))
+            if (data.TryGetValue(key, out string str) && !string.IsNullOrEmpty(str) && int.TryParse(str, out _))
             {
-                if (string.IsNullOrEmpty(data[key]))
-                {
-                    SetData(key, defaultIfNotFound);
-                    return defaultIfNotFound;
-                }
-                int test = 0;
-                if (!int.TryParse(data[key], out test))
-                {
-                    SetData(key, defaultIfNotFound);
-                    return defaultIfNotFound;
-                }
                 return GetInt(key);
             }
+
             SetData(key, defaultIfNotFound);
             return defaultIfNotFound;
         }
@@ -375,7 +336,7 @@ namespace Lutra.Utility
         /// <param name="key">The key.</param>
         /// <param name="defaultIfNotFound">The default if not found.</param>
         /// <returns>The value or the default if the key is not found.</returns>
-        public int GetIntOrDefault(Enum key, int defaultIfNotFound = default(int))
+        public int GetIntOrDefault(Enum key, int defaultIfNotFound = default)
         {
             return GetIntOrDefault(Util.EnumValueToString(key), defaultIfNotFound);
         }
@@ -406,17 +367,13 @@ namespace Lutra.Utility
         /// <param name="key">The key.</param>
         /// <param name="defaultIfNotFound">The default if not found.</param>
         /// <returns>The value or the default if the key is not found.</returns>
-        public string GetStringOrDefault(string key, string defaultIfNotFound = default(string))
+        public string GetStringOrDefault(string key, string defaultIfNotFound = default)
         {
-            if (data.ContainsKey(key))
+            if (data.TryGetValue(key, out string str) && !string.IsNullOrEmpty(str))
             {
-                if (string.IsNullOrEmpty(data[key]))
-                {
-                    SetData(key, defaultIfNotFound);
-                    return defaultIfNotFound;
-                }
                 return GetString(key);
             }
+
             SetData(key, defaultIfNotFound);
             return defaultIfNotFound;
         }
@@ -427,7 +384,7 @@ namespace Lutra.Utility
         /// <param name="key">The key.</param>
         /// <param name="defaultIfNotFound">The default if not found.</param>
         /// <returns>The value or the default if the key is not found.</returns>
-        public string GetStringOrDefault(Enum key, string defaultIfNotFound = default(string))
+        public string GetStringOrDefault(Enum key, string defaultIfNotFound = default)
         {
             return GetStringOrDefault(Util.EnumValueToString(key), defaultIfNotFound);
         }
@@ -458,23 +415,13 @@ namespace Lutra.Utility
         /// <param name="key">The key.</param>
         /// <param name="defaultIfNotFound">The default if not found.</param>
         /// <returns>The value or the default if the key is not found.</returns>
-        public bool GetBoolOrDefault(string key, bool defaultIfNotFound = default(bool))
+        public bool GetBoolOrDefault(string key, bool defaultIfNotFound = default)
         {
-            if (data.ContainsKey(key))
+            if (data.TryGetValue(key, out string value) && !string.IsNullOrEmpty(value) && bool.TryParse(value, out _))
             {
-                if (string.IsNullOrEmpty(data[key]))
-                {
-                    SetData(key, defaultIfNotFound);
-                    return defaultIfNotFound;
-                }
-                bool test = false;
-                if (!bool.TryParse(data[key], out test))
-                {
-                    SetData(key, defaultIfNotFound);
-                    return defaultIfNotFound;
-                }
                 return GetBool(key);
             }
+
             SetData(key, defaultIfNotFound);
             return defaultIfNotFound;
         }
@@ -485,7 +432,7 @@ namespace Lutra.Utility
         /// <param name="key">The key.</param>
         /// <param name="defaultIfNotFound">The default if not found.</param>
         /// <returns>The value or the default if the key is not found.</returns>
-        public bool GetBoolOrDefault(Enum key, bool defaultIfNotFound = default(bool))
+        public bool GetBoolOrDefault(Enum key, bool defaultIfNotFound = default)
         {
             return GetBoolOrDefault(Util.EnumValueToString(key), defaultIfNotFound);
         }

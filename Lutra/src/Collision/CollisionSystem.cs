@@ -14,10 +14,10 @@ namespace Lutra.Collision
         public static int QUADTREE_MAXDEPTH = 2048;
         public static int QUADTREE_MARGIN = 8;
 
-        public List<int> KnownColliderTags = new();
+        public List<int> KnownColliderTags = [];
         public QuadTree<Collider> ColliderQuadTree;
 
-        public List<Collider> RegisteredColliders = new();
+        public List<Collider> RegisteredColliders = [];
 
         public static CollisionSystem Instance;
 
@@ -45,10 +45,7 @@ namespace Lutra.Collision
 
         public void UnregisterCollider(Collider collider)
         {
-            if (RegisteredColliders.Contains(collider))
-            {
-                RegisteredColliders.Remove(collider);
-            }
+            RegisteredColliders.Remove(collider);
         }
 
         public void Update()
@@ -366,11 +363,11 @@ namespace Lutra.Collision
                             {
                                 rectX = i * grid.TileWidth + grid.Left;
                                 rectY = j * grid.TileHeight + grid.Top;
-                                if (Util.InRect((float)line.Line2.PointA.X, (float)line.Line2.PointA.Y, rectX, rectY, grid.TileWidth, grid.TileHeight))
+                                if (Util.InRect(line.Line2.PointA.X, line.Line2.PointA.Y, rectX, rectY, grid.TileWidth, grid.TileHeight))
                                 {
                                     return true;
                                 }
-                                if (Util.InRect((float)line.Line2.PointB.X, (float)line.Line2.PointB.Y, rectX, rectY, grid.TileWidth, grid.TileHeight))
+                                if (Util.InRect(line.Line2.PointB.X, line.Line2.PointB.Y, rectX, rectY, grid.TileWidth, grid.TileHeight))
                                 {
                                     return true;
                                 }
@@ -849,8 +846,6 @@ namespace Lutra.Collision
             if ((first is PixelCollider && second is PixelCollider))
             {
                 //AABB test first
-                var pixel1 = first as PixelCollider;
-                var pixel2 = second as PixelCollider;
 
                 if (first.Right <= second.Left) return false;
                 if (first.Left >= second.Right) return false;

@@ -6,5 +6,5 @@ namespace Lutra.Events;
 /// </summary>
 public abstract class EventMessage
 {
-    
+
 }

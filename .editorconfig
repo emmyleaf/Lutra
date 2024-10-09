@@ -1,0 +1,7 @@
+[*.{cs,vb}]
+
+# IDE0130: Namespace does not match folder structure
+dotnet_style_namespace_match_folder = false
+
+# IDE0017: Simplify object initialization
+dotnet_style_object_initializer = false

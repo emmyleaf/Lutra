@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Commons.Music.Midi;
-using Lutra;
 
 namespace Lutra.MIDI;
 
@@ -13,10 +11,10 @@ namespace Lutra.MIDI;
 public class MIDIInput : IDisposable
 {
     // Private Fields
-    private IMidiAccess accessManager;
-    private IMidiInput midiInput;
-    private Queue<Byte[]> midiEventQueue = new Queue<Byte[]>();
-    private Queue<string> decodingMessageQueue = new Queue<string>();
+    private readonly IMidiAccess accessManager;
+    private readonly IMidiInput midiInput;
+    private readonly Queue<Byte[]> midiEventQueue = new();
+    private readonly Queue<string> decodingMessageQueue = new();
     private MIDICommandEventType previousType;
     private int previousChannel;
 
@@ -38,8 +36,8 @@ public class MIDIInput : IDisposable
             Utility.Util.LogError("Cannot open MIDI Input. No devices available.");
         }
 
-        Utility.Util.Log($"Attempting to connect to MIDI Input {(portID == null ? availableInputs.Last().Id : portID)}");
-        midiInput = accessManager.OpenInputAsync(portID == null ? availableInputs.Last().Id : portID).Result;
+        Utility.Util.Log($"Attempting to connect to MIDI Input {(portID ?? availableInputs.Last().Id)}");
+        midiInput = accessManager.OpenInputAsync(portID ?? availableInputs.Last().Id).Result;
 
         if (midiInput != null)
         {
@@ -49,7 +47,7 @@ public class MIDIInput : IDisposable
 
         if (!connectSuccess)
         {
-            Utility.Util.LogError($"Failed to connect to MIDI Input {(portID == null ? availableInputs.Last().Id : portID)}.");
+            Utility.Util.LogError($"Failed to connect to MIDI Input {(portID ?? availableInputs.Last().Id)}.");
         }
         else
         {

@@ -31,10 +31,6 @@ namespace Lutra.Graphics
                 Height = y2 - y1
             };
 
-            if (!fillRects.ContainsKey(key))
-            {
-                fillRects.Add(key, rect);
-            }
             fillRects[key] = rect;
         }
 
@@ -62,7 +58,7 @@ namespace Lutra.Graphics
             tWidth,
             tHeight;
 
-        static Dictionary<string, RectInt> fillRects = new Dictionary<string, RectInt>();
+        static readonly Dictionary<string, RectInt> fillRects = [];
 
         int sliceX1, sliceX2, sliceY1, sliceY2;
 
@@ -100,10 +96,7 @@ namespace Lutra.Graphics
         /// </summary>
         public PanelType PanelType
         {
-            get
-            {
-                return paneltype;
-            }
+            get => paneltype;
             set
             {
                 paneltype = value;
@@ -224,9 +217,8 @@ namespace Lutra.Graphics
 
             if (fillRect == null)
             {
-                if (fillRects.ContainsKey(source))
+                if (fillRects.TryGetValue(source, out RectInt rect))
                 {
-                    var rect = fillRects[source];
                     SetFillRect(rect.Left, rect.Top, rect.Right, rect.Bottom);
                 }
             }
@@ -242,11 +234,11 @@ namespace Lutra.Graphics
             InitializeDrawable(Texture, WorldMatrix);
 
             var minWidth = sliceX1 + tWidth - sliceX2;
-            panelScaleX = (float)Width / (float)minWidth;
+            panelScaleX = Width / (float)minWidth;
             if (panelScaleX > 1) panelScaleX = 1;
 
             var minHeight = sliceY1 + tHeight - sliceY2;
-            panelScaleY = (float)Height / (float)minHeight;
+            panelScaleY = Height / (float)minHeight;
             if (panelScaleY > 1) panelScaleY = 1;
 
             int x0 = 0;

@@ -8,7 +8,7 @@ namespace Lutra.Examples
     // This scene shows off manual drawing to a Surface using a custom Render method.
     public class SurfaceManualTestScene : Scene
     {
-        public List<Image> Lutras = new();
+        public List<Image> Lutras = [];
         public Surface LutrasSurface;
 
         public override void Begin()

@@ -38,7 +38,7 @@ namespace Lutra.Collision
         {
             var i = 0;
             float x = 0;
-            List<Vector2> vectorPoints = new List<Vector2>();
+            List<Vector2> vectorPoints = [];
             foreach (var p in points)
             {
                 if (i == 0)
@@ -60,61 +60,28 @@ namespace Lutra.Collision
             this.polygon = new Polygon(points);
         }
 
-        public List<Vector2> Points
-        {
-            get
-            {
-                return polygon.Points;
-            }
-        }
+        public List<Vector2> Points => polygon.Points;
 
         public Vector2 this[int index]
         {
-            get
-            {
-                return polygon[index];
-            }
-            set
-            {
-                polygon[index] = value;
-            }
+            get => polygon[index];
+            set => polygon[index] = value;
         }
 
-        public int Count
-        {
-            get
-            {
-                return polygon.Count;
-            }
-        }
+        public int Count => polygon.Count;
 
         public PolygonCollider(Vector2 firstPoint, params Vector2[] points)
         {
             polygon = new Polygon(firstPoint, points);
         }
 
-        public override float Width
-        {
-            get
-            {
-                return polygon.Width;
-            }
-        }
+        public override float Width => polygon.Width;
 
-        public override float Height
-        {
-            get
-            {
-                return polygon.Height;
-            }
-        }
+        public override float Height => polygon.Height;
 
         public Polygon Polygon
         {
-            set
-            {
-                polygon = value;
-            }
+            set => polygon = value;
             get
             {
                 if (!AutoTransform) return polygon;
